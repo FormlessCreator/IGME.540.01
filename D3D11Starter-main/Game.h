@@ -12,6 +12,12 @@ public:
 	Game(const Game&) = delete; // Remove copy constructor
 	Game& operator=(const Game&) = delete; // Remove copy-assignment operator
 
+	// Intialize the ImGui first.
+	void Initialize();
+
+	// Create a helper method that helps update get data and create an ImGui window.
+	void updateHelper();
+
 	// Primary functions
 	void Update(float deltaTime, float totalTime);
 	void Draw(float deltaTime, float totalTime);
@@ -22,6 +28,9 @@ private:
 	// Initialization helper methods - feel free to customize, combine, remove, etc.
 	void LoadShaders();
 	void CreateGeometry();
+
+	// Create a count pointer for ImGui initialization.
+	int* count;
 
 	// Note the usage of ComPtr below
 	//  - This is a smart pointer for objects that abide by the

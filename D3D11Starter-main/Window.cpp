@@ -2,13 +2,27 @@
 #include "Window.h"
 #include "Graphics.h"
 #include "Input.h"
+#include "ImGui/imgui.h"
+#include "ImGui/imgui_impl_dx11.h"
+#include "ImGui/imgui_impl_win32.h"
+
+// Include ImGui's Win32 backend and forward declare the window handler function
+	// Note: This CANNOT be inside a namespace!
+	// Note: The include assumes files are in an “ImGui” folder. Adjust as necessary
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(
+	HWND hWnd,
+	UINT msg,
+	WPARAM wParam,
+	LPARAM lParam);
 
 #include <sstream>
+
 
 namespace Window
 {
 	// Annonymous namespace to hold variables
-	// only accessible in this file
+	// only accessible in this file.
+
 	namespace
 	{
 		// Initialization tracking
@@ -253,6 +267,10 @@ void Window::CreateConsoleWindow(int bufferLines, int bufferColumns, int windowL
 // --------------------------------------------------------
 LRESULT Window::ProcessMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	// Call ImGui’s message handler and exit early if necessary
+	if (ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam))
+		return true;
+
 	// Check the incoming message and handle any we care about
 	switch (uMsg)
 	{

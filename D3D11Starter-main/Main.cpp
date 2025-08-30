@@ -81,6 +81,9 @@ int WINAPI WinMain(
 	// Now the main application object itself can be initialzied
 	game = new Game();
 
+	// Create an unsigned int pointer to intialize ImGui once.
+	//int* intializeCount = new int(0);
+
 	// Time tracking
 	LARGE_INTEGER perfFreq{};
 	double perfSeconds = 0;
@@ -123,6 +126,19 @@ int WINAPI WinMain(
 			// Input updating
 			Input::Update();
 
+			//// If initailizeCount is 0, call the game initialize method once.
+			//if (intializeCount == 0)
+			//{
+			//	// Intialize ImGui for the game class once.
+			//	game->Initialize();
+
+			//	// Increase count.
+			//	intializeCount++;
+			//}
+
+			// Intialize ImGui for the game class once.
+			game->Initialize();
+
 			// Update and draw
 			game->Update(deltaTime, totalTime);
 			game->Draw(deltaTime, totalTime);
@@ -139,6 +155,7 @@ int WINAPI WinMain(
 
 	// Clean up
 	delete game;
+	//delete intializeCount;
 	Input::ShutDown();
 	Graphics::ShutDown();
 	return (HRESULT)msg.wParam;
