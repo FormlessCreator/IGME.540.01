@@ -32,6 +32,17 @@ Game::Game()
 	// Initialize count to 0.
 	count = new int(0);
 
+	// Intialize the current and previous background & border color.
+	previousBgColor = new float[4];
+	previousBorderColor = new float[4];
+	bgColor = new float[4];
+	borderColor = new float[4];
+
+	// Set boolean variables to false by casting.
+	drawBgColor = (bool*) false;
+	drawBorderColor = (bool*) false;
+
+
 	// Set initial graphics API state
 	//  - These settings persist until we change them
 	//  - Some of these, like the primitive topology & input layout, probably won't change
@@ -71,6 +82,16 @@ Game::~Game()
 	
 	// delete the count pointer.
 	delete count;
+
+	// Delete the bgColor & borderColor array pointers
+	delete[] bgColor;
+	delete[] borderColor;
+
+	// Delete the boolean variables.
+	delete previousBgColor;
+	delete previousBorderColor;
+	delete drawBgColor;
+	delete drawBorderColor;
 }
 
 void Game::Initialize()
@@ -113,6 +134,88 @@ void Game::updateHelper()
 
 	// Show the demo window
 	ImGui::ShowDemoWindow();
+}
+
+void Game::buildImGuiCustomizedUI()
+{
+	// Create a new window.
+	ImGui::Begin("Customized UI window");
+
+	// Create an window app detail.
+	// Create a collapsing header named [ Application Information ].
+	if(ImGui::TreeNode("Application Information"))
+	{
+		// Get the frame rate of the application and display it.
+		ImGui::Text("Framerate: %.6f fps", ImGui::GetIO().Framerate);
+
+		// Create another tree node to change the background color and window color.
+		// To change background color and window color.
+		// Get the window width and height and display it.
+		ImGui::Text("Window Client Width: %d", Window::Width());
+		ImGui::Text("Window Client Height: %d", Window::Height());
+
+		// Create tree pop to close the collapsing header tree node.
+		ImGui::TreePop();
+	}
+
+
+	// Create another tree node to change the custom UI background & Outline color.
+	if (ImGui::TreeNode("Edit Custom ImGUI UI"))
+	{
+		// Get the style of the ImGui.
+		// Create a UI color node.
+		if (ImGui::TreeNode("Background UI Color"))
+		{
+			// Use color edit4 to actively change the bg color values.
+			ImGui::ColorEdit4("Background Color",  (float*)&bgColor);
+
+
+
+
+			// Create a tree pop to close child header tree node.
+			ImGui::TreePop();
+		}
+
+		if (ImGui::TreeNode("UI Border Color"))
+		{
+			// Use color edit4 to get and change the border color values
+			ImGui::ColorEdit4("Border Color", (float*)&borderColor);
+
+
+			// Create a tree pop to close child header tree node.
+			ImGui::TreePop();
+		}
+
+		// Create a tree pop to close child header tree node.
+		ImGui::TreePop();
+	}
+
+
+	// End the created window.
+	ImGui::End();
+}
+
+void Game::customizedUIColor()
+{
+	// If the drawBgColor is true, then apply the background color to the UI window.
+	if (*drawBgColor)
+	{
+		
+	}
+	else
+	{
+		// Revert to default ImGui background color.
+	}
+
+	if (*drawBorderColor)
+	{
+
+	}
+	else
+	{
+		// Revert to defaualt ImGui border color.
+	}
+	
 }
 
 
@@ -301,6 +404,9 @@ void Game::Update(float deltaTime, float totalTime)
 
 	// Call the update helper.
 	updateHelper();
+
+	// Call the Build UI update helper.
+	buildImGuiCustomizedUI();
 }
 
 

@@ -2,6 +2,7 @@
 
 #include <d3d11.h>
 #include <wrl/client.h>
+#include <DirectXMath.h>
 
 class Game
 {
@@ -18,6 +19,12 @@ public:
 	// Create a helper method that helps update get data and create an ImGui window.
 	void updateHelper();
 
+	// Create a build UI update helper method to build a customized game UI.
+	void buildImGuiCustomizedUI();
+
+	// Create a method that applies background & border color for the UI helper.
+	void customizedUIColor();
+
 	// Primary functions
 	void Update(float deltaTime, float totalTime);
 	void Draw(float deltaTime, float totalTime);
@@ -31,6 +38,16 @@ private:
 
 	// Create a count pointer for ImGui initialization.
 	int* count;
+
+	// Create float arrays for background and border color.
+	float* previousBgColor;
+	float* previousBorderColor;
+	float* bgColor;
+	float* borderColor;
+
+	// Create boolean variables to draw the background & border color window.
+	bool* drawBgColor;
+	bool* drawBorderColor;
 
 	// Note the usage of ComPtr below
 	//  - This is a smart pointer for objects that abide by the
