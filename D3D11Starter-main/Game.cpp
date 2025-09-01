@@ -33,14 +33,18 @@ Game::Game()
 	count = new int(0);
 
 	// Intialize the current and previous background & border color.
-	previousBgColor = new float[4];
-	previousBorderColor = new float[4];
-	bgColor = new float[4];
-	borderColor = new float[4];
+	//previousBgColor = new float[4] { 0.0f, 0.0f, 0.0f, 0.0f };
+	bgColor = new float[4] { 0.0f, 0.0f, 0.0f, 0.0f };
+
+	//previousBorderColor = new float[4];
+	borderColor = new float[4] {0.0f, 0.0f, 0.0f, 0.0f };
+
+	// Set the color picker to defualt 0.0f values.
+	colorPicker = new float[4] { 0.0f, 0.0f, 0.0f, 0.0f };
 
 	// Set boolean variables to false by casting.
-	drawBgColor = (bool*) false;
-	drawBorderColor = (bool*) false;
+	drawBgColor = new bool(false);
+	drawBorderColor = new bool (false);
 
 
 	// Set initial graphics API state
@@ -82,16 +86,27 @@ Game::~Game()
 	
 	// delete the count pointer.
 	delete count;
+	count = nullptr;
 
 	// Delete the bgColor & borderColor array pointers
+	//delete[] previousBgColor;
 	delete[] bgColor;
+	//delete[] previousBorderColor;
 	delete[] borderColor;
 
+	// Set the bgColor & borderColor pointers to nullptr after deleting.
+	//previousBgColor = nullptr;
+	bgColor = nullptr;
+	//previousBorderColor = nullptr;
+	borderColor = nullptr;
+
 	// Delete the boolean variables.
-	delete previousBgColor;
-	delete previousBorderColor;
 	delete drawBgColor;
 	delete drawBorderColor;
+
+	// Set the boolean variables to nullptr after deleting.
+	drawBgColor = nullptr;
+	drawBorderColor = nullptr;
 }
 
 void Game::Initialize()
@@ -138,6 +153,25 @@ void Game::updateHelper()
 
 void Game::buildImGuiCustomizedUI()
 {
+	// Get the style of the ImGui.
+	ImGuiStyle& style = ImGui::GetStyle();
+
+	// Get the background & border vector flost color values from the style.
+	ImVec4 bg = style.Colors[ImGuiCol_WindowBg];
+	ImVec4 border = style.Colors[ImGuiCol_Border];
+
+	// Set the defualt background & border color manually.
+	/*previousBgColor[0] = bg.x;
+	previousBgColor[1] = bg.y;
+	previousBgColor[2] = bg.z;
+	previousBgColor[3] = bg.w;
+
+	previousBorderColor[0] = border.x;
+	previousBorderColor[1] = border.y;
+	previousBorderColor[2] = border.z;
+	previousBorderColor[3] = border.w;*/
+
+
 	// Create a new window.
 	ImGui::Begin("Customized UI window");
 
@@ -154,6 +188,16 @@ void Game::buildImGuiCustomizedUI()
 		ImGui::Text("Window Client Width: %d", Window::Width());
 		ImGui::Text("Window Client Height: %d", Window::Height());
 
+		// Create tree node for changing the window color using color picker.
+		if (ImGui::TreeNode("Change window background color"))
+		{
+			// Create a new window color for app using color edit4.
+			ImGui::ColorEdit4("Window Color", colorPicker);
+
+			// Create a tree pop to end node if closed
+			ImGui::TreePop();
+		}
+
 		// Create tree pop to close the collapsing header tree node.
 		ImGui::TreePop();
 	}
@@ -162,15 +206,18 @@ void Game::buildImGuiCustomizedUI()
 	// Create another tree node to change the custom UI background & Outline color.
 	if (ImGui::TreeNode("Edit Custom ImGUI UI"))
 	{
-		// Get the style of the ImGui.
 		// Create a UI color node.
 		if (ImGui::TreeNode("Background UI Color"))
 		{
 			// Use color edit4 to actively change the bg color values.
-			ImGui::ColorEdit4("Background Color",  (float*)&bgColor);
+			ImGui::ColorEdit4("Background Color", bgColor);
 
-
-
+			// If the apply background color is preessed.
+			if(ImGui::Button("Apply new background color"))
+			{
+				// Apply the new background color to the ImGui style.
+				style.Colors[ImGuiCol_WindowBg] = ImVec4(bgColor[0], bgColor[1], bgColor[2], bgColor[3]);
+			}
 
 			// Create a tree pop to close child header tree node.
 			ImGui::TreePop();
@@ -179,8 +226,14 @@ void Game::buildImGuiCustomizedUI()
 		if (ImGui::TreeNode("UI Border Color"))
 		{
 			// Use color edit4 to get and change the border color values
-			ImGui::ColorEdit4("Border Color", (float*)&borderColor);
+			ImGui::ColorEdit4("Border Color", borderColor);
 
+			// If the apply border color is pressed.
+			if (ImGui::Button("Apply new border color"))
+			{
+				// Apply the new border color to the ImGui style.
+				style.Colors[ImGuiCol_Border] = ImVec4(borderColor[0], borderColor[1], borderColor[2], borderColor[3]);
+			}
 
 			// Create a tree pop to close child header tree node.
 			ImGui::TreePop();
@@ -190,33 +243,10 @@ void Game::buildImGuiCustomizedUI()
 		ImGui::TreePop();
 	}
 
-
 	// End the created window.
 	ImGui::End();
 }
 
-void Game::customizedUIColor()
-{
-	// If the drawBgColor is true, then apply the background color to the UI window.
-	if (*drawBgColor)
-	{
-		
-	}
-	else
-	{
-		// Revert to default ImGui background color.
-	}
-
-	if (*drawBorderColor)
-	{
-
-	}
-	else
-	{
-		// Revert to defaualt ImGui border color.
-	}
-	
-}
 
 
 // --------------------------------------------------------
@@ -420,7 +450,9 @@ void Game::Draw(float deltaTime, float totalTime)
 	// - At the beginning of Game::Draw() before drawing *anything*
 	{
 		// Clear the back buffer (erase what's on screen) and depth buffer
-		const float color[4] = { 0.4f, 0.6f, 0.75f, 0.0f };
+		// Use the color picker values to create a float array.
+		float color[4] = { colorPicker[0], colorPicker[1], colorPicker[2], colorPicker[3] };
+
 		Graphics::Context->ClearRenderTargetView(Graphics::BackBufferRTV.Get(),	color);
 		Graphics::Context->ClearDepthStencilView(Graphics::DepthBufferDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}

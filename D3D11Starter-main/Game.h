@@ -2,7 +2,6 @@
 
 #include <d3d11.h>
 #include <wrl/client.h>
-#include <DirectXMath.h>
 
 class Game
 {
@@ -23,7 +22,7 @@ public:
 	void buildImGuiCustomizedUI();
 
 	// Create a method that applies background & border color for the UI helper.
-	void customizedUIColor();
+	// void applyUIColor();
 
 	// Primary functions
 	void Update(float deltaTime, float totalTime);
@@ -40,10 +39,13 @@ private:
 	int* count;
 
 	// Create float arrays for background and border color.
-	float* previousBgColor;
-	float* previousBorderColor;
+	//float* previousBgColor;
 	float* bgColor;
+	//float* previousBorderColor;
 	float* borderColor;
+
+	// Create color picker for window.
+	float* colorPicker;
 
 	// Create boolean variables to draw the background & border color window.
 	bool* drawBgColor;
