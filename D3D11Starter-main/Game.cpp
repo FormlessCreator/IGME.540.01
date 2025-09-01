@@ -46,6 +46,8 @@ Game::Game()
 	drawBgColor = new bool(false);
 	drawBorderColor = new bool (false);
 
+	// Set the demo window to true as defualt.
+	showDemoWindow = new bool(true);
 
 	// Set initial graphics API state
 	//  - These settings persist until we change them
@@ -103,6 +105,11 @@ Game::~Game()
 	// Delete the boolean variables.
 	delete drawBgColor;
 	delete drawBorderColor;
+	delete showDemoWindow;
+
+	// Delete the color picker and set to nullptr.
+	delete[] colorPicker;
+	colorPicker = nullptr;
 
 	// Set the boolean variables to nullptr after deleting.
 	drawBgColor = nullptr;
@@ -146,9 +153,6 @@ void Game::updateHelper()
 	// Determine new input capture
 	Input::SetKeyboardCapture(io.WantCaptureKeyboard);
 	Input::SetMouseCapture(io.WantCaptureMouse);
-
-	// Show the demo window
-	ImGui::ShowDemoWindow();
 }
 
 void Game::buildImGuiCustomizedUI()
@@ -238,6 +242,15 @@ void Game::buildImGuiCustomizedUI()
 			// Create a tree pop to close child header tree node.
 			ImGui::TreePop();
 		}
+
+		// Create a show/hidden demo window button.
+		if(ImGui::Button("Show ImGui Demo Window"))
+		{
+			*showDemoWindow = !*showDemoWindow;
+		}
+
+		// If boolean variable is true, show the demo window, else don't show window.
+		ImGui::ShowDemoWindow(showDemoWindow);
 
 		// Create a tree pop to close child header tree node.
 		ImGui::TreePop();
