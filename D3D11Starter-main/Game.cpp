@@ -229,7 +229,7 @@ void Game::buildImGuiCustomizedUI()
 	if (!showTestWindow)
 	{
 		// If value is less than 10.0f.
-		if (value < 10.0f)
+		if (value < 8.0f)
 		{
 			// If the value is less than 0, set it to 0.
 			if (value < 0.0f)
@@ -243,8 +243,8 @@ void Game::buildImGuiCustomizedUI()
 				// Increase the value by 0.5f.
 				value += 0.5f;
 
-				// If the value is >= 10.0f, set the window to true.
-				if(value >= 10.0f)
+				// If the value is >= 8.0f, set the window to true.
+				if(value >= 8.0f)
 				{
 					// Set showTestWindow to true.
 					showTestWindow = true;
@@ -257,7 +257,7 @@ void Game::buildImGuiCustomizedUI()
 	}
 
 	// Draw a pictograph of the value using a histogram.
-	ImGui::PlotHistogram("<-- Test I", &value, 1, 0, nullptr, 0.0f, 10.0f, ImVec2(0, 100));
+	ImGui::PlotHistogram("<-- Test I", &value, 1, 0, nullptr, 0.0f, 8.0f, ImVec2(0, 100));
 
 	// If test window is true, show the test window.
 	if (showTestWindow)
