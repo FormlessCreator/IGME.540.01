@@ -47,7 +47,7 @@ Game::Game()
 	drawBorderColor = new bool (false);
 
 	// Set the demo window to true as defualt.
-	showDemoWindow = new bool(true);
+	showDemoWindow = new bool(false);
 
 	// Set initial graphics API state
 	//  - These settings persist until we change them
@@ -153,6 +153,12 @@ void Game::updateHelper()
 	// Determine new input capture
 	Input::SetKeyboardCapture(io.WantCaptureKeyboard);
 	Input::SetMouseCapture(io.WantCaptureMouse);
+
+	// If boolean variable is true, show the demo window, else don't show window.
+	if (*showDemoWindow)
+	{
+		ImGui::ShowDemoWindow();
+	}
 }
 
 void Game::buildImGuiCustomizedUI()
@@ -160,7 +166,7 @@ void Game::buildImGuiCustomizedUI()
 	// Get the style of the ImGui.
 	ImGuiStyle& style = ImGui::GetStyle();
 
-	// Get the background & border vector flost color values from the style.
+	// Get the background & border vector float color values from the style.
 	ImVec4 bg = style.Colors[ImGuiCol_WindowBg];
 	ImVec4 border = style.Colors[ImGuiCol_Border];
 
@@ -174,7 +180,6 @@ void Game::buildImGuiCustomizedUI()
 	previousBorderColor[1] = border.y;
 	previousBorderColor[2] = border.z;
 	previousBorderColor[3] = border.w;*/
-
 
 	// Create a new window.
 	ImGui::Begin("Customized UI window");
@@ -202,58 +207,100 @@ void Game::buildImGuiCustomizedUI()
 			ImGui::TreePop();
 		}
 
+		// Create a show/hidden demo window button.
+		if (ImGui::Button("Show ImGui Demo Window"))
+		{
+			// Toggle the boolean variable to true or false.
+			*showDemoWindow = !*showDemoWindow;
+		}
+
 		// Create tree pop to close the collapsing header tree node.
 		ImGui::TreePop();
 	}
 
+	// Create a mini game that uses ImGui buttons to change a float variable.
+	// The float variable drops with time and the user can click buttons.
+	// If the user is fast enough to click the buttons. The customized UI window appears.
+	// Create a static float variable to hold the value number of button clicked.
+	static float value = 0.0f;
+	static bool showTestWindow = false;
 
-	// Create another tree node to change the custom UI background & Outline color.
-	if (ImGui::TreeNode("Edit Custom ImGUI UI"))
+	// If showTestWindow is false, run the mini game.
+	if (!showTestWindow)
 	{
-		// Create a UI color node.
-		if (ImGui::TreeNode("Background UI Color"))
+		// If value is less than 10.0f.
+		if (value < 10.0f)
 		{
-			// Use color edit4 to actively change the bg color values.
-			ImGui::ColorEdit4("Background Color", bgColor);
-
-			// If the apply background color is preessed.
-			if(ImGui::Button("Apply new background color"))
+			// If the value is less than 0, set it to 0.
+			if (value < 0.0f)
 			{
-				// Apply the new background color to the ImGui style.
-				style.Colors[ImGuiCol_WindowBg] = ImVec4(bgColor[0], bgColor[1], bgColor[2], bgColor[3]);
+				value = 0.0f;
+			}
+
+			// Create a button called Click me to unlock the customized UI window.
+			if (ImGui::Button("Test I: Click as fast as you can to unlock the Edit Custom ImGUI UI - Test II & III"))
+			{
+				// Increase the value by 0.5f.
+				value += 0.5f;
+
+				// If the value is >= 10.0f, set the window to true.
+				if(value >= 10.0f)
+				{
+					// Set showTestWindow to true.
+					showTestWindow = true;
+				}
+			}
+
+			// Reduce the value by every milliseconds.
+			value -= ImGui::GetIO().DeltaTime;
+		}
+	}
+
+	// Draw a pictograph of the value using a histogram.
+	ImGui::PlotHistogram("<-- Test I", &value, 1, 0, nullptr, 0.0f, 10.0f, ImVec2(0, 100));
+
+	// If test window is true, show the test window.
+	if (showTestWindow)
+	{
+		// Create another tree node to change the custom UI background & Outline color.
+		if (ImGui::TreeNode("[Unlocked] - Edit Custom ImGUI UI Test"))
+		{
+			// Create a UI color node.
+			if (ImGui::TreeNode("Background UI Color - Test II"))
+			{
+				// Use color edit4 to actively change the bg color values.
+				ImGui::ColorEdit4("Background Color", bgColor);
+
+				// If the apply background color is preessed.
+				if (ImGui::Button("Apply new background color"))
+				{
+					// Apply the new background color to the ImGui style.
+					style.Colors[ImGuiCol_WindowBg] = ImVec4(bgColor[0], bgColor[1], bgColor[2], bgColor[3]);
+				}
+
+				// Create a tree pop to close child header tree node.
+				ImGui::TreePop();
+			}
+
+			if (ImGui::TreeNode("UI Border Color - Test III"))
+			{
+				// Use color edit4 to get and change the border color values
+				ImGui::ColorEdit4("Border Color", borderColor);
+
+				// If the apply border color is pressed.
+				if (ImGui::Button("Apply new border color"))
+				{
+					// Apply the new border color to the ImGui style.
+					style.Colors[ImGuiCol_Border] = ImVec4(borderColor[0], borderColor[1], borderColor[2], borderColor[3]);
+				}
+
+				// Create a tree pop to close child header tree node.
+				ImGui::TreePop();
 			}
 
 			// Create a tree pop to close child header tree node.
 			ImGui::TreePop();
 		}
-
-		if (ImGui::TreeNode("UI Border Color"))
-		{
-			// Use color edit4 to get and change the border color values
-			ImGui::ColorEdit4("Border Color", borderColor);
-
-			// If the apply border color is pressed.
-			if (ImGui::Button("Apply new border color"))
-			{
-				// Apply the new border color to the ImGui style.
-				style.Colors[ImGuiCol_Border] = ImVec4(borderColor[0], borderColor[1], borderColor[2], borderColor[3]);
-			}
-
-			// Create a tree pop to close child header tree node.
-			ImGui::TreePop();
-		}
-
-		// Create a show/hidden demo window button.
-		if(ImGui::Button("Show ImGui Demo Window"))
-		{
-			*showDemoWindow = !*showDemoWindow;
-		}
-
-		// If boolean variable is true, show the demo window, else don't show window.
-		ImGui::ShowDemoWindow(showDemoWindow);
-
-		// Create a tree pop to close child header tree node.
-		ImGui::TreePop();
 	}
 
 	// End the created window.
