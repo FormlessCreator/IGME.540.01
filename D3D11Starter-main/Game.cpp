@@ -229,7 +229,7 @@ void Game::buildImGuiCustomizedUI()
 	if (!showTestWindow)
 	{
 		// If value is less than 10.0f.
-		if (value < 8.0f)
+		if (value < 4.0f)
 		{
 			// If the value is less than 0, set it to 0.
 			if (value < 0.0f)
@@ -243,8 +243,8 @@ void Game::buildImGuiCustomizedUI()
 				// Increase the value by 0.5f.
 				value += 0.5f;
 
-				// If the value is >= 8.0f, set the window to true.
-				if(value >= 8.0f)
+				// If the value is >= 4.0f, set the window to true.
+				if(value >= 4.0f)
 				{
 					// Set showTestWindow to true.
 					showTestWindow = true;
@@ -257,7 +257,7 @@ void Game::buildImGuiCustomizedUI()
 	}
 
 	// Draw a pictograph of the value using a histogram.
-	ImGui::PlotHistogram("<-- Test I", &value, 1, 0, nullptr, 0.0f, 8.0f, ImVec2(0, 100));
+	ImGui::PlotHistogram("<-- Clicker: Test I", &value, 1, 0, nullptr, 0.0f, 4.0f, ImVec2(0, 100));
 
 	// If test window is true, show the test window.
 	if (showTestWindow)
@@ -295,6 +295,23 @@ void Game::buildImGuiCustomizedUI()
 				}
 
 				// Create a tree pop to close child header tree node.
+				ImGui::TreePop();
+			}
+
+			if (ImGui::TreeNode("PlotLines of Framerate - Test IV"))
+			{
+				// Create static variables to get the frame rate.
+				static const int frameArraySize = 120;
+				static float frameRateHolder[frameArraySize] = { 0 };
+				static int currentFrame = 0;
+
+				// Get the current frame rate and store it in the array.
+				// I do not use average frame rate due to reducing the performance of the application.
+				frameRateHolder[(currentFrame % frameArraySize)] = ImGui::GetIO().Framerate;
+				currentFrame = (currentFrame + 1) % frameArraySize;
+
+				// Use Lines to visualize frame rate.
+				ImGui::PlotLines("<--- Frame Rate: Test IV", frameRateHolder, frameArraySize, currentFrame, nullptr, 0.0f, 120.0f, ImVec2(0, 60));
 				ImGui::TreePop();
 			}
 
