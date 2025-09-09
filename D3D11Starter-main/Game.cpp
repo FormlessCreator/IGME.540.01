@@ -328,6 +328,35 @@ void Game::buildImGuiCustomizedUI()
 		}
 	}
 
+	// Create Tree node for Meshes.
+	if (ImGui::TreeNode("Mesh"))
+	{
+		if (ImGui::TreeNode("Triangle"))
+		{
+			ImGui::Text("Triangle: %d", triangle->GetIndexCount() / 3);
+			ImGui::Text("Vertices: %d", triangle->GetVertexCount());
+			ImGui::Text("Indices: %d", triangle->GetIndexCount());
+			ImGui::TreePop();
+		}
+
+		if (ImGui::TreeNode("Right-angle Triangle"))
+		{
+			ImGui::Text("Triangle: %d", rightTriangle->GetIndexCount() / 3);
+			ImGui::Text("Vertices: %d", rightTriangle->GetVertexCount());
+			ImGui::Text("Indices: %d", rightTriangle->GetIndexCount());
+			ImGui::TreePop();
+		}
+
+		if (ImGui::TreeNode("Diamond square"))
+		{
+			ImGui::Text("Triangle: %d", square->GetIndexCount() / 3);
+			ImGui::Text("Vertices: %d", square->GetVertexCount());
+			ImGui::Text("Indices: %d", square->GetIndexCount());
+			ImGui::TreePop();
+		}
+		ImGui::TreePop();
+	}
+
 	// End the created window.
 	ImGui::End();
 }
@@ -415,6 +444,7 @@ void Game::CreateGeometry()
 	XMFLOAT4 red = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
 	XMFLOAT4 green = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
 	XMFLOAT4 blue = XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
+	XMFLOAT4 white = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 
 	// Set up the vertices of the triangle we would like to draw
 	// - We're going to copy this array, exactly as it exists in CPU memory
@@ -443,7 +473,41 @@ void Game::CreateGeometry()
 	unsigned int indices[] = { 0, 1, 2 };
 
 	// Test to see if the triangle is drawn using the mesh class.
-	triangle = std::make_shared<Mesh>(vertices, indices, 3, 3);
+	triangle = std::make_shared<Mesh>(vertices, indices, _countof(vertices), _countof(indices));
+
+	// Create vertices to draw square.
+	Vertex squareVertices[] = 
+	{
+		{ XMFLOAT3(+0.0f, +0.2f, +0.0f), red },
+		{ XMFLOAT3(+0.2f, +0.0f, +0.0f), blue },
+		{ XMFLOAT3(-0.0f, -0.2f, +0.0f), white },
+		{ XMFLOAT3(-0.2f, +0.0f, +0.0f), green }
+	};
+
+	// Create intergers for the square.
+	unsigned int squareIndices[] = { 0, 1, 2, 2, 3, 0 };
+
+	// Initialize the square.
+	square = std::make_shared<Mesh>(squareVertices, squareIndices, _countof(squareVertices), _countof(squareIndices));
+
+	// Create vertices to draw a right traingle.
+	Vertex rightTriangleVertices[] = 
+	{
+		{ XMFLOAT3(+0.0f, +0.5f, +0.0f), red },
+		{ XMFLOAT3(+0.5f, -0.5f, +0.0f), blue },
+		{ XMFLOAT3(-0.0f, -0.5f, +0.0f), white },
+		//{ XMFLOAT3(-0.0f, -0.5f, +0.0f), white }
+	};
+
+	// Create indices for the right triangle.
+	unsigned int rightTriangleIndices[] = { 0, 1, 2 };
+
+	// Intialize the right triangle.
+	rightTriangle = std::make_shared<Mesh>(
+		rightTriangleVertices,
+		rightTriangleIndices,
+		_countof(rightTriangleVertices),
+		_countof(rightTriangleIndices));
 
 	// Create 3 mesh classes and get information about them for ImGui.
 
@@ -495,6 +559,8 @@ void Game::Draw(float deltaTime, float totalTime)
 	}
 
 	// Call the triangle mesh draw.
+	square->Draw();
+	rightTriangle->Draw();
 	triangle->Draw();
 
 
