@@ -69,6 +69,9 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
 
+	// Create a constant buffer.
+	Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer;
+
 	// Create a shared pointer for the list triangles.
 	std::shared_ptr<Mesh> triangle;
 	std::shared_ptr<Mesh> square;

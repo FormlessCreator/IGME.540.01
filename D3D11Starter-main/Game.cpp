@@ -8,10 +8,13 @@
 #include "ImGui/imgui_impl_dx11.h"
 #include "ImGui/imgui_impl_win32.h"
 
-// Include Mesh clas.
+// Include Mesh class.
 #include "Mesh.h"
 #include <memory>
 #include <vector>
+
+// Include buffer struct header.
+#include "BufferStructs.h"
 
 #include <DirectXMath.h>
 
@@ -509,8 +512,6 @@ void Game::CreateGeometry()
 		_countof(rightTriangleVertices),
 		_countof(rightTriangleIndices));
 
-	// Create 3 mesh classes and get information about them for ImGui.
-
 }
 
 
@@ -557,6 +558,23 @@ void Game::Draw(float deltaTime, float totalTime)
 		Graphics::Context->ClearRenderTargetView(Graphics::BackBufferRTV.Get(),	color);
 		Graphics::Context->ClearDepthStencilView(Graphics::DepthBufferDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}
+
+	// Get the data size of the constant buffer struct for to create a constant
+	// buffer in memory.
+	unsigned int dataSize = sizeof(BufferStructs);
+
+	// Adjust the size to always be a multiple of 16.
+	dataSize = ((dataSize + 15) / 16) * 16;
+
+	// Create two new variables that hold the new struct data for the constant buffer.
+	XMFLOAT4 newTint = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
+	XMFLOAT3 newOffset = XMFLOAT3(0.0f, 0.0f, 0.0f);
+
+	// Create a set of instructions that describes constant buffer object.
+	D3D11_BUFFER_DESC cbDesc = {};
+	cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	cbDesc.ByteWidth = dataSize;
+
 
 	// Call the triangle mesh draw.
 	square->Draw();
