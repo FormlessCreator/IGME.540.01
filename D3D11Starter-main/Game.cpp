@@ -57,8 +57,41 @@ Game::Game()
 	// Set the demo window to true as defualt.
 	showDemoWindow = new bool(false);
 
-	// Set the triangle mesh to nullptr.
-	//triangle = nullptr;
+	// Create a unique float pointer for the colour tint and offset data.
+	colorData = std::make_unique<float[]>(4);
+	colorData[0] = 0.0f;
+	colorData[1] = 0.0f;
+	colorData[2] = 0.0f;
+	colorData[3] = 0.0f;
+
+	offsetData = std::make_unique<float[]>(3);
+	offsetData[0] = 0.0f;
+	offsetData[1] = 0.0f;
+	offsetData[2] = 0.0f;
+
+	// Initialize the constant buffer.
+	// Get the data size of the constant buffer struct for to create a constant
+	// buffer in memory.
+	unsigned int dataSize = sizeof(BufferStructs);
+
+	// Adjust the size to always be a multiple of 16.
+	dataSize = ((dataSize + 15) / 16) * 16;
+
+	// Create a set of instructions that describes constant buffer object.
+	D3D11_BUFFER_DESC cbDesc = {};
+	cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	cbDesc.ByteWidth = dataSize;
+	cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	cbDesc.Usage = D3D11_USAGE_DYNAMIC;
+
+	// Create the constant buffer.
+	Graphics::Device->CreateBuffer(&cbDesc, 0, constantBuffer.GetAddressOf());
+
+	// Bind the constant buffer to set it active.
+	Graphics::Context->VSSetConstantBuffers(
+		0,
+		1,
+		constantBuffer.GetAddressOf());
 
 	// Set initial graphics API state
 	//  - These settings persist until we change them
@@ -236,6 +269,9 @@ void Game::buildImGuiCustomizedUI()
 	static float value = 0.0f;
 	static bool showTestWindow = false;
 
+	// Create a single struct variable in which its members can be changed.
+	//BufferStructs shaderDataChange = {};
+
 	// If showTestWindow is false, run the mini game.
 	if (!showTestWindow)
 	{
@@ -360,6 +396,25 @@ void Game::buildImGuiCustomizedUI()
 		ImGui::TreePop();
 	}
 
+	if (ImGui::TreeNode("Constant Buffer Data Changes"))
+	{
+		if (ImGui::TreeNode("Vertices offset"))
+		{
+			// Get the float[] data content with Sliderfloat3().
+			ImGui::SliderFloat3("Vertices Offset", offsetData.get(), -1.0f, 1.0f);
+			ImGui::TreePop();
+		}
+		
+		if (ImGui::TreeNode("Vertices Color"))
+		{
+			// Edit the color data of the buffer shader and update the unique ptr data.
+			ImGui::ColorEdit4("Vertices Color", colorData.get());
+			ImGui::TreePop();
+		}
+
+		ImGui::TreePop();
+	}
+
 	// End the created window.
 	ImGui::End();
 }
@@ -407,6 +462,7 @@ void Game::LoadShaders()
 			0,										// No classes in this shader
 			vertexShader.GetAddressOf());			// The address of the ID3D11VertexShader pointer
 	}
+
 
 	// Create an input layout 
 	//  - This describes the layout of data sent to a vertex shader
@@ -559,24 +615,29 @@ void Game::Draw(float deltaTime, float totalTime)
 		Graphics::Context->ClearDepthStencilView(Graphics::DepthBufferDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}
 
-	// Get the data size of the constant buffer struct for to create a constant
-	// buffer in memory.
-	unsigned int dataSize = sizeof(BufferStructs);
-
-	// Adjust the size to always be a multiple of 16.
-	dataSize = ((dataSize + 15) / 16) * 16;
-
 	// Create two new variables that hold the new struct data for the constant buffer.
 	// Using the buffer struct model.
 	BufferStructs cbStruct;
-	cbStruct.colorTint = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
-	cbStruct.offset = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	cbStruct.colorTint = XMFLOAT4(colorData[0], colorData[1], colorData[2], colorData[3]);
+	cbStruct.offset = XMFLOAT3(offsetData[0], offsetData[1], offsetData[2]);
 
-	// Create a set of instructions that describes constant buffer object.
-	D3D11_BUFFER_DESC cbDesc = {};
-	cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	cbDesc.ByteWidth = dataSize;
+	// Map out or get the data of the constant buffer to pause data use and
+	// address moving in the GPU.
+	D3D11_MAPPED_SUBRESOURCE mappedBuffer = {};
+	Graphics::Context->Map(
+		constantBuffer.Get(),
+		0,
+		D3D11_MAP_WRITE_DISCARD,
+		0,
+		&mappedBuffer
+	);
 
+	// Copy the new struct data into the constant buffer with the approximate size.
+	memcpy(mappedBuffer.pData, &cbStruct, sizeof(cbStruct));
+
+	// Unmap or realease the address of the constant buffer for the GPU to use and
+	// move the files if necessary.
+	Graphics::Context->Unmap(constantBuffer.Get(), 0);
 
 	// Call the triangle mesh draw.
 	square->Draw();
