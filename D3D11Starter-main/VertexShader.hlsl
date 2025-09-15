@@ -1,4 +1,12 @@
 
+// Create an external data for the constant buffer for the vertex
+// shader to recognize it.
+cbuffer ExternalData : register(b0)
+{
+    float4 tint;
+    float3 offset;
+}
+
 // Struct representing a single vertex worth of data
 // - This should match the vertex definition in our C++ code
 // - By "match", I mean the size, order and number of members
