@@ -567,8 +567,10 @@ void Game::Draw(float deltaTime, float totalTime)
 	dataSize = ((dataSize + 15) / 16) * 16;
 
 	// Create two new variables that hold the new struct data for the constant buffer.
-	XMFLOAT4 newTint = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
-	XMFLOAT3 newOffset = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	// Using the buffer struct model.
+	BufferStructs cbStruct;
+	cbStruct.colorTint = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
+	cbStruct.offset = XMFLOAT3(0.0f, 0.0f, 0.0f);
 
 	// Create a set of instructions that describes constant buffer object.
 	D3D11_BUFFER_DESC cbDesc = {};
