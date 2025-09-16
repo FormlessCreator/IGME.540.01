@@ -28,8 +28,8 @@ using namespace DirectX;
 Mesh::Mesh(Vertex* vertices, unsigned int* indices, int numberOfVerticies, int numberOfIndices)
 {
 	// Save the mesh vertices and indices count.
-	vertexCount = std::make_unique<unsigned int>(static_cast <unsigned int>(numberOfVerticies));
-	indexCount = std::make_unique<unsigned int>(static_cast <unsigned int>(numberOfIndices));
+	vertexCount = numberOfVerticies;
+	indexCount = numberOfIndices;
 
 	// Create a VERTEX BUFFER
 	// - This holds the vertex data of triangles for a single object
@@ -102,12 +102,12 @@ ID3D11Buffer* Mesh::GetIndexBuffer()
 
 int Mesh::GetVertexCount()
 {
-    return *vertexCount;
+    return vertexCount;
 }
 
 int Mesh::GetIndexCount()
 {
-    return *indexCount;
+    return indexCount;
 }
 
 void Mesh::Draw()
@@ -133,7 +133,7 @@ void Mesh::Draw()
 		//  - DrawIndexed() uses the currently set INDEX BUFFER to look up corresponding
 		//     vertices in the currently set VERTEX BUFFER
 		Graphics::Context->DrawIndexed(
-			*indexCount,     // The number of indices to use (we could draw a subset if we wanted)
+			indexCount,     // The number of indices to use (we could draw a subset if we wanted)
 			0,     // Offset to the first index we want to use
 			0);    // Offset to add to each index when looking up vertices
 	}

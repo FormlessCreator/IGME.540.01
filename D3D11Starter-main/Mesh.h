@@ -33,7 +33,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer;
 
 	// Create a unique pointer for vertices and indicies buffer count.
-	std::unique_ptr<unsigned int> vertexCount;
-	std::unique_ptr<unsigned int> indexCount;
+	unsigned int vertexCount;
+	unsigned int indexCount;
 };
 
