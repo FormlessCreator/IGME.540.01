@@ -15,6 +15,7 @@
 
 // Include buffer struct header.
 #include "BufferStructs.h"
+#include "Transform.h"
 
 #include <DirectXMath.h>
 
@@ -619,17 +620,21 @@ void Game::Draw(float deltaTime, float totalTime)
 	// Using the buffer struct model.
 	BufferStructs cbStruct;
 
-	// Create a 4 by 4 world matrix.
-	XMFLOAT4X4 worldMatrix;
+	// Create a transform class.
+	Transform entityTranform = Transform();
 
-	// Store the SIMD identity matrix to the world matrix.
-	XMStoreFloat4x4(&worldMatrix, XMMatrixIdentity());
+	// Get the transform class world matrix.
+	XMFLOAT4X4 transMatrix = entityTranform.GetWorldMatrix();
+
+
+	// Store the loaded SIMD identity matrix of the transform class to the world matrix.
+	//XMStoreFloat4x4(&worldMatrix, XMLoadFloat4x4(&entityTranform.GetWorldMatrix()));
 	
 	// Create a color tint.
 	cbStruct.colorTint = XMFLOAT4(colorData[0], colorData[1], colorData[2], colorData[3]);
 
 	// Store the SIMD identity matrix to the world matrix.
-	cbStruct.worldMatrix = XMLoadFloat4x4(&worldMatrix);
+	cbStruct.worldMatrix = XMLoadFloat4x4(&transMatrix);
 
 	// Map out or get the data of the constant buffer to pause data use and
 	// address moving in the GPU.

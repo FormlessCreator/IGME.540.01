@@ -4,8 +4,8 @@ using namespace DirectX;
 Transform::Transform()
 {
 	// Set and store the initial data for variables by loading.
-	DirectX::XMStoreFloat3(&position, DirectX::XMVectorSet(1.0f, 1.0f, 1.0f, 0.0f));
-	DirectX::XMStoreFloat3(&rotation, DirectX::XMVectorSet(1.0f, 1.0f, 1.0f, 0.0f));
+	DirectX::XMStoreFloat3(&position, DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f));
+	DirectX::XMStoreFloat3(&rotation, DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f));
 	DirectX::XMStoreFloat3(&scale, DirectX::XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f));
 	
 	// Store up the matrix with an identity matrix.
@@ -89,11 +89,20 @@ DirectX::XMFLOAT4X4 Transform::GetWorldMatrix()
 DirectX::XMFLOAT4X4 Transform::GetInverseTransposeMatrix()
 {
 	// Create a xmmatrix variable to use for calculations. 
-	XMMATRIX worldInTransMatrix = 
-		XMMatrixInverse(0, XMMatrixTranspose(XMLoadFloat4x4(&worldMatrix)));
+	//XMMATRIX worldInTransMatrix = 
+		//XMMatrixInverse(0, XMMatrixTranspose(XMLoadFloat4x4(&worldMatrix)));
+	// Create a xmmatrix variables to use for calculations.
+	// Convert each floats variables to their respective matrix.
+	XMMATRIX scaleMatrix = XMMatrixScaling(scale.x, scale.y, scale.z);
+	XMMATRIX rotationMatrix = XMMatrixRotationRollPitchYaw(rotation.x, rotation.y, rotation.z);
+	XMMATRIX translationMatrix = XMMatrixTranslation(position.x, position.y, position.z);
+
+	// Calculate the world matrix.
+	XMMATRIX world = scaleMatrix * rotationMatrix * translationMatrix;
 
 	// Store in the world inverse transpose matrix.
-	XMStoreFloat4x4(&worldInverseTransposeMatrix, worldInTransMatrix);
+	XMStoreFloat4x4(&worldInverseTransposeMatrix, 
+		XMMatrixInverse(0, XMMatrixTranspose(world)));
 
 	// Return the stored matrix.
 	return worldInverseTransposeMatrix;
@@ -124,7 +133,7 @@ void Transform::Rotate(float x, float y, float z)
 {
 	// Store calculation in the rotation variable.
 	XMStoreFloat3(&rotation,
-		XMLoadFloat3(&rotation) * XMVectorSet(x, y, z, 0.0f));
+		XMLoadFloat3(&rotation) + XMVectorSet(x, y, z, 0.0f));
 }
 
 void Transform::Rotate(DirectX::XMFLOAT3 rotationAmount)
@@ -132,7 +141,7 @@ void Transform::Rotate(DirectX::XMFLOAT3 rotationAmount)
 	// Store calculation in the rotation variable.
 		// Store calculation in the rotation variable.
 	XMStoreFloat3(&rotation,
-		XMLoadFloat3(&rotation) * 
+		XMLoadFloat3(&rotation) + 
 		XMVectorSet(rotationAmount.x, rotationAmount.y, rotationAmount.z, 0.0f));
 }
 
