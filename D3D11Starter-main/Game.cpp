@@ -618,8 +618,18 @@ void Game::Draw(float deltaTime, float totalTime)
 	// Create two new variables that hold the new struct data for the constant buffer.
 	// Using the buffer struct model.
 	BufferStructs cbStruct;
+
+	// Create a 4 by 4 world matrix.
+	XMFLOAT4X4 worldMatrix;
+
+	// Store the SIMD identity matrix to the world matrix.
+	XMStoreFloat4x4(&worldMatrix, XMMatrixIdentity());
+	
+	// Create a color tint.
 	cbStruct.colorTint = XMFLOAT4(colorData[0], colorData[1], colorData[2], colorData[3]);
-	cbStruct.offset = XMFLOAT3(offsetData[0], offsetData[1], offsetData[2]);
+
+	// Store the SIMD identity matrix to the world matrix.
+	cbStruct.worldMatrix = XMLoadFloat4x4(&worldMatrix);
 
 	// Map out or get the data of the constant buffer to pause data use and
 	// address moving in the GPU.
