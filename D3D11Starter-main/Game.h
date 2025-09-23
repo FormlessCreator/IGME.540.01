@@ -4,6 +4,7 @@
 #include <wrl/client.h>
 #include <vector>
 #include <memory>
+#include <DirectXMath.h>
 
 // Include the mesh class.
 #include "Mesh.h"
@@ -41,23 +42,22 @@ private:
 	void CreateGeometry();
 
 	// Create a count pointer for ImGui initialization.
-	int* count;
+	int count;
 
-	// Create float arrays for background and border color.
+	// Create xmfloat arrays for background and border color.
 	//float* previousBgColor;
-	float* bgColor;
-	//float* previousBorderColor;
-	float* borderColor;
+	XMFLOAT4 bgColor;
+	XMFLOAT4 borderColor;
 
 	// Create color picker for window.
-	float* colorPicker;
+	XMFLOAT4 colorPicker;
 
 	// Create boolean variables to draw the background & border color window.
-	bool* drawBgColor;
-	bool* drawBorderColor;
+	bool drawBgColor;
+	bool drawBorderColor;
 
 	// Variable to show the demo window.
-	bool* showDemoWindow;
+	bool showDemoWindow;
 
 	// Create unique pointer for the color and offset data off the constant buffer struct.
 	std::unique_ptr<float[]> colorData;

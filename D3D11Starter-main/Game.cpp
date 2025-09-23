@@ -39,31 +39,37 @@ Game::Game()
 	CreateGeometry();
 
 	// Initialize count to 0.
-	count = new int(0);
+	count = 0;
 
 	// Intialize the current and previous background & border color.
 	//previousBgColor = new float[4] { 0.0f, 0.0f, 0.0f, 0.0f };
-	bgColor = new float[4] { 0.0f, 0.0f, 0.0f, 0.0f };
+	bgColor = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
 
 	//previousBorderColor = new float[4];
-	borderColor = new float[4] {0.0f, 0.0f, 0.0f, 0.0f };
+	borderColor = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
 
-	// Set the color picker to defualt 0.0f values.
-	colorPicker = new float[4] { 0.0f, 0.0f, 0.0f, 0.0f };
+	// Set the color picker to defualt .f values.
+	// Convert the float value to colors between 0 - 1.
+	// By normalization.
+	colorPicker =  XMFLOAT4(
+		(233.0f / 255.0f), 
+		(188.0f / 255.0f), 
+		(188.0f / 255.0f), 
+		(0.0f / 255.0f));
 
 	// Set boolean variables to false by casting.
-	drawBgColor = new bool(false);
-	drawBorderColor = new bool (false);
+	drawBgColor = false;
+	drawBorderColor = false;
 
 	// Set the demo window to true as defualt.
-	showDemoWindow = new bool(false);
+	showDemoWindow = false;
 
 	// Create a unique float pointer for the colour tint and offset data.
 	colorData = std::make_unique<float[]>(4);
-	colorData[0] = 0.0f;
+	colorData[0] = 1.0f;
 	colorData[1] = 0.0f;
 	colorData[2] = 0.0f;
-	colorData[3] = 0.0f;
+	colorData[3] = 1.0f;
 
 	offsetData = std::make_unique<float[]>(3);
 	offsetData[0] = 0.0f;
@@ -130,41 +136,12 @@ Game::~Game()
 	ImGui_ImplDX11_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
-	
-	// delete the count pointer.
-	delete count;
-	count = nullptr;
-
-	// Delete the bgColor & borderColor array pointers
-	//delete[] previousBgColor;
-	delete[] bgColor;
-	//delete[] previousBorderColor;
-	delete[] borderColor;
-
-	// Set the bgColor & borderColor pointers to nullptr after deleting.
-	//previousBgColor = nullptr;
-	bgColor = nullptr;
-	//previousBorderColor = nullptr;
-	borderColor = nullptr;
-
-	// Delete the boolean variables.
-	delete drawBgColor;
-	delete drawBorderColor;
-	delete showDemoWindow;
-
-	// Delete the color picker and set to nullptr.
-	delete[] colorPicker;
-	colorPicker = nullptr;
-
-	// Set the boolean variables to nullptr after deleting.
-	drawBgColor = nullptr;
-	drawBorderColor = nullptr;
 }
 
 void Game::Initialize()
 {
 	// Initialize ImGui once using a count pointer.
-	if (*count == 0)
+	if (count == 0)
 	{
 		// Initialize ImGui itself & platform/renderer backends
 		IMGUI_CHECKVERSION();
@@ -178,7 +155,7 @@ void Game::Initialize()
 		//ImGui::StyleColorsClassic();
 
 		// Increase the count by one.
-		(*count)++;
+		(count)++;
 	}
 }
 
@@ -200,7 +177,7 @@ void Game::updateHelper()
 	Input::SetMouseCapture(io.WantCaptureMouse);
 
 	// If boolean variable is true, show the demo window, else don't show window.
-	if (*showDemoWindow)
+	if (showDemoWindow)
 	{
 		ImGui::ShowDemoWindow();
 	}
@@ -214,17 +191,6 @@ void Game::buildImGuiCustomizedUI()
 	// Get the background & border vector float color values from the style.
 	ImVec4 bg = style.Colors[ImGuiCol_WindowBg];
 	ImVec4 border = style.Colors[ImGuiCol_Border];
-
-	// Set the defualt background & border color manually.
-	/*previousBgColor[0] = bg.x;
-	previousBgColor[1] = bg.y;
-	previousBgColor[2] = bg.z;
-	previousBgColor[3] = bg.w;
-
-	previousBorderColor[0] = border.x;
-	previousBorderColor[1] = border.y;
-	previousBorderColor[2] = border.z;
-	previousBorderColor[3] = border.w;*/
 
 	// Create a new window.
 	ImGui::Begin("Customized UI window");
@@ -245,8 +211,17 @@ void Game::buildImGuiCustomizedUI()
 		// Create tree node for changing the window color using color picker.
 		if (ImGui::TreeNode("Change window background color"))
 		{
-			// Create a new window color for app using color edit4.
-			ImGui::ColorEdit4("Window Color", colorPicker);
+			/* Create a float array(which is a non - static member pointer within this scope).
+			 * To get the changed float(*) values in colouredit4 using an if statement if a
+			 * a color is changed. */
+			float color[4] = { colorPicker.x, colorPicker.y, colorPicker.z, colorPicker.w };
+
+			// Create a new window color for the app using an if color edit4 statement.
+			if (ImGui::ColorEdit4("Window Color", color))
+			{
+				// Convert the float pointer to Xmfloat.
+				colorPicker = XMFLOAT4(color[0], color[1], color[2], color[3]);
+			}
 
 			// Create a tree pop to end node if closed
 			ImGui::TreePop();
@@ -256,7 +231,7 @@ void Game::buildImGuiCustomizedUI()
 		if (ImGui::Button("Show ImGui Demo Window"))
 		{
 			// Toggle the boolean variable to true or false.
-			*showDemoWindow = !*showDemoWindow;
+			showDemoWindow = !showDemoWindow;
 		}
 
 		// Create tree pop to close the collapsing header tree node.
@@ -316,14 +291,21 @@ void Game::buildImGuiCustomizedUI()
 			// Create a UI color node.
 			if (ImGui::TreeNode("Background UI Color - Test II"))
 			{
-				// Use color edit4 to actively change the bg color values.
-				ImGui::ColorEdit4("Background Color", bgColor);
+				// Create a scope member non-static float array variable.
+				float color[4] = { bgColor.x, bgColor.y, bgColor.z, bgColor.w };
+
+				// Use if color edit4 to actively change the bg color values.
+				if (ImGui::ColorEdit4("Background Color", color))
+				{
+					// Convert the changed color to xmfloat4 values for bgcolor.
+					bgColor = XMFLOAT4(color[0], color[1], color[2], color[3]);
+				}
 
 				// If the apply background color is preessed.
 				if (ImGui::Button("Apply new background color"))
 				{
 					// Apply the new background color to the ImGui style.
-					style.Colors[ImGuiCol_WindowBg] = ImVec4(bgColor[0], bgColor[1], bgColor[2], bgColor[3]);
+					style.Colors[ImGuiCol_WindowBg] = ImVec4(bgColor.x, bgColor.y, bgColor.z, bgColor.w);
 				}
 
 				// Create a tree pop to close child header tree node.
@@ -332,14 +314,21 @@ void Game::buildImGuiCustomizedUI()
 
 			if (ImGui::TreeNode("UI Border Color - Test III"))
 			{
+				// Create scope float array for color to be changed to the prevoius array.
+				float color[4] = { borderColor.x, borderColor.y, borderColor.z, borderColor.w };
+
 				// Use color edit4 to get and change the border color values
-				ImGui::ColorEdit4("Border Color", borderColor);
+				if(ImGui::ColorEdit4("Border Color", color))
+				{
+					// Convert changed color values to bgcolor xmfloat values.
+					borderColor = XMFLOAT4(color[0], color[1], color[2], color[3]);
+				}
 
 				// If the apply border color is pressed.
 				if (ImGui::Button("Apply new border color"))
 				{
 					// Apply the new border color to the ImGui style.
-					style.Colors[ImGuiCol_Border] = ImVec4(borderColor[0], borderColor[1], borderColor[2], borderColor[3]);
+					style.Colors[ImGuiCol_Border] = ImVec4(borderColor.x, borderColor.y, borderColor.z, borderColor.w);
 				}
 
 				// Create a tree pop to close child header tree node.
@@ -533,7 +522,9 @@ void Game::CreateGeometry()
 	unsigned int indices[] = { 0, 1, 2 };
 
 	// Test to see if the triangle is drawn using the mesh class.
-	triangle = std::make_shared<Mesh>(vertices, indices, _countof(vertices), _countof(indices));
+	triangle = std::make_shared<Mesh>(vertices, indices, 
+		static_cast<int>(_countof(vertices)), 
+		static_cast<int>(_countof(indices)));
 
 	// Create vertices to draw square.
 	Vertex squareVertices[] = 
@@ -548,7 +539,9 @@ void Game::CreateGeometry()
 	unsigned int squareIndices[] = { 0, 1, 2, 2, 3, 0 };
 
 	// Initialize the square.
-	square = std::make_shared<Mesh>(squareVertices, squareIndices, _countof(squareVertices), _countof(squareIndices));
+	square = std::make_shared<Mesh>(squareVertices, squareIndices,
+		static_cast<int>(_countof(squareVertices)), 
+		static_cast<int>(_countof(squareIndices)));
 
 	// Create vertices to draw a right traingle.
 	Vertex rightTriangleVertices[] = 
@@ -566,9 +559,8 @@ void Game::CreateGeometry()
 	rightTriangle = std::make_shared<Mesh>(
 		rightTriangleVertices,
 		rightTriangleIndices,
-		_countof(rightTriangleVertices),
-		_countof(rightTriangleIndices));
-
+		static_cast<int>(_countof(rightTriangleVertices)),
+		static_cast<int>(_countof(rightTriangleIndices)));
 }
 
 
@@ -610,7 +602,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	{
 		// Clear the back buffer (erase what's on screen) and depth buffer
 		// Use the color picker values to create a float array.
-		float color[4] = { colorPicker[0], colorPicker[1], colorPicker[2], colorPicker[3] };
+		float color[4] = { colorPicker.x, colorPicker.y, colorPicker.z, colorPicker.w };
 
 		Graphics::Context->ClearRenderTargetView(Graphics::BackBufferRTV.Get(),	color);
 		Graphics::Context->ClearDepthStencilView(Graphics::DepthBufferDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
