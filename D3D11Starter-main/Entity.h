@@ -11,7 +11,7 @@ public:
 	void Draw();
 
 private:
-	Transform tranform;
+	Transform transform;
 	std::shared_ptr<Mesh> mesh;
 };
 
