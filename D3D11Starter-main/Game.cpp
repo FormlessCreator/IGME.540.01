@@ -651,6 +651,8 @@ void Game::Draw(float deltaTime, float totalTime)
 	rightTriangle->Draw();
 	triangle->Draw();
 
+	// For each of the data alter the data of the cbuffer.
+
 
 	// Tells Imgui to gets its buffer data information and feed the data to another funtion.
 	{

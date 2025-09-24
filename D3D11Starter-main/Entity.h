@@ -6,6 +6,8 @@
 class Entity
 {
 public:
+	Entity(Mesh mesh);
+	~Entity();
 	Transform& GetTransform();
 	std::shared_ptr<Mesh> GetMesh();
 	void Draw();
