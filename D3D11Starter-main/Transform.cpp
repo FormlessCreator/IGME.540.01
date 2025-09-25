@@ -6,7 +6,7 @@ Transform::Transform()
 	// Set and store the initial data for variables by loading.
 	DirectX::XMStoreFloat3(&position, DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f));
 	DirectX::XMStoreFloat3(&rotation, DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f));
-	DirectX::XMStoreFloat3(&scale, DirectX::XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f));
+	DirectX::XMStoreFloat3(&scale, DirectX::XMVectorSet(1.0f, 1.0f, 1.0f, 0.0f));
 	
 	// Store up the matrix with an identity matrix.
 	DirectX::XMStoreFloat4x4(&worldMatrix, DirectX::XMMatrixIdentity());
@@ -35,10 +35,10 @@ void Transform::SetRotation(float x, float y, float z)
 	XMStoreFloat3(&rotation, XMVectorSet(x, y, z, 0.0f));
 }
 
-void Transform::SetRotation(DirectX::XMFLOAT3 rotation)
+void Transform::SetRotation(DirectX::XMFLOAT3 rotationInput)
 {
 	// Set the new rotation.
-	XMStoreFloat3(&rotation, XMVectorSet(rotation.x, rotation.y, rotation.z, 0.0f));
+	XMStoreFloat3(&rotation, XMVectorSet(rotationInput.x, rotationInput.y, rotationInput.z, 0.0f));
 }
 
 void Transform::SetPosition(float x, float y, float z)
@@ -113,20 +113,20 @@ void Transform::Scale(float x, float y, float z)
 	// Store the float values after vector calculations.
 	// Store the new changed scale.
 	// The w for scale should be 1.0f
-	XMStoreFloat3(&scale, XMLoadFloat3(&scale) *
-		XMVectorSet(x, y, z, 1.0f));
+	XMStoreFloat3(&scale, XMVectorMultiply(XMLoadFloat3(&scale),
+		XMVectorSet(x, y, z, 1.0f)));
 }
 
 void Transform::Scale(DirectX::XMFLOAT3 scaleAmount)
 {
 	// Store the new changed scale.
 	// The w for scale should be 1.0f
-	XMStoreFloat3(&scale, XMLoadFloat3(&scale) * 
+	XMStoreFloat3(&scale, XMVectorMultiply(XMLoadFloat3(&scale),
 		XMVectorSet(
 			scaleAmount.x,
 			scaleAmount.y,
 			scaleAmount.z,
-			1.0f));
+			1.0f)));
 }
 
 void Transform::Rotate(float x, float y, float z)
@@ -141,14 +141,16 @@ void Transform::Rotate(DirectX::XMFLOAT3 rotationAmount)
 	// Store calculation in the rotation variable.
 		// Store calculation in the rotation variable.
 	XMStoreFloat3(&rotation,
-		XMLoadFloat3(&rotation) + 
-		XMVectorSet(rotationAmount.x, rotationAmount.y, rotationAmount.z, 0.0f));
+		XMVectorAdd(XMLoadFloat3(&rotation),
+		XMVectorSet(rotationAmount.x, rotationAmount.y, rotationAmount.z, 0.0f)));
 }
 
 void Transform::MoveAbsolute(float x, float y, float z)
 {
 	// Store calculation in the position variable.
 	XMStoreFloat3(&position, XMLoadFloat3(&position) + XMVectorSet(x, y, z, 0.0f));
+
+	GetWorldMatrix();
 }
 
 void Transform::MoveAbsolute(DirectX::XMFLOAT3 offset)

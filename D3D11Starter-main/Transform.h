@@ -10,7 +10,7 @@ public:
 	void SetScale(float x, float y, float z);
 	void SetScale(DirectX::XMFLOAT3 position);
 	void SetRotation(float x, float y, float z);
-	void SetRotation(DirectX::XMFLOAT3 rotation);
+	void SetRotation(DirectX::XMFLOAT3 rotationInput);
 	void SetPosition(float x, float y, float z);
 	void SetPosition(DirectX::XMFLOAT3 translate);
 

@@ -9,6 +9,9 @@
 // Include the mesh class.
 #include "Mesh.h"
 
+// Include entity class.
+#include "Entity.h"
+
 class Game
 {
 public:
@@ -80,5 +83,15 @@ private:
 	std::shared_ptr<Mesh> triangle;
 	std::shared_ptr<Mesh> square;
 	std::shared_ptr<Mesh> rightTriangle;
+
+	// Create an five entity.
+	Entity entity1;
+	Entity entity2;
+	Entity entity3;
+	Entity entity4;
+	Entity entity5;
+	
+	// Create a list of entities.
+	std::vector<Entity> listOfEntities;
 };
 

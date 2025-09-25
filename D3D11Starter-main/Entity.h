@@ -6,6 +6,7 @@
 class Entity
 {
 public:
+	Entity();
 	Entity(Mesh mesh);
 	~Entity();
 	Transform& GetTransform();

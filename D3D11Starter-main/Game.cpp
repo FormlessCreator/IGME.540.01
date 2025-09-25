@@ -17,6 +17,9 @@
 #include "BufferStructs.h"
 #include "Transform.h"
 
+// Include entity class.
+#include "Entity.h"
+
 #include <DirectXMath.h>
 
 // Needed for a helper function to load pre-compiled shader files
@@ -383,6 +386,50 @@ void Game::buildImGuiCustomizedUI()
 			ImGui::Text("Indices: %d", square->GetIndexCount());
 			ImGui::TreePop();
 		}
+		
+		ImGui::TreePop();
+	}
+
+	// Create new menu for entity tracking.
+	if (ImGui::TreeNode("Entities"))
+	{
+		// Create a loop of entities to be displayed.
+		for (int i = 0; i < listOfEntities.size(); i++)
+		{
+			std::string number = "Entity " + std::to_string(i + 1);
+
+			if (ImGui::TreeNode(number.c_str()))
+			{
+				// Get the transform address to get its data.
+				Transform& entityTransform = listOfEntities[i].GetTransform();
+
+				// Create Push ID to make an edited variable of transform 
+				// element to be unique to each entity for each loop.
+				ImGui::PushID(i);
+
+				// Create the xmfloat3 data of position, scale and rotation.
+				XMFLOAT3 position = XMFLOAT3(entityTransform.GetPosition());
+				XMFLOAT3 scale = XMFLOAT3(entityTransform.GetScale());
+				XMFLOAT3 rotation = XMFLOAT3(entityTransform.GetPitchYawRoll());
+
+				// Create a drag float that chages the transformation of the entities.
+				ImGui::DragFloat3("Position", &position.x, 0.1f);
+				ImGui::DragFloat3("Scale", &scale.x, 0.1f);
+				ImGui::DragFloat3("Rotation", &rotation.x, 0.1f);
+
+				// Set the tranform data to the new values.
+				entityTransform.SetPosition(position);
+				entityTransform.SetRotation(rotation);
+				entityTransform.SetScale(scale);
+
+				// Remove the Id after loop ends and changes are made.
+				ImGui::PopID();
+
+				// Pop the tree.
+				ImGui::TreePop();
+			}
+		}
+
 		ImGui::TreePop();
 	}
 
@@ -561,6 +608,22 @@ void Game::CreateGeometry()
 		rightTriangleIndices,
 		static_cast<int>(_countof(rightTriangleVertices)),
 		static_cast<int>(_countof(rightTriangleIndices)));
+
+	// Create entities.
+	entity1 = Entity(*(rightTriangle.get()));
+	entity2 = Entity(*(triangle.get()));
+	entity3 = Entity(*(square.get()));
+
+	// Create two entities that have the same shared mesh as entity3
+	entity4 = Entity(*(entity3.GetMesh()));
+	entity5 = Entity(*(entity3.GetMesh()));
+
+	// Use mesh to create and push in three distinct entities with different meshes.
+	listOfEntities.push_back(entity3);
+	listOfEntities.push_back(entity3);
+	listOfEntities.push_back(entity3);
+	listOfEntities.push_back(entity1);
+	listOfEntities.push_back(entity2);
 }
 
 
@@ -608,50 +671,52 @@ void Game::Draw(float deltaTime, float totalTime)
 		Graphics::Context->ClearDepthStencilView(Graphics::DepthBufferDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}
 
-	// Create two new variables that hold the new struct data for the constant buffer.
-	// Using the buffer struct model.
-	BufferStructs cbStruct;
+	// Use a for each to draw the mesh.
+	for (int i = 0; i < listOfEntities.size(); i++)
+	{
+		// Create two new variables that hold the new struct data for the constant buffer.
+		// Using the buffer struct model.
+		BufferStructs cbStruct = {};
 
-	// Create a transform class.
-	Transform entityTranform = Transform();
+		// Get the transform class world matrix.
+		XMFLOAT4X4 entityTransformWorldMatrix = listOfEntities[i].GetTransform().GetWorldMatrix();
 
-	// Get the transform class world matrix.
-	XMFLOAT4X4 transMatrix = entityTranform.GetWorldMatrix();
+		// Store the loaded SIMD identity matrix of the transform class to the world matrix.
+		//XMStoreFloat4x4(&worldMatrix, XMLoadFloat4x4(&entityTranform.GetWorldMatrix()));
 
+		// Create a color tint.
+		cbStruct.colorTint = XMFLOAT4(colorData[0], colorData[1], colorData[2], colorData[3]);
 
-	// Store the loaded SIMD identity matrix of the transform class to the world matrix.
-	//XMStoreFloat4x4(&worldMatrix, XMLoadFloat4x4(&entityTranform.GetWorldMatrix()));
-	
-	// Create a color tint.
-	cbStruct.colorTint = XMFLOAT4(colorData[0], colorData[1], colorData[2], colorData[3]);
+		// Store the SIMD identity matrix to the world matrix.
+		cbStruct.worldMatrix = XMLoadFloat4x4(&entityTransformWorldMatrix);
 
-	// Store the SIMD identity matrix to the world matrix.
-	cbStruct.worldMatrix = XMLoadFloat4x4(&transMatrix);
+		// Map out or get the data of the constant buffer to pause data use and
+		// address moving in the GPU.
+		D3D11_MAPPED_SUBRESOURCE mappedBuffer = {};
+		Graphics::Context->Map(
+			constantBuffer.Get(),
+			0,
+			D3D11_MAP_WRITE_DISCARD,
+			0,
+			&mappedBuffer
+		);
 
-	// Map out or get the data of the constant buffer to pause data use and
-	// address moving in the GPU.
-	D3D11_MAPPED_SUBRESOURCE mappedBuffer = {};
-	Graphics::Context->Map(
-		constantBuffer.Get(),
-		0,
-		D3D11_MAP_WRITE_DISCARD,
-		0,
-		&mappedBuffer
-	);
+		// Copy the new struct data into the constant buffer with the approximate size.
+		memcpy(mappedBuffer.pData, &cbStruct, sizeof(cbStruct));
 
-	// Copy the new struct data into the constant buffer with the approximate size.
-	memcpy(mappedBuffer.pData, &cbStruct, sizeof(cbStruct));
+		// Unmap or realease the address of the constant buffer for the GPU to use and
+		// move the files if necessary.
+		Graphics::Context->Unmap(constantBuffer.Get(), 0);
 
-	// Unmap or realease the address of the constant buffer for the GPU to use and
-	// move the files if necessary.
-	Graphics::Context->Unmap(constantBuffer.Get(), 0);
+		// Draw the entities after their world matrix have be updated in the vertex shader
+		// using the constant shader.
+		listOfEntities[i].Draw();
+	}
 
 	// Call the triangle mesh draw.
-	square->Draw();
-	rightTriangle->Draw();
-	triangle->Draw();
-
-	// For each of the data alter the data of the cbuffer.
+	//square->Draw();
+	//rightTriangle->Draw();
+	//triangle->Draw();
 
 
 	// Tells Imgui to gets its buffer data information and feed the data to another funtion.
