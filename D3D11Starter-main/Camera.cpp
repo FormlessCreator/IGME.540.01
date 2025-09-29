@@ -1,11 +1,11 @@
 #include "Camera.h"
 using namespace DirectX;
 
-Camera::Camera(float aspectRatio, DirectX::XMFLOAT3 intialPosition, DirectX::XMFLOAT3 startingOrientation, float fieldOfView, float nearClipPlane, float farClipPlane, float cameraMovementSpeed, float cameraMouseLookSpeed, bool isCameraPerspective)
+Camera::Camera(float aspectRatio, DirectX::XMFLOAT3 initialPosition, DirectX::XMFLOAT3 startingOrientation, float fieldOfView, float nearClipPlane, float farClipPlane, float cameraMovementSpeed, float cameraMouseLookSpeed, bool isCameraPerspective)
 {
     // Initialize the camera transform data.
     transform = Transform();
-    transform.SetPosition(intialPosition);
+    transform.SetPosition(initialPosition);
     transform.SetRotation(startingOrientation);
 
     // Intialize other variable:
@@ -46,6 +46,9 @@ DirectX::XMFLOAT4X4 Camera::GetProjectionMatrix()
 
 void Camera::UpdateProjectionMatrix(float aspectRatio)
 {
+    // Set this aspect ratio to the new aspect ratio.
+    this->aspectRatio = aspectRatio;
+
     // If the camera Perpective is true.
     if (isPerspective)
     {
@@ -65,7 +68,7 @@ void Camera::UpdateProjectionMatrix(float aspectRatio)
         // Create a projection matrix using ortrographic view.
         XMMATRIX cameraProjectionMatrix = XMMatrixOrthographicLH(
             this->aspectRatio,
-            aspectRatio,
+            this->aspectRatio * 10.0f,
             nearClip,
             farClip
         );
@@ -107,17 +110,6 @@ void Camera::UpdateViewMatrix()
 
     // Store the matrix in the view matrix.
     XMStoreFloat4x4(&viewMatrix, cameraViewmarix);
-
-    // Set the hasViewChange to false.
-    hasViewChanged = false;
-
-    //// If view has changed.
-    //if (hasViewChanged)
-    //{
-    //    
-    //}
-    // Create a view matrix using the xmatrixlooktolh()
-
 }
 
 void Camera::Update(float dt)
@@ -139,6 +131,9 @@ void Camera::Update(float dt)
 
         // Move forward with time.
         transform.MoveRelative(store);
+
+        // Set the hasViewChange to false.
+        hasViewChanged = true;
     }
 
     if (Input::KeyDown('S'))
@@ -154,6 +149,9 @@ void Camera::Update(float dt)
 
         // Move.
         transform.MoveRelative(store);
+
+        // Set the hasViewChange to false.
+        hasViewChanged = true;
     }
 
     if (Input::KeyDown('A'))
@@ -168,6 +166,9 @@ void Camera::Update(float dt)
 
         // Move.
         transform.MoveRelative(store);
+
+        // Set the hasViewChange to false.
+        hasViewChanged = true;
     }
 
     if (Input::KeyDown('D'))
@@ -182,6 +183,9 @@ void Camera::Update(float dt)
 
         // Move.
         transform.MoveRelative(store);
+
+        // Set the hasViewChange to false.
+        hasViewChanged = true;
     }
 
     // Move the camera up along the y axis absolutely.
@@ -197,9 +201,12 @@ void Camera::Update(float dt)
 
         // Move absolutely.
         transform.MoveAbsolute(store);
+
+        // Set the hasViewChange to false.
+        hasViewChanged = true;
     }
 
-    // Move the camera down along the x axis absolutely.
+    // Move the camera down along the y axis absolutely.
     if (Input::KeyDown('X'))
     {
         // Get the opposite of tranform get up().
@@ -212,6 +219,9 @@ void Camera::Update(float dt)
 
         // Move absolutely.
         transform.MoveAbsolute(store);
+
+        // Set the hasViewChange to false.
+        hasViewChanged = true;
     }
 
     // Collect the mouse down input data and use it to
@@ -253,8 +263,18 @@ void Camera::Update(float dt)
 
         // Set the camera new mouse rotation.
         transform.SetRotation(xRot, yRot, 0.0f);
+
+        // Set the hasViewChange to false.
+        hasViewChanged = true;
     }
 
-    // Update the camera view matrix.
-    UpdateViewMatrix();
+    // If view has changed.
+    if (hasViewChanged)
+    {
+        // Update the camera view matrix.
+        UpdateViewMatrix();
+
+        // Set the hasViewChange to false.
+        hasViewChanged = false;
+    }
 }

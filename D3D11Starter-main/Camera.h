@@ -8,7 +8,7 @@ class Camera
 public:
 	Camera(
 		float aspectRatio, 
-		DirectX::XMFLOAT3 intialPosition,
+		DirectX::XMFLOAT3 initialPosition,
 		DirectX::XMFLOAT3 startingOrientation,
 		float fieldOfView,
 		float nearClipPlane,
