@@ -12,6 +12,9 @@
 // Include entity class.
 #include "Entity.h"
 
+// Add a camera class.
+#include "Camera.h"
+
 class Game
 {
 public:
@@ -93,5 +96,8 @@ private:
 	
 	// Create a list of entities.
 	std::vector<Entity> listOfEntities;
+
+	// Add a shared ptr Camera Class.
+	std::shared_ptr<Camera> camera1;
 };
 

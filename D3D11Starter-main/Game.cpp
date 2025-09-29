@@ -67,6 +67,21 @@ Game::Game()
 	// Set the demo window to true as defualt.
 	showDemoWindow = false;
 
+	// Initialize the camera class with the window aspect ratio.
+	float aspectRatio = Window::AspectRatio();
+	XMFLOAT3 startingPoint = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	XMFLOAT3 startingOrientation = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	float fov = 45.0f;
+	float nearClip = 0.1f;
+	float farClip = 1000.f;
+	float cameraMovementSpeed = 2.0f;
+	float cameraMouseLookSpeed = 2.0f;
+	bool isCameraPerspective = true;
+
+	camera1 = std::make_shared<Camera>
+		(aspectRatio, startingPoint, startingOrientation, fov, nearClip,
+			farClip, cameraMovementSpeed, cameraMouseLookSpeed, isCameraPerspective);
+
 	// Create a unique float pointer for the colour tint and offset data.
 	colorData = std::make_unique<float[]>(4);
 	colorData[0] = 1.0f;
@@ -633,7 +648,13 @@ void Game::CreateGeometry()
 // --------------------------------------------------------
 void Game::OnResize()
 {
-	
+	// if the camera pointer is not null.
+	if (camera1 != nullptr)
+	{
+		// Update the update projection matrix with the new window aspect.
+		float aspectRatio = Window::AspectRatio();
+		camera1.get()->UpdateProjectionMatrix(aspectRatio);
+	}
 }
 
 

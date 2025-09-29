@@ -21,7 +21,6 @@ Camera::Camera(float aspectRatio, DirectX::XMFLOAT3 initialPosition, DirectX::XM
 
     // Intialize the view and projection hasChanged variable.
     hasViewChanged = true;
-    hasProjectionChanged = true;
 
     // Call the update view and projection matrix.
     UpdateViewMatrix();
@@ -76,24 +75,6 @@ void Camera::UpdateProjectionMatrix(float aspectRatio)
         // Store the matrix in the projection matrix.
         XMStoreFloat4x4(&projectionMatrix, cameraProjectionMatrix);
     }
-
-    //// If aspect ratio is not the same, projection has changed.
-    //if (this->aspectRatio != aspectRatio)
-    //{
-    //    hasProjectionChanged = true;
-
-    //    // Set this aspect ratio to the new aspect ratio.
-    //    this->aspectRatio = aspectRatio;
-    //}
-
-    //// If projection has changed, get a new projection matrix.
-    //if (hasProjectionChanged)
-    //{
-    //    
-
-    //    // Set the hasprojectionChanged to false.
-    //    hasProjectionChanged = false;
-    //}
 }
 
 void Camera::UpdateViewMatrix()
@@ -245,7 +226,7 @@ void Camera::Update(float dt)
         yRot += mouseCursorY * mouseLookSpeed;
 
         // Clamp the xRot to -PI to PI / 2.
-        float halfPi = XM_PIDIV2;
+        float halfPi = 90.0f;
 
         // Clamp xrot so it does not move to the left infinitely.
         if (xRot > halfPi)

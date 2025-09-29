@@ -35,6 +35,5 @@ private:
 	float aspectRatio;
 	bool isPerspective;
 	bool hasViewChanged;
-	bool hasProjectionChanged;
 };
 
