@@ -67,7 +67,7 @@ void Camera::UpdateProjectionMatrix(float aspectRatio)
         // Create a projection matrix using ortrographic view.
         XMMATRIX cameraProjectionMatrix = XMMatrixOrthographicLH(
             this->aspectRatio,
-            this->aspectRatio * 10.0f,
+            this->aspectRatio,
             nearClip,
             farClip
         );
@@ -210,8 +210,8 @@ void Camera::Update(float dt)
     if (Input::MouseLeftDown())
     {
         // Get the mouse cursor x and y position data.
-        float mouseCursorX = Input::GetMouseXDelta();
-        float mouseCursorY = Input::GetMouseYDelta();
+        float mouseCursorX = Input::GetMouseXDelta() * 0.1f;
+        float mouseCursorY = Input::GetMouseYDelta() * 0.1f;
 
         // Set the camera rotation the camara relatively to the mouse position.
         // Get the camera rotation
@@ -226,7 +226,7 @@ void Camera::Update(float dt)
         yRot += mouseCursorY * mouseLookSpeed;
 
         // Clamp the xRot to -PI to PI / 2.
-        float halfPi = 90.0f;
+        float halfPi = XM_PIDIV2;
 
         // Clamp xrot so it does not move to the left infinitely.
         if (xRot > halfPi)

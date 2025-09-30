@@ -75,12 +75,21 @@ Game::Game()
 	float nearClip = 0.1f;
 	float farClip = 1000.f;
 	float cameraMovementSpeed = 2.0f;
-	float cameraMouseLookSpeed = 0.002f;
+	float cameraMouseLookSpeed = 0.02f;
 	bool isCameraPerspective = true;
 
 	camera1 = std::make_shared<Camera>
 		(aspectRatio, startingPoint, startingOrientation, fov, nearClip,
 			farClip, cameraMovementSpeed, cameraMouseLookSpeed, isCameraPerspective);
+
+	XMFLOAT3 startingPoint2 = XMFLOAT3(2.0f, 2.0f, 2.0f);
+	XMFLOAT3 startingOrientation2 = XMFLOAT3(-2.0f, 0.0f, 2.0f);
+	float fov2 = XM_PI;
+	camera2 = std::make_shared<Camera>(
+		aspectRatio, startingPoint2, startingOrientation2, fov2, nearClip,
+		farClip, cameraMouseLookSpeed, cameraMouseLookSpeed, isCameraPerspective);
+
+	// Add the cameras to the camera.
 
 	// Create a unique float pointer for the colour tint and offset data.
 	colorData = std::make_unique<float[]>(4);

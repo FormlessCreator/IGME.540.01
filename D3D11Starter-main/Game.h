@@ -99,5 +99,11 @@ private:
 
 	// Add a shared ptr Camera Class.
 	std::shared_ptr<Camera> camera1;
+	std::shared_ptr<Camera> camera2;
+
+	// Create a vector of shared camera pointers.
+	std::vector<std::shared_ptr<Camera>> cameras;
+	std::shared_ptr<Camera> activeCamera;
+	int cameraItem[];
 };
 
