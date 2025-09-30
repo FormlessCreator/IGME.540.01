@@ -8,5 +8,7 @@ struct BufferStructs
 {
 	DirectX::XMFLOAT4 colorTint;
 	DirectX::XMMATRIX worldMatrix;
+	DirectX::XMMATRIX viewMatrix;
+	DirectX::XMMATRIX projectionMatrix;
 };
 

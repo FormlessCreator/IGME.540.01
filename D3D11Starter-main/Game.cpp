@@ -69,13 +69,13 @@ Game::Game()
 
 	// Initialize the camera class with the window aspect ratio.
 	float aspectRatio = Window::AspectRatio();
-	XMFLOAT3 startingPoint = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	XMFLOAT3 startingPoint = XMFLOAT3(0.0f, 0.0f, -5.0f);
 	XMFLOAT3 startingOrientation = XMFLOAT3(0.0f, 0.0f, 0.0f);
-	float fov = 45.0f;
+	float fov = XM_PIDIV4;
 	float nearClip = 0.1f;
 	float farClip = 1000.f;
 	float cameraMovementSpeed = 2.0f;
-	float cameraMouseLookSpeed = 2.0f;
+	float cameraMouseLookSpeed = 0.002f;
 	bool isCameraPerspective = true;
 
 	camera1 = std::make_shared<Camera>
@@ -672,6 +672,9 @@ void Game::Update(float deltaTime, float totalTime)
 
 	// Call the Build UI update helper.
 	buildImGuiCustomizedUI();
+
+	// Update the input and view matrix camera each frame.
+	camera1.get()->Update(deltaTime);
 }
 
 
@@ -710,6 +713,13 @@ void Game::Draw(float deltaTime, float totalTime)
 
 		// Store the SIMD identity matrix to the world matrix.
 		cbStruct.worldMatrix = XMLoadFloat4x4(&entityTransformWorldMatrix);
+
+		// Get the view and projection matrix of our camera and set it to the constant buffer.
+		XMFLOAT4X4 cameraViewMatrix = camera1.get()->GetViewMatrix();
+		cbStruct.viewMatrix = XMLoadFloat4x4(&cameraViewMatrix);
+
+		XMFLOAT4X4 cameraProjectionMatrix = camera1.get()->GetProjectionMatrix();
+		cbStruct.projectionMatrix = XMLoadFloat4x4(&cameraProjectionMatrix);
 
 		// Map out or get the data of the constant buffer to pause data use and
 		// address moving in the GPU.

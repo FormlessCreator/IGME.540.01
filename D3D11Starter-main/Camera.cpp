@@ -222,7 +222,7 @@ void Camera::Update(float dt)
         float yRot = cameraRotation.y;
 
         // Update the rotation by the cursor x and y values with mouse look speed.
-        xRot += mouseCursorX * mouseLookSpeed;
+        xRot -= mouseCursorX * mouseLookSpeed;
         yRot += mouseCursorY * mouseLookSpeed;
 
         // Clamp the xRot to -PI to PI / 2.
