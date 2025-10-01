@@ -35,7 +35,6 @@ public:
 	DirectX::XMFLOAT3 GetUp();
 	DirectX::XMFLOAT3 GetForward();
 	DirectX::XMFLOAT3 GetRight();
-	
 
 private:
 	DirectX::XMFLOAT3 scale;

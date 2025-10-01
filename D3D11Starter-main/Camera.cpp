@@ -225,7 +225,7 @@ void Camera::Update(float dt)
         xRot -= mouseCursorX * mouseLookSpeed;
         yRot += mouseCursorY * mouseLookSpeed;
 
-        // Clamp the xRot to -PI to PI / 2.
+        // Clamp the xRot to -PI/ 2 to PI / 2.
         float halfPi = XM_PIDIV2;
 
         // Clamp xrot so it does not move to the left infinitely.
@@ -258,4 +258,19 @@ void Camera::Update(float dt)
         // Set the hasViewChange to false.
         hasViewChanged = false;
     }
+}
+
+float Camera::GetFov()
+{
+    return fov;
+}
+
+float Camera::GetPerspective()
+{
+    return isPerspective;
+}
+
+Transform& Camera::GetTransform()
+{
+    return transform;
 }

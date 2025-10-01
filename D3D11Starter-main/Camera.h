@@ -23,6 +23,13 @@ public:
 	void UpdateViewMatrix();
 	void Update(float dt);
 
+	// Get fov and perspective.
+	float GetFov();
+	float GetPerspective();
+	
+	// Get the transform data.
+	Transform& GetTransform();
+
 private:
 	Transform transform;
 	DirectX::XMFLOAT4X4 viewMatrix;

@@ -469,17 +469,30 @@ void Game::buildImGuiCustomizedUI()
 	
 	if (ImGui::TreeNode("Swap Active Camera"))
 	{
-		ImGui::Text("Active Camera Details:");
-		ImGui::Text("Position: %f");
-		ImGui::Text("Fov: %f");
-		ImGui::Text("Position: %f");
+		XMFLOAT3 position = activeCamera.get()->GetTransform().GetPosition();
+		
+		// Get string value of the float.
+		std::string stringPos = "Position: " +
+			std::to_string(position.x) + "f, " +
+			std::to_string(position.y) + "f, " +
+			std::to_string(position.z) + "f";
+		
 
-		/*float fov = XM_PIDIV4;
-		float nearClip = 0.1f;
-		float farClip = 1000.f;
-		float cameraMovementSpeed = 2.0f;
-		float cameraMouseLookSpeed = 0.02f;
-		bool isCameraPerspective = true;*/
+		// Convert bool to string.
+		std::string trueOrfalse = " ";
+		if (activeCamera.get()->GetPerspective())
+		{
+			trueOrfalse = "True";
+		}
+		else
+		{
+			trueOrfalse = "False";
+		}
+
+		ImGui::Text("Active Camera Details:");
+		ImGui::Text("%s", stringPos.c_str());
+		ImGui::Text("Fov: %f", activeCamera.get()->GetFov());
+		ImGui::Text("IsPerspective: %s", trueOrfalse.c_str());
 
 
 		// If swapbutton Previous is tapped.
