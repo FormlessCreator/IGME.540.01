@@ -33,6 +33,9 @@ public:
 	// Create a build UI update helper method to build a customized game UI.
 	void buildImGuiCustomizedUI();
 
+	// Create helper for swaping camera.
+	void SwapCamera(bool x);
+
 	// Create a method that applies background & border color for the UI helper.
 	// void applyUIColor();
 
@@ -104,6 +107,6 @@ private:
 	// Create a vector of shared camera pointers.
 	std::vector<std::shared_ptr<Camera>> cameras;
 	std::shared_ptr<Camera> activeCamera;
-	int cameraItem[];
+	bool swapCamera;
 };
 

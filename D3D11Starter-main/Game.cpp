@@ -69,7 +69,7 @@ Game::Game()
 
 	// Initialize the camera class with the window aspect ratio.
 	float aspectRatio = Window::AspectRatio();
-	XMFLOAT3 startingPoint = XMFLOAT3(0.0f, 0.0f, -5.0f);
+	XMFLOAT3 startingPoint = XMFLOAT3(0.0f, 0.0f, -2.0f);
 	XMFLOAT3 startingOrientation = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	float fov = XM_PIDIV4;
 	float nearClip = 0.1f;
@@ -78,18 +78,28 @@ Game::Game()
 	float cameraMouseLookSpeed = 0.02f;
 	bool isCameraPerspective = true;
 
+	// Create camera 1.
 	camera1 = std::make_shared<Camera>
 		(aspectRatio, startingPoint, startingOrientation, fov, nearClip,
 			farClip, cameraMovementSpeed, cameraMouseLookSpeed, isCameraPerspective);
 
-	XMFLOAT3 startingPoint2 = XMFLOAT3(2.0f, 2.0f, 2.0f);
-	XMFLOAT3 startingOrientation2 = XMFLOAT3(-2.0f, 0.0f, 2.0f);
-	float fov2 = XM_PI;
+	// Create camera 2.
+	XMFLOAT3 startingPoint2 = XMFLOAT3(0.0f, 0.0f, -10.0f);
+	XMFLOAT3 startingOrientation2 = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	float fov2 = XM_PI / 6;
 	camera2 = std::make_shared<Camera>(
 		aspectRatio, startingPoint2, startingOrientation2, fov2, nearClip,
-		farClip, cameraMouseLookSpeed, cameraMouseLookSpeed, isCameraPerspective);
+		farClip, cameraMovementSpeed, cameraMouseLookSpeed, isCameraPerspective);
 
 	// Add the cameras to the camera.
+	cameras.push_back(camera1);
+	cameras.push_back(camera2);
+
+	// Intialize the swap camera to false.
+	swapCamera = false;
+
+	// If the swap camera is false set the active camera to camara 2.
+	activeCamera = camera2;
 
 	// Create a unique float pointer for the colour tint and offset data.
 	colorData = std::make_unique<float[]>(4);
@@ -456,6 +466,38 @@ void Game::buildImGuiCustomizedUI()
 
 		ImGui::TreePop();
 	}
+	
+	if (ImGui::TreeNode("Swap Active Camera"))
+	{
+		ImGui::Text("Active Camera Details:");
+		ImGui::Text("Position: %f");
+		ImGui::Text("Fov: %f");
+		ImGui::Text("Position: %f");
+
+		/*float fov = XM_PIDIV4;
+		float nearClip = 0.1f;
+		float farClip = 1000.f;
+		float cameraMovementSpeed = 2.0f;
+		float cameraMouseLookSpeed = 0.02f;
+		bool isCameraPerspective = true;*/
+
+
+		// If swapbutton Previous is tapped.
+		if (ImGui::Button("Previous"))
+		{
+			// Set the swap Camera variable to false.
+			this->swapCamera = false;
+		}
+
+		// If swapbutton Next is tapped.
+		if (ImGui::Button("Next"))
+		{
+			// Set the swap Camera variable to true.
+			this->swapCamera = true;
+		}
+
+		ImGui::TreePop();
+	}
 
 	if (ImGui::TreeNode("Constant Buffer Data Changes"))
 	{
@@ -478,6 +520,66 @@ void Game::buildImGuiCustomizedUI()
 
 	// End the created window.
 	ImGui::End();
+}
+
+void Game::SwapCamera(bool swapCamera)
+{
+	// If number of camera is less than 0 end method.
+	if (cameras.empty())
+	{
+		return;
+	}
+
+	if (swapCamera)
+	{
+		// Set active camera to camera2.
+		activeCamera = cameras[1];
+	}
+	else
+	{
+		// Set active camera to camera 1.
+		activeCamera = cameras[0];
+	}
+
+	//// Create int for cameta index.
+	//int cameraIndex = 0;
+
+	//// Use a for loop to check the current index of the camera.
+	//for (int x = 0; x < cameras.size(); x++)
+	//{
+	//	// If the active camera is the same as the camera index.
+	//	if (activeCamera == cameras[x])
+	//	{
+	//		// Camera index is set loop number.
+	//		cameraIndex = x;
+	//	}
+	//}
+
+	//if (swapCamera)
+	//{
+	//	// Set active camera to camera2.
+	//	int cameraNumber = cameraIndex + 1;
+
+	//	if (cameraNumber >= cameras.size())
+	//	{
+	//		cameraNumber = 0;
+	//	}
+
+	//	activeCamera = cameras[cameraNumber];
+	//}
+	//else
+	//{
+	//	// Set active camera to camera2.
+	//	int cameraNumber = cameraIndex - 1;
+
+	//	if (cameraNumber < 0)
+	//	{
+	//		cameraNumber = cameras.size() - 1;
+	//	}
+
+	//	// Set active camera to camera 1.
+	//	activeCamera = cameras[cameraNumber];
+	//}
 }
 
 
@@ -578,11 +680,12 @@ void Game::CreateGeometry()
 	//    knowing the exact size (in pixels) of the image/window/etc.  
 	// - Long story short: Resizing the window also resizes the triangle,
 	//    since we're describing the triangle in terms of the window itself
+	/* Make each vertices z.position 10f.*/
 	Vertex vertices[] =
 	{
-		{ XMFLOAT3(+0.0f, +0.5f, +0.0f), red },
-		{ XMFLOAT3(+0.5f, -0.5f, +0.0f), blue },
-		{ XMFLOAT3(-0.5f, -0.5f, +0.0f), green },
+		{ XMFLOAT3(+0.0f, +0.5f, +1.0f), red },
+		{ XMFLOAT3(+0.5f, -0.5f, +1.0f), blue },
+		{ XMFLOAT3(-0.5f, -0.5f, +1.0f), green },
 	};
 
 	// Set up indices, which tell us which vertices to use and in which order
@@ -600,10 +703,10 @@ void Game::CreateGeometry()
 	// Create vertices to draw square.
 	Vertex squareVertices[] = 
 	{
-		{ XMFLOAT3(+0.0f, +0.2f, +0.0f), red },
-		{ XMFLOAT3(+0.2f, +0.0f, +0.0f), blue },
-		{ XMFLOAT3(-0.0f, -0.2f, +0.0f), white },
-		{ XMFLOAT3(-0.2f, +0.0f, +0.0f), green }
+		{ XMFLOAT3(+0.0f, +0.2f, -4.0f), red },
+		{ XMFLOAT3(+0.2f, +0.0f, -4.0f), blue },
+		{ XMFLOAT3(-0.0f, -0.2f, -4.0f), white },
+		{ XMFLOAT3(-0.2f, +0.0f, -4.0f), green }
 	};
 
 	// Create intergers for the square.
@@ -658,11 +761,11 @@ void Game::CreateGeometry()
 void Game::OnResize()
 {
 	// if the camera pointer is not null.
-	if (camera1 != nullptr)
+	if (activeCamera != nullptr)
 	{
 		// Update the update projection matrix with the new window aspect.
 		float aspectRatio = Window::AspectRatio();
-		camera1.get()->UpdateProjectionMatrix(aspectRatio);
+		activeCamera.get()->UpdateProjectionMatrix(aspectRatio);
 	}
 }
 
@@ -682,8 +785,30 @@ void Game::Update(float deltaTime, float totalTime)
 	// Call the Build UI update helper.
 	buildImGuiCustomizedUI();
 
+	// SwapCamera();Call the swap camera function.
+	SwapCamera(this->swapCamera);
+
+	// Make an oscilating number.
+	float wave = (float)sin(totalTime * 4) * 0.5 + 2.0f;
+	
+	// Set entity 1 transform scale to back to 1 each time to reset scale.
+	// This will work but it make this a bit slow. 
+	//listOfEntities[4].GetTransform().SetScale(XMFLOAT3(1.0f, 1.0f, 1.0f));
+
+	// Make entity 1 scale up and down. Just set scale directly.
+	listOfEntities[4].GetTransform().SetScale(XMFLOAT3(wave, wave, wave));
+
+	float wave2 = (float)sin(totalTime * 4) * 0.5 + 0.0f;
+	// Make entity 4 and 5 move back and forth each time.
+	listOfEntities[0].GetTransform().SetPosition(XMFLOAT3(wave2, 0.0f, 0.0f));
+	listOfEntities[1].GetTransform().SetPosition(XMFLOAT3(-wave2, 0.0f, 0.0f));
+
+	// Rotate the third square with time on its z axis.
+	listOfEntities[2].GetTransform().Rotate(XMFLOAT3(0.0f, 0.0f, deltaTime * 3.5));
+
 	// Update the input and view matrix camera each frame.
-	camera1.get()->Update(deltaTime);
+	// Get update the active camera each time.
+	activeCamera.get()->Update(deltaTime);
 }
 
 
@@ -724,10 +849,10 @@ void Game::Draw(float deltaTime, float totalTime)
 		cbStruct.worldMatrix = XMLoadFloat4x4(&entityTransformWorldMatrix);
 
 		// Get the view and projection matrix of our camera and set it to the constant buffer.
-		XMFLOAT4X4 cameraViewMatrix = camera1.get()->GetViewMatrix();
+		XMFLOAT4X4 cameraViewMatrix = activeCamera.get()->GetViewMatrix();
 		cbStruct.viewMatrix = XMLoadFloat4x4(&cameraViewMatrix);
 
-		XMFLOAT4X4 cameraProjectionMatrix = camera1.get()->GetProjectionMatrix();
+		XMFLOAT4X4 cameraProjectionMatrix = activeCamera.get()->GetProjectionMatrix();
 		cbStruct.projectionMatrix = XMLoadFloat4x4(&cameraProjectionMatrix);
 
 		// Map out or get the data of the constant buffer to pause data use and
