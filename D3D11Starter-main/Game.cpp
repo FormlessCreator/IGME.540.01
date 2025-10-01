@@ -760,6 +760,18 @@ void Game::CreateGeometry()
 // --------------------------------------------------------
 void Game::OnResize()
 {
+	// Update the matrix of each camera.
+	// if the camera pointer is not null.
+	if (cameras.size() <= 0)
+	{
+		for (int i = 0; i < cameras.size(); i++)
+		{
+			// Update the update projection matrix with the new window aspect.
+			float aspectRatio = Window::AspectRatio();
+			cameras[i].get()->UpdateProjectionMatrix(aspectRatio);
+		}
+	}
+
 	// if the camera pointer is not null.
 	if (activeCamera != nullptr)
 	{
