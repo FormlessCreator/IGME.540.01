@@ -6,32 +6,32 @@
 class Material
 {
 public:
-	Material(Microsoft::WRL::ComPtr<ID3D10VertexShader> vs, Microsoft::WRL::ComPtr<ID3D10PixelShader> ps, Microsoft::WRL::ComPtr<ID3D10InputLayout> il, DirectX::XMFLOAT4 color);
+	Material();
+	Material(Microsoft::WRL::ComPtr<ID3D11VertexShader> vs, Microsoft::WRL::ComPtr<ID3D11PixelShader> ps, Microsoft::WRL::ComPtr<ID3D11InputLayout> il, DirectX::XMFLOAT4 color);
 	~Material();
-	Material(const Material& material) = delete;
-	Material& operator=(const Material& material) = delete;
+	//Material(const Material& material) = delete;
+	//Material& operator=(const Material& material) = delete;
 
 	// Getters:
 	DirectX::XMFLOAT4 GetColorTint();
-	ID3D10VertexShader* GetVertexShader();
-	ID3D10PixelShader* GetPixelShader();
-	ID3D10InputLayout* GetInputLayout();
+	Microsoft::WRL::ComPtr<ID3D11VertexShader> GetVertexShader();
+	Microsoft::WRL::ComPtr<ID3D11PixelShader> GetPixelShader();
+	Microsoft::WRL::ComPtr<ID3D11InputLayout> GetInputLayout();
 
 	// Setters:
-	void SetColorTint();
-	void SetVertexShader();
-	void SetPixelShader();
-	void SetInputlayout();
+	void SetColorTint(DirectX::XMFLOAT4 color);
+	void SetVertexShader(Microsoft::WRL::ComPtr<ID3D11VertexShader> vs);
+	void SetPixelShader(Microsoft::WRL::ComPtr<ID3D11PixelShader> ps);
+	void SetInputlayout(Microsoft::WRL::ComPtr<ID3D11InputLayout> il);
 
 	// Load Vertex and Pixel Shaders
 	void LoadVertexShader();
 	void LoadPixelShader();
-	void LoadInputLayout();
 
 private:
 	DirectX::XMFLOAT4 colorTint;
-	Microsoft::WRL::ComPtr<ID3D10VertexShader> vertexShader;
-	Microsoft::WRL::ComPtr<ID3D10PixelShader> pixelShader;
-	Microsoft::WRL::ComPtr<ID3D10InputLayout> inputLayout;
+	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
+	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
+	Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
 };
 

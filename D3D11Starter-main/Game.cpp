@@ -35,10 +35,33 @@ using namespace DirectX;
 // --------------------------------------------------------
 Game::Game()
 {
+	// Create material class to hold vertex & input shaders with the input layout.
+	materialForShaders1 = std::make_shared<Material>(vertexShader, pixelShader, inputLayout, XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f));
+	materialForShaders2 = std::make_shared<Material>(vertexShader, pixelShader, inputLayout, XMFLOAT4(1.0f, 1.0f, 1.0f, 0.0f));
+	customMaterialForShaders = std::make_shared<Material>(vertexShader, pixelShader, inputLayout, XMFLOAT4(1.0f, 0.0f, 0.0f, 0.0f));
+	// Make material directly:
+	//Material material1(vertexShader, pixelShader, inputLayout, XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f));
+	//testMaterial = Material(vertexShader, pixelShader, inputLayout, XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f));
+
 	// Helper methods for loading shaders, creating some basic
 	// geometry to draw and some simple camera matrices.
-	//  - You'll be expanding and/or replacing these later
-	LoadShaders();
+	//  - You'll be expanding and/or replacing these later.
+	//LoadShaders();
+	
+	// Load the material for shaders1 vertices.
+	materialForShaders1.get()->LoadVertexShader();
+	materialForShaders1.get()->LoadPixelShader();
+
+	// Load material 2.
+	materialForShaders2.get()->SetVertexShader(materialForShaders1.get()->GetVertexShader());
+	materialForShaders2.get()->SetPixelShader(materialForShaders1.get()->GetPixelShader());
+	materialForShaders2.get()->SetInputlayout(materialForShaders1.get()->GetInputLayout());
+
+	// Load custom material for shaders.
+	customMaterialForShaders.get()->SetVertexShader(materialForShaders1.get()->GetVertexShader());
+	customMaterialForShaders.get()->SetPixelShader(materialForShaders1.get()->GetPixelShader());
+	customMaterialForShaders.get()->SetInputlayout(materialForShaders1.get()->GetInputLayout());
+
 	CreateGeometry();
 
 	// Initialize count to 0.
@@ -150,13 +173,19 @@ Game::Game()
 		// Ensure the pipeline knows how to interpret all the numbers stored in
 		// the vertex buffer. For this course, all of your vertices will probably
 		// have the same layout, so we can just set this once at startup.
-		Graphics::Context->IASetInputLayout(inputLayout.Get());
+		//Graphics::Context->IASetInputLayout(inputLayout.Get());
+
+		// Using the new material for shaders set the input laout.
+		//Graphics::Context->IASetInputLayout(materialForShaders1.get()->GetInputLayout().Get());
 
 		// Set the active vertex and pixel shaders
 		//  - Once you start applying different shaders to different objects,
 		//    these calls will need to happen multiple times per frame
-		Graphics::Context->VSSetShader(vertexShader.Get(), 0, 0);
-		Graphics::Context->PSSetShader(pixelShader.Get(), 0, 0);
+		//Graphics::Context->VSSetShader(vertexShader.Get(), 0, 0);
+		//Graphics::Context->PSSetShader(pixelShader.Get(), 0, 0);
+		// Using the material for shaders, set the shaders.
+		//Graphics::Context->VSSetShader(materialForShaders1.get()->GetVertexShader().Get(), 0, 0);
+		//Graphics::Context->PSSetShader(materialForShaders1.get()->GetPixelShader().Get(), 0, 0);
 	}
 }
 
@@ -605,68 +634,68 @@ void Game::SwapCamera(bool swapCamera)
 //    be verified against vertex shader byte code
 // - We'll have that byte code already loaded below
 // --------------------------------------------------------
-void Game::LoadShaders()
-{
-	// BLOBs (or Binary Large OBjects) for reading raw data from external files
-	// - This is a simplified way of handling big chunks of external data
-	// - Literally just a big array of bytes read from a file
-	ID3DBlob* pixelShaderBlob;
-	ID3DBlob* vertexShaderBlob;
-
-	// Loading shaders
-	//  - Visual Studio will compile our shaders at build time
-	//  - They are saved as .cso (Compiled Shader Object) files
-	//  - We need to load them when the application starts
-	{
-		// Read our compiled shader code files into blobs
-		// - Essentially just "open the file and plop its contents here"
-		// - Uses the custom FixPath() helper from Helpers.h to ensure relative paths
-		// - Note the "L" before the string - this tells the compiler the string uses wide characters
-		D3DReadFileToBlob(FixPath(L"PixelShader.cso").c_str(), &pixelShaderBlob);
-		D3DReadFileToBlob(FixPath(L"VertexShader.cso").c_str(), &vertexShaderBlob);
-
-		// Create the actual Direct3D shaders on the GPU
-		Graphics::Device->CreatePixelShader(
-			pixelShaderBlob->GetBufferPointer(),	// Pointer to blob's contents
-			pixelShaderBlob->GetBufferSize(),		// How big is that data?
-			0,										// No classes in this shader
-			pixelShader.GetAddressOf());			// Address of the ID3D11PixelShader pointer
-
-		Graphics::Device->CreateVertexShader(
-			vertexShaderBlob->GetBufferPointer(),	// Get a pointer to the blob's contents
-			vertexShaderBlob->GetBufferSize(),		// How big is that data?
-			0,										// No classes in this shader
-			vertexShader.GetAddressOf());			// The address of the ID3D11VertexShader pointer
-	}
-
-
-	// Create an input layout 
-	//  - This describes the layout of data sent to a vertex shader
-	//  - In other words, it describes how to interpret data (numbers) in a vertex buffer
-	//  - Doing this NOW because it requires a vertex shader's byte code to verify against!
-	//  - Luckily, we already have that loaded (the vertex shader blob above)
-	{
-		D3D11_INPUT_ELEMENT_DESC inputElements[2] = {};
-
-		// Set up the first element - a position, which is 3 float values
-		inputElements[0].Format = DXGI_FORMAT_R32G32B32_FLOAT;				// Most formats are described as color channels; really it just means "Three 32-bit floats"
-		inputElements[0].SemanticName = "POSITION";							// This is "POSITION" - needs to match the semantics in our vertex shader input!
-		inputElements[0].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;	// How far into the vertex is this?  Assume it's after the previous element
-
-		// Set up the second element - a color, which is 4 more float values
-		inputElements[1].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;			// 4x 32-bit floats
-		inputElements[1].SemanticName = "COLOR";							// Match our vertex shader input!
-		inputElements[1].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;	// After the previous element
-
-		// Create the input layout, verifying our description against actual shader code
-		Graphics::Device->CreateInputLayout(
-			inputElements,							// An array of descriptions
-			2,										// How many elements in that array?
-			vertexShaderBlob->GetBufferPointer(),	// Pointer to the code of a shader that uses this layout
-			vertexShaderBlob->GetBufferSize(),		// Size of the shader code that uses this layout
-			inputLayout.GetAddressOf());			// Address of the resulting ID3D11InputLayout pointer
-	}
-}
+//void Game::LoadShaders()
+//{
+//	// BLOBs (or Binary Large OBjects) for reading raw data from external files
+//	// - This is a simplified way of handling big chunks of external data
+//	// - Literally just a big array of bytes read from a file
+//	ID3DBlob* pixelShaderBlob;
+//	ID3DBlob* vertexShaderBlob;
+//
+//	// Loading shaders
+//	//  - Visual Studio will compile our shaders at build time
+//	//  - They are saved as .cso (Compiled Shader Object) files
+//	//  - We need to load them when the application starts
+//	{
+//		// Read our compiled shader code files into blobs
+//		// - Essentially just "open the file and plop its contents here"
+//		// - Uses the custom FixPath() helper from Helpers.h to ensure relative paths
+//		// - Note the "L" before the string - this tells the compiler the string uses wide characters
+//		D3DReadFileToBlob(FixPath(L"PixelShader.cso").c_str(), &pixelShaderBlob);
+//		D3DReadFileToBlob(FixPath(L"VertexShader.cso").c_str(), &vertexShaderBlob);
+//
+//		// Create the actual Direct3D shaders on the GPU
+//		Graphics::Device->CreatePixelShader(
+//			pixelShaderBlob->GetBufferPointer(),	// Pointer to blob's contents
+//			pixelShaderBlob->GetBufferSize(),		// How big is that data?
+//			0,										// No classes in this shader
+//			pixelShader.GetAddressOf());			// Address of the ID3D11PixelShader pointer
+//
+//		Graphics::Device->CreateVertexShader(
+//			vertexShaderBlob->GetBufferPointer(),	// Get a pointer to the blob's contents
+//			vertexShaderBlob->GetBufferSize(),		// How big is that data?
+//			0,										// No classes in this shader
+//			vertexShader.GetAddressOf());			// The address of the ID3D11VertexShader pointer
+//	}
+//
+//
+//	// Create an input layout 
+//	//  - This describes the layout of data sent to a vertex shader
+//	//  - In other words, it describes how to interpret data (numbers) in a vertex buffer
+//	//  - Doing this NOW because it requires a vertex shader's byte code to verify against!
+//	//  - Luckily, we already have that loaded (the vertex shader blob above)
+//	{
+//		D3D11_INPUT_ELEMENT_DESC inputElements[2] = {};
+//
+//		// Set up the first element - a position, which is 3 float values
+//		inputElements[0].Format = DXGI_FORMAT_R32G32B32_FLOAT;				// Most formats are described as color channels; really it just means "Three 32-bit floats"
+//		inputElements[0].SemanticName = "POSITION";							// This is "POSITION" - needs to match the semantics in our vertex shader input!
+//		inputElements[0].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;	// How far into the vertex is this?  Assume it's after the previous element
+//
+//		// Set up the second element - a color, which is 4 more float values
+//		inputElements[1].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;			// 4x 32-bit floats
+//		inputElements[1].SemanticName = "COLOR";							// Match our vertex shader input!
+//		inputElements[1].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;	// After the previous element
+//
+//		// Create the input layout, verifying our description against actual shader code
+//		Graphics::Device->CreateInputLayout(
+//			inputElements,							// An array of descriptions
+//			2,										// How many elements in that array?
+//			vertexShaderBlob->GetBufferPointer(),	// Pointer to the code of a shader that uses this layout
+//			vertexShaderBlob->GetBufferSize(),		// Size of the shader code that uses this layout
+//			inputLayout.GetAddressOf());			// Address of the resulting ID3D11InputLayout pointer
+//	}
+//}
 
 
 // --------------------------------------------------------
@@ -750,13 +779,13 @@ void Game::CreateGeometry()
 		static_cast<int>(_countof(rightTriangleIndices)));
 
 	// Create entities.
-	entity1 = Entity(*(rightTriangle.get()));
-	entity2 = Entity(*(triangle.get()));
-	entity3 = Entity(*(square.get()));
+	entity1 = Entity(*(rightTriangle.get()), materialForShaders1);
+	entity2 = Entity(*(triangle.get()), materialForShaders2);
+	entity3 = Entity(*(square.get()), customMaterialForShaders);
 
 	// Create two entities that have the same shared mesh as entity3
-	entity4 = Entity(*(entity3.GetMesh()));
-	entity5 = Entity(*(entity3.GetMesh()));
+	entity4 = Entity(*(entity3.GetMesh()), materialForShaders1);
+	entity5 = Entity(*(entity3.GetMesh()), materialForShaders1);
 
 	// Use mesh to create and push in three distinct entities with different meshes.
 	listOfEntities.push_back(entity3);
@@ -814,7 +843,7 @@ void Game::Update(float deltaTime, float totalTime)
 	SwapCamera(this->swapCamera);
 
 	// Make an oscilating number.
-	float wave = (float)sin(totalTime * 4) * 0.5 + 2.0f;
+	float wave = static_cast<float>(sin(totalTime * 4) * 0.5 + 2.0f);
 	
 	// Set entity 1 transform scale to back to 1 each time to reset scale.
 	// This will work but it make this a bit slow. 
@@ -823,13 +852,13 @@ void Game::Update(float deltaTime, float totalTime)
 	// Make entity 1 scale up and down. Just set scale directly.
 	listOfEntities[4].GetTransform().SetScale(XMFLOAT3(wave, wave, wave));
 
-	float wave2 = (float)sin(totalTime * 4) * 0.5 + 0.0f;
+	float wave2 = static_cast<float>(sin(totalTime * 4) * 0.5 + 0.0f);
 	// Make entity 4 and 5 move back and forth each time.
 	listOfEntities[0].GetTransform().SetPosition(XMFLOAT3(wave2, 0.0f, 0.0f));
 	listOfEntities[1].GetTransform().SetPosition(XMFLOAT3(-wave2, 0.0f, 0.0f));
 
 	// Rotate the third square with time on its z axis.
-	listOfEntities[2].GetTransform().Rotate(XMFLOAT3(0.0f, 0.0f, deltaTime * 3.5));
+	listOfEntities[2].GetTransform().Rotate(XMFLOAT3(0.0f, 0.0f, static_cast<float>(deltaTime * 3.5)));
 
 	// Update the input and view matrix camera each frame.
 	// Get update the active camera each time.
@@ -868,7 +897,7 @@ void Game::Draw(float deltaTime, float totalTime)
 		//XMStoreFloat4x4(&worldMatrix, XMLoadFloat4x4(&entityTranform.GetWorldMatrix()));
 
 		// Create a color tint.
-		cbStruct.colorTint = XMFLOAT4(colorData[0], colorData[1], colorData[2], colorData[3]);
+		cbStruct.colorTint = listOfEntities[i].GetMaterial().get()->GetColorTint();
 
 		// Store the SIMD identity matrix to the world matrix.
 		cbStruct.worldMatrix = XMLoadFloat4x4(&entityTransformWorldMatrix);

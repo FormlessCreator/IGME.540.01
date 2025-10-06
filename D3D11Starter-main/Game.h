@@ -15,6 +15,9 @@
 // Add a camera class.
 #include "Camera.h"
 
+// Include a material class.
+#include "Material.h"
+
 class Game
 {
 public:
@@ -47,7 +50,7 @@ public:
 private:
 
 	// Initialization helper methods - feel free to customize, combine, remove, etc.
-	void LoadShaders();
+	//void LoadShaders();
 	void CreateGeometry();
 
 	// Create a count pointer for ImGui initialization.
@@ -77,10 +80,20 @@ private:
 	//     Component Object Model, which DirectX objects do
 	//  - More info here: https://github.com/Microsoft/DirectXTK/wiki/ComPtr
 
+
 	// Shaders and shader-related constructs
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
+
+	// Shaders and shader-related constructs will be now placed in the material class:
+	// Create a shared pointer for material.
+	std::shared_ptr<Material> materialForShaders1;
+	std::shared_ptr<Material> materialForShaders2;
+	std::shared_ptr<Material> customMaterialForShaders;
+
+	// Create a test material that is not shared.
+	//Material testMaterial;
 
 	// Create a constant buffer.
 	Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer;
