@@ -2,7 +2,12 @@
 #include <d3d11.h>
 #include <wrl/client.h>
 #include <DirectXMath.h>
+#include <vector>
 #include <memory>
+
+// Add fstream and stdexcept for object character file loading.
+#include <fstream>
+#include <stdexcept>
 
 #include "Graphics.h"
 #include "Vertex.h"
@@ -21,10 +26,16 @@ class Mesh
 public:
 	Mesh(Vertex* vertices, unsigned int* indices, int numberOfVerticies, int numberOfIndices);
 	~Mesh();
+
+	// Create a second overload constructor for mesh that accepts the file name to load mesh v, vt, vn & f information.
+	Mesh(const char* name);
+
+	// Other required mesh data information.
 	ID3D11Buffer* GetVertexBuffer();
 	ID3D11Buffer* GetIndexBuffer();
 	int GetVertexCount();
 	int GetIndexCount();
+
 	void Draw();
 
 private:
@@ -33,7 +44,10 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer;
 
 	// Create a unique pointer for vertices and indicies buffer count.
-	unsigned int vertexCount;
-	unsigned int indexCount;
+	unsigned int vertexCount = 0;
+	unsigned int indexCount = 0;
+
+	// Name of the mesh.
+	std::string filePath = "";
 };
 

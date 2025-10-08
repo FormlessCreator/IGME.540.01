@@ -98,10 +98,22 @@ private:
 	// Create a constant buffer.
 	Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer;
 
+	// Create a pixel constant buffer using the pixeldata struct.
+	Microsoft::WRL::ComPtr<ID3D11Buffer> psConstantBuffer;
+
 	// Create a shared pointer for the list triangles.
-	std::shared_ptr<Mesh> triangle;
+	/*std::shared_ptr<Mesh> triangle;
 	std::shared_ptr<Mesh> square;
-	std::shared_ptr<Mesh> rightTriangle;
+	std::shared_ptr<Mesh> rightTriangle;*/
+
+	// Create shared meshes for the .obj files.
+	std::shared_ptr<Mesh> cube;
+	std::shared_ptr<Mesh> cylinder;
+	std::shared_ptr<Mesh> helix;
+	std::shared_ptr<Mesh> quad;
+	std::shared_ptr<Mesh> quad_Double_Sided;
+	std::shared_ptr<Mesh> sphere;
+	std::shared_ptr<Mesh> torus;
 
 	// Create an five entity.
 	Entity entity1;
@@ -109,6 +121,8 @@ private:
 	Entity entity3;
 	Entity entity4;
 	Entity entity5;
+	Entity entity6;
+	Entity entity7;
 	
 	// Create a list of entities.
 	std::vector<Entity> listOfEntities;

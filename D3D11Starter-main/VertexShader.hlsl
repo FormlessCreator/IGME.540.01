@@ -1,9 +1,9 @@
 
 // Create an external data for the constant buffer for the vertex
 // shader to recognize it.
-cbuffer ExternalData : register(b0)
+cbuffer VSExternalData : register(b0)
 {
-    float4 tint;
+    //float4 tint;
     matrix worldMatrix;
     matrix viewMatrix;
     matrix projectionMatrix;
@@ -22,7 +22,8 @@ struct VertexShaderInput
 	//  |    |                |
 	//  v    v                v
 	float3 localPosition	: POSITION;     // XYZ position
-	float4 color			: COLOR;        // RGBA color
+    float2 uv 				: TEXCOORD;		// The uv texture coordinate.
+    float2 normal 			: NORMAL;       // The normal direction of the vertex.
 };
 
 // Struct representing the data we're sending down the pipeline
@@ -38,7 +39,9 @@ struct VertexToPixel
 	//  |    |                |
 	//  v    v                v
 	float4 screenPosition	: SV_POSITION;	// XYZW position (System Value Position)
-	float4 color			: COLOR;        // RGBA color
+	
+	// Remove color.
+	// float4 color			: COLOR;        // RGBA color
 };
 
 // --------------------------------------------------------
@@ -69,7 +72,7 @@ VertexToPixel main( VertexShaderInput input )
 	// Pass the color through 
 	// - The values will be interpolated per-pixel by the rasterizer
 	// - We don't need to alter it here, but we do need to send it to the pixel shader
-	output.color = input.color * tint;
+	//output.color = tint;
 
 	// Whatever we return will make its way through the pipeline to the
 	// next programmable stage we're using (the pixel shader for now)

@@ -92,7 +92,7 @@ Game::Game()
 
 	// Initialize the camera class with the window aspect ratio.
 	float aspectRatio = Window::AspectRatio();
-	XMFLOAT3 startingPoint = XMFLOAT3(0.0f, 0.0f, -2.0f);
+	XMFLOAT3 startingPoint = XMFLOAT3(0.0f, 10.0f, -30.0f);
 	XMFLOAT3 startingOrientation = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	float fov = XM_PIDIV4;
 	float nearClip = 0.1f;
@@ -107,7 +107,7 @@ Game::Game()
 			farClip, cameraMovementSpeed, cameraMouseLookSpeed, isCameraPerspective);
 
 	// Create camera 2.
-	XMFLOAT3 startingPoint2 = XMFLOAT3(0.0f, 0.0f, -10.0f);
+	XMFLOAT3 startingPoint2 = XMFLOAT3(0.0f, 0.0f, -30.0f);
 	XMFLOAT3 startingOrientation2 = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	float fov2 = XM_PI / 6;
 	camera2 = std::make_shared<Camera>(
@@ -159,6 +159,32 @@ Game::Game()
 		0,
 		1,
 		constantBuffer.GetAddressOf());
+
+	// -------------------------------------------------------------------------
+	// Initialize the pixel shader constant buffer.
+	// Get the data size of the constant buffer struct for to create a constant
+	// buffer in memory.
+	unsigned int psdataSize = sizeof(PixelDataStruct);
+
+	// Adjust the size to always be a multiple of 16.
+	psdataSize = ((dataSize + 15) / 16) * 16;
+
+	// Create a set of instructions that describes constant buffer object.
+	D3D11_BUFFER_DESC pssDesc = {};
+	pssDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	pssDesc.ByteWidth = psdataSize;
+	pssDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	pssDesc.Usage = D3D11_USAGE_DYNAMIC;
+
+	// Create the pixel shader constant buffer.
+	Graphics::Device->CreateBuffer(&pssDesc, 0, psConstantBuffer.GetAddressOf());
+
+	// Bind the pixel shader constant buffer to set it active.
+	// using Context->PSSetConstantBuffers.
+	Graphics::Context->PSSetConstantBuffers(
+		0,
+		1,
+		psConstantBuffer.GetAddressOf());
 
 	// Set initial graphics API state
 	//  - These settings persist until we change them
@@ -424,7 +450,7 @@ void Game::buildImGuiCustomizedUI()
 	}
 
 	// Create Tree node for Meshes.
-	if (ImGui::TreeNode("Mesh"))
+	/*if (ImGui::TreeNode("Mesh"))
 	{
 		if (ImGui::TreeNode("Triangle"))
 		{
@@ -451,7 +477,7 @@ void Game::buildImGuiCustomizedUI()
 		}
 		
 		ImGui::TreePop();
-	}
+	}*/
 
 	// Create new menu for entity tracking.
 	if (ImGui::TreeNode("Entities"))
@@ -705,10 +731,10 @@ void Game::CreateGeometry()
 {
 	// Create some temporary variables to represent colors
 	// - Not necessary, just makes things more readable
-	XMFLOAT4 red = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
+	/*XMFLOAT4 red = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
 	XMFLOAT4 green = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
 	XMFLOAT4 blue = XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
-	XMFLOAT4 white = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	XMFLOAT4 white = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);*/
 
 	// Set up the vertices of the triangle we would like to draw
 	// - We're going to copy this array, exactly as it exists in CPU memory
@@ -723,76 +749,99 @@ void Game::CreateGeometry()
 	// - Long story short: Resizing the window also resizes the triangle,
 	//    since we're describing the triangle in terms of the window itself
 	/* Make each vertices z.position 10f.*/
-	Vertex vertices[] =
+	/*Vertex vertices[] =
 	{
 		{ XMFLOAT3(+0.0f, +0.5f, +1.0f), red },
 		{ XMFLOAT3(+0.5f, -0.5f, +1.0f), blue },
 		{ XMFLOAT3(-0.5f, -0.5f, +1.0f), green },
-	};
+	};*/
 
 	// Set up indices, which tell us which vertices to use and in which order
 	// - This is redundant for just 3 vertices, but will be more useful later
 	// - Indices are technically not required if the vertices are in the buffer 
 	//    in the correct order and each one will be used exactly once
 	// - But just to see how it's done...
-	unsigned int indices[] = { 0, 1, 2 };
+	//unsigned int indices[] = { 0, 1, 2 };
 
-	// Test to see if the triangle is drawn using the mesh class.
-	triangle = std::make_shared<Mesh>(vertices, indices, 
-		static_cast<int>(_countof(vertices)), 
-		static_cast<int>(_countof(indices)));
+	//// Test to see if the triangle is drawn using the mesh class.
+	//triangle = std::make_shared<Mesh>(vertices, indices, 
+	//	static_cast<int>(_countof(vertices)), 
+	//	static_cast<int>(_countof(indices)));
 
 	// Create vertices to draw square.
-	Vertex squareVertices[] = 
-	{
-		{ XMFLOAT3(+0.0f, +0.2f, -4.0f), red },
-		{ XMFLOAT3(+0.2f, +0.0f, -4.0f), blue },
-		{ XMFLOAT3(-0.0f, -0.2f, -4.0f), white },
-		{ XMFLOAT3(-0.2f, +0.0f, -4.0f), green }
-	};
+	//Vertex squareVertices[] = 
+	//{
+	//	{ XMFLOAT3(+0.0f, +0.2f, -4.0f), red },
+	//	{ XMFLOAT3(+0.2f, +0.0f, -4.0f), blue },
+	//	{ XMFLOAT3(-0.0f, -0.2f, -4.0f), white },
+	//	{ XMFLOAT3(-0.2f, +0.0f, -4.0f), green }
+	//};
 
-	// Create intergers for the square.
-	unsigned int squareIndices[] = { 0, 1, 2, 2, 3, 0 };
+	//// Create intergers for the square.
+	//unsigned int squareIndices[] = { 0, 1, 2, 2, 3, 0 };
 
-	// Initialize the square.
-	square = std::make_shared<Mesh>(squareVertices, squareIndices,
-		static_cast<int>(_countof(squareVertices)), 
-		static_cast<int>(_countof(squareIndices)));
+	//// Initialize the square.
+	//square = std::make_shared<Mesh>(squareVertices, squareIndices,
+	//	static_cast<int>(_countof(squareVertices)), 
+	//	static_cast<int>(_countof(squareIndices)));
 
-	// Create vertices to draw a right traingle.
-	Vertex rightTriangleVertices[] = 
-	{
-		{ XMFLOAT3(+0.0f, +0.5f, +0.0f), red },
-		{ XMFLOAT3(+0.5f, -0.5f, +0.0f), blue },
-		{ XMFLOAT3(-0.0f, -0.5f, +0.0f), white },
-		//{ XMFLOAT3(-0.0f, -0.5f, +0.0f), white }
-	};
+	//// Create vertices to draw a right traingle.
+	//Vertex rightTriangleVertices[] = 
+	//{
+	//	{ XMFLOAT3(+0.0f, +0.5f, +0.0f), red },
+	//	{ XMFLOAT3(+0.5f, -0.5f, +0.0f), blue },
+	//	{ XMFLOAT3(-0.0f, -0.5f, +0.0f), white },
+	//	//{ XMFLOAT3(-0.0f, -0.5f, +0.0f), white }
+	//};
 
 	// Create indices for the right triangle.
-	unsigned int rightTriangleIndices[] = { 0, 1, 2 };
+	// unsigned int rightTriangleIndices[] = { 0, 1, 2 };
 
 	// Intialize the right triangle.
-	rightTriangle = std::make_shared<Mesh>(
+	/*rightTriangle = std::make_shared<Mesh>(
 		rightTriangleVertices,
 		rightTriangleIndices,
 		static_cast<int>(_countof(rightTriangleVertices)),
-		static_cast<int>(_countof(rightTriangleIndices)));
+		static_cast<int>(_countof(rightTriangleIndices)));*/
+
+	// .. / .. /
+	// Create meshes using the imported .obj data.
+	cube = std::make_shared<Mesh>(FixPath("../../Assets/Meshes/cube.obj").c_str());
+	cylinder = std::make_shared<Mesh>(FixPath("../../Assets/Meshes/cylinder.obj").c_str());
+	helix = std::make_shared<Mesh>(FixPath("../../Assets/Meshes/helix.obj").c_str());
+	quad = std::make_shared<Mesh>(FixPath("../../Assets/Meshes/quad.obj").c_str());
+	quad_Double_Sided = std::make_shared<Mesh>(FixPath("../../Assets/Meshes/quad_double_sided.obj").c_str());
+	sphere = std::make_shared<Mesh>(FixPath("../../Assets/Meshes/sphere.obj").c_str());
+	torus = std::make_shared<Mesh>(FixPath("../../Assets/Meshes/torus.obj").c_str());
 
 	// Create entities.
-	entity1 = Entity(*(rightTriangle.get()), materialForShaders1);
-	entity2 = Entity(*(triangle.get()), materialForShaders2);
-	entity3 = Entity(*(square.get()), customMaterialForShaders);
+	entity1 = Entity(*(cube.get()), materialForShaders1);
+	entity2 = Entity(*(cylinder.get()), materialForShaders2);
+	entity3 = Entity(*(helix.get()), customMaterialForShaders);
 
 	// Create two entities that have the same shared mesh as entity3
-	entity4 = Entity(*(entity3.GetMesh()), materialForShaders1);
-	entity5 = Entity(*(entity3.GetMesh()), materialForShaders1);
+	entity4 = Entity(*(quad.get()), materialForShaders2);
+	entity5 = Entity(*(quad_Double_Sided.get()), materialForShaders2);
+	entity6 = Entity(*(sphere.get()), materialForShaders2);
+	entity7 = Entity(*(torus.get()), materialForShaders2);
 
 	// Use mesh to create and push in three distinct entities with different meshes.
+	listOfEntities.push_back(entity7);
+	listOfEntities.push_back(entity6);
+	listOfEntities.push_back(entity5);
+	listOfEntities.push_back(entity4);
 	listOfEntities.push_back(entity3);
-	listOfEntities.push_back(entity3);
-	listOfEntities.push_back(entity3);
-	listOfEntities.push_back(entity1);
 	listOfEntities.push_back(entity2);
+	listOfEntities.push_back(entity1);
+
+	// Transform the meshes position to their new position.
+	listOfEntities[0].GetTransform().SetPosition(-9, 0, 0);
+	listOfEntities[1].GetTransform().SetPosition(-6, 0, 0);
+	listOfEntities[2].GetTransform().SetPosition(-3, 0, 0);
+	listOfEntities[3].GetTransform().SetPosition(0, 0, 0);
+	listOfEntities[4].GetTransform().SetPosition(3, 0, 0);
+	listOfEntities[5].GetTransform().SetPosition(6, 0, 0);
+	listOfEntities[6].GetTransform().SetPosition(9, 0, 0);
 }
 
 
@@ -842,23 +891,23 @@ void Game::Update(float deltaTime, float totalTime)
 	// SwapCamera();Call the swap camera function.
 	SwapCamera(this->swapCamera);
 
-	// Make an oscilating number.
-	float wave = static_cast<float>(sin(totalTime * 4) * 0.5 + 2.0f);
-	
-	// Set entity 1 transform scale to back to 1 each time to reset scale.
-	// This will work but it make this a bit slow. 
-	//listOfEntities[4].GetTransform().SetScale(XMFLOAT3(1.0f, 1.0f, 1.0f));
+	//// Make an oscilating number.
+	//float wave = static_cast<float>(sin(totalTime * 4) * 0.5 + 2.0f);
+	//
+	//// Set entity 1 transform scale to back to 1 each time to reset scale.
+	//// This will work but it make this a bit slow. 
+	////listOfEntities[4].GetTransform().SetScale(XMFLOAT3(1.0f, 1.0f, 1.0f));
 
-	// Make entity 1 scale up and down. Just set scale directly.
-	listOfEntities[4].GetTransform().SetScale(XMFLOAT3(wave, wave, wave));
+	//// Make entity 1 scale up and down. Just set scale directly.
+	//listOfEntities[4].GetTransform().SetScale(XMFLOAT3(wave, wave, wave));
 
-	float wave2 = static_cast<float>(sin(totalTime * 4) * 0.5 + 0.0f);
-	// Make entity 4 and 5 move back and forth each time.
-	listOfEntities[0].GetTransform().SetPosition(XMFLOAT3(wave2, 0.0f, 0.0f));
-	listOfEntities[1].GetTransform().SetPosition(XMFLOAT3(-wave2, 0.0f, 0.0f));
+	//float wave2 = static_cast<float>(sin(totalTime * 4) * 0.5 + 0.0f);
+	//// Make entity 4 and 5 move back and forth each time.
+	//listOfEntities[0].GetTransform().SetPosition(XMFLOAT3(wave2, 0.0f, 0.0f));
+	//listOfEntities[1].GetTransform().SetPosition(XMFLOAT3(-wave2, 0.0f, 0.0f));
 
-	// Rotate the third square with time on its z axis.
-	listOfEntities[2].GetTransform().Rotate(XMFLOAT3(0.0f, 0.0f, static_cast<float>(deltaTime * 3.5)));
+	//// Rotate the third square with time on its z axis.
+	//listOfEntities[2].GetTransform().Rotate(XMFLOAT3(0.0f, 0.0f, static_cast<float>(deltaTime * 3.5)));
 
 	// Update the input and view matrix camera each frame.
 	// Get update the active camera each time.
@@ -886,6 +935,32 @@ void Game::Draw(float deltaTime, float totalTime)
 	// Use a for each to draw the mesh.
 	for (int i = 0; i < listOfEntities.size(); i++)
 	{
+		// Create a psConstantBuffer using the pixel shader struct.
+		PixelDataStruct psCB1 = {};
+
+		// Set the color tint of pixel shader cbuffer to the material color.
+		psCB1.colorTint = listOfEntities[i].GetMaterial().get()->GetColorTint();
+
+		// Map out or get the data of the constant buffer to pause data use and
+		// address moving in the GPU.
+		D3D11_MAPPED_SUBRESOURCE mappedPSBuffer = {};
+		Graphics::Context->Map(
+			psConstantBuffer.Get(),
+			0,
+			D3D11_MAP_WRITE_DISCARD,
+			0,
+			&mappedPSBuffer
+		);
+
+		// Copy the new struct data into the constant buffer with the approximate size.
+		memcpy(mappedPSBuffer.pData, &psCB1, sizeof(psCB1));
+
+		// Unmap or realease the address of the constant buffer for the GPU to use and
+		// move the files if necessary.
+		Graphics::Context->Unmap(psConstantBuffer.Get(), 0);
+
+		// ---------------------------------------------------------------------------------------
+
 		// Create two new variables that hold the new struct data for the constant buffer.
 		// Using the buffer struct model.
 		BufferStructs cbStruct = {};
@@ -897,7 +972,7 @@ void Game::Draw(float deltaTime, float totalTime)
 		//XMStoreFloat4x4(&worldMatrix, XMLoadFloat4x4(&entityTranform.GetWorldMatrix()));
 
 		// Create a color tint.
-		cbStruct.colorTint = listOfEntities[i].GetMaterial().get()->GetColorTint();
+		// cbStruct.colorTint = listOfEntities[i].GetMaterial().get()->GetColorTint();
 
 		// Store the SIMD identity matrix to the world matrix.
 		cbStruct.worldMatrix = XMLoadFloat4x4(&entityTransformWorldMatrix);
