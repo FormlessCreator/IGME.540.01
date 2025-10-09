@@ -56,19 +56,18 @@ Game::Game()
 	//LoadShaders();
 	
 	// Load the material for shaders1 vertices.
-	pShader.get()->LoadVertexShader();
-	pShader.get()->LoadPixelShader();
-
+	materialForShaders1.get()->LoadVertexShader();
+	materialForShaders1.get()->LoadPixelShader();
 
 	// Load material 2.
-	materialForShaders2.get()->SetVertexShader(pShader.get()->GetVertexShader());
-	materialForShaders2.get()->SetPixelShader(pShader.get()->GetPixelShader());
-	materialForShaders2.get()->SetInputlayout(pShader.get()->GetInputLayout());
+	materialForShaders2.get()->SetVertexShader(materialForShaders1.get()->GetVertexShader());
+	materialForShaders2.get()->SetPixelShader(materialForShaders1.get()->GetPixelShader());
+	materialForShaders2.get()->SetInputlayout(materialForShaders1.get()->GetInputLayout());
 
 	// Load custom material for shaders.
-	customMaterialForShaders.get()->SetVertexShader(pShader.get()->GetVertexShader());
-	customMaterialForShaders.get()->SetPixelShader(pShader.get()->GetPixelShader());
-	customMaterialForShaders.get()->SetInputlayout(pShader.get()->GetInputLayout());
+	customMaterialForShaders.get()->SetVertexShader(materialForShaders1.get()->GetVertexShader());
+	customMaterialForShaders.get()->SetPixelShader(materialForShaders1.get()->GetPixelShader());
+	customMaterialForShaders.get()->SetInputlayout(materialForShaders1.get()->GetInputLayout());
 
 	CreateGeometry();
 
