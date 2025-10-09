@@ -16,9 +16,9 @@ struct VertexToPixel
 	//  |   Name          Semantic
 	//  |    |                |
 	//  v    v                v
-	float4 screenPosition	: SV_POSITION;
-    float2 uv				: TEXCOORD;
-    float3 normal			: NORMAL;
+    float4 screenPosition : SV_POSITION;
+    float2 uv : TEXCOORD;
+    float3 normal : NORMAL;
 	
 	// Remove the color.
 	//float4 color			: COLOR;
@@ -39,7 +39,7 @@ float4 main(VertexToPixel input) : SV_TARGET
 	// - This color (like most values passing through the rasterizer) is 
 	//   interpolated for each pixel between the corresponding vertices 
 	//   of the triangle we're rendering
-	return colorTint;
+    return colorTint;
 	
 	// Test:
 	//return float4(input.uv, 0, 1);

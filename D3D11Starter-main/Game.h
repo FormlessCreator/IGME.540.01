@@ -86,8 +86,14 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
 
+	// Create 3 pixel shader that uses the uv data, normal data and a custom pixel shader.
+	Microsoft::WRL::ComPtr<ID3D11PixelShader> debugUVsPS;
+	Microsoft::WRL::ComPtr<ID3D11PixelShader> debugNormalsPS;
+	Microsoft::WRL::ComPtr<ID3D11PixelShader> customPS;
+
 	// Shaders and shader-related constructs will be now placed in the material class:
 	// Create a shared pointer for material.
+	std::shared_ptr<Material> pShader;
 	std::shared_ptr<Material> materialForShaders1;
 	std::shared_ptr<Material> materialForShaders2;
 	std::shared_ptr<Material> customMaterialForShaders;

@@ -2,19 +2,26 @@
 #include "Graphics.h"
 #include "PathHelpers.h"
 #include <d3dcompiler.h>
+#include <string>
 
 Material::Material()
 {
 	colorTint = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
-Material::Material(Microsoft::WRL::ComPtr<ID3D11VertexShader> vs, Microsoft::WRL::ComPtr<ID3D11PixelShader> ps, Microsoft::WRL::ComPtr<ID3D11InputLayout> il, DirectX::XMFLOAT4 color)
+Material::Material(
+	Microsoft::WRL::ComPtr<ID3D11VertexShader> vs,
+	Microsoft::WRL::ComPtr<ID3D11PixelShader> ps,
+	Microsoft::WRL::ComPtr<ID3D11InputLayout> il,
+	const std::wstring& psFileName,
+	DirectX::XMFLOAT4 color)
 {
 	// Initialize the variables.
 	vertexShader = vs;
 	pixelShader = ps;
 	inputLayout = il;
 	colorTint = color;
+	pixelShaderFileName = psFileName;
 }
 
 Material::~Material()
@@ -134,6 +141,9 @@ void Material::LoadPixelShader()
 	// Create a binary large object to hold a read external pixel shader cso file information.
 	ID3DBlob* pixelShaderBlob;
 
+	// Create a com ptr for the pixel shader blob.
+	//Microsoft::WRL::ComPtr<ID3DBlob> pixelShaderBlob;
+
 	// Loading shaders
 	//  - Visual Studio will compile our shaders at build time
 	//  - They are saved as .cso (Compiled Shader Object) files
@@ -143,6 +153,7 @@ void Material::LoadPixelShader()
 		// - Essentially just "open the file and plop its contents here"
 		// - Uses the custom FixPath() helper from Helpers.h to ensure relative paths
 		// - Note the "L" before the string - this tells the compiler the string uses wide characters
+		//D3DReadFileToBlob(FixPath(pixelShaderFileName).c_str(), &pixelShaderBlob);
 		D3DReadFileToBlob(FixPath(L"PixelShader.cso").c_str(), &pixelShaderBlob);
 
 		// Create the actual Direct3D shaders on the GPU

@@ -23,7 +23,7 @@ struct VertexShaderInput
 	//  v    v                v
 	float3 localPosition	: POSITION;     // XYZ position
     float2 uv 				: TEXCOORD;		// The uv texture coordinate.
-    float2 normal 			: NORMAL;       // The normal direction of the vertex.
+    float3 normal 			: NORMAL;       // The normal direction of the vertex.
 };
 
 // Struct representing the data we're sending down the pipeline
@@ -39,9 +39,8 @@ struct VertexToPixel
 	//  |    |                |
 	//  v    v                v
 	float4 screenPosition	: SV_POSITION;	// XYZW position (System Value Position)
-	
-	// Remove color.
-	// float4 color			: COLOR;        // RGBA color
+    float2 uv				: TEXCOORD;		// Texture coordinate.
+    float3 normal			: NORMAL;		// The vertex normal.
 };
 
 // --------------------------------------------------------
@@ -68,6 +67,10 @@ VertexToPixel main( VertexShaderInput input )
 	// Get the world, to view, to projection matrix.
     matrix wvp = mul(projectionMatrix, mul(viewMatrix, worldMatrix));
     output.screenPosition = mul(wvp, float4(input.localPosition, 1.0f));
+	
+	// Add the input information to the output.
+    output.uv = input.uv;
+    output.normal = input.normal;
 
 	// Pass the color through 
 	// - The values will be interpolated per-pixel by the rasterizer

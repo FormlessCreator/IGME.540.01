@@ -35,10 +35,17 @@ using namespace DirectX;
 // --------------------------------------------------------
 Game::Game()
 {
+	const std::wstring ps = L"PixelShader.cso";
+	const std::wstring debugUVShader = L"DebugUVsPS.cso";
+	const std::wstring debugNormalShader = L"DebugNormalPS.cso";
+	const std::wstring customPShader = L"CustomPS.cso";
+
 	// Create material class to hold vertex & input shaders with the input layout.
-	materialForShaders1 = std::make_shared<Material>(vertexShader, pixelShader, inputLayout, XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f));
-	materialForShaders2 = std::make_shared<Material>(vertexShader, pixelShader, inputLayout, XMFLOAT4(1.0f, 1.0f, 1.0f, 0.0f));
-	customMaterialForShaders = std::make_shared<Material>(vertexShader, pixelShader, inputLayout, XMFLOAT4(1.0f, 0.0f, 0.0f, 0.0f));
+	pShader = std::make_shared<Material>(vertexShader, pixelShader, inputLayout, ps, XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f));
+	materialForShaders1 = std::make_shared<Material>(vertexShader, debugNormalsPS, inputLayout, debugNormalShader, XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f));
+	materialForShaders2 = std::make_shared<Material>(vertexShader, debugUVsPS, inputLayout, debugUVShader, XMFLOAT4(1.0f, 1.0f, 1.0f, 0.0f));
+	customMaterialForShaders = std::make_shared<Material>(vertexShader, customPS, inputLayout, customPShader, XMFLOAT4(1.0f, 0.0f, 0.0f, 0.0f));
+
 	// Make material directly:
 	//Material material1(vertexShader, pixelShader, inputLayout, XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f));
 	//testMaterial = Material(vertexShader, pixelShader, inputLayout, XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f));
@@ -49,18 +56,19 @@ Game::Game()
 	//LoadShaders();
 	
 	// Load the material for shaders1 vertices.
-	materialForShaders1.get()->LoadVertexShader();
-	materialForShaders1.get()->LoadPixelShader();
+	pShader.get()->LoadVertexShader();
+	pShader.get()->LoadPixelShader();
+
 
 	// Load material 2.
-	materialForShaders2.get()->SetVertexShader(materialForShaders1.get()->GetVertexShader());
-	materialForShaders2.get()->SetPixelShader(materialForShaders1.get()->GetPixelShader());
-	materialForShaders2.get()->SetInputlayout(materialForShaders1.get()->GetInputLayout());
+	materialForShaders2.get()->SetVertexShader(pShader.get()->GetVertexShader());
+	materialForShaders2.get()->SetPixelShader(pShader.get()->GetPixelShader());
+	materialForShaders2.get()->SetInputlayout(pShader.get()->GetInputLayout());
 
 	// Load custom material for shaders.
-	customMaterialForShaders.get()->SetVertexShader(materialForShaders1.get()->GetVertexShader());
-	customMaterialForShaders.get()->SetPixelShader(materialForShaders1.get()->GetPixelShader());
-	customMaterialForShaders.get()->SetInputlayout(materialForShaders1.get()->GetInputLayout());
+	customMaterialForShaders.get()->SetVertexShader(pShader.get()->GetVertexShader());
+	customMaterialForShaders.get()->SetPixelShader(pShader.get()->GetPixelShader());
+	customMaterialForShaders.get()->SetInputlayout(pShader.get()->GetInputLayout());
 
 	CreateGeometry();
 
@@ -92,7 +100,7 @@ Game::Game()
 
 	// Initialize the camera class with the window aspect ratio.
 	float aspectRatio = Window::AspectRatio();
-	XMFLOAT3 startingPoint = XMFLOAT3(0.0f, 10.0f, -30.0f);
+	XMFLOAT3 startingPoint = XMFLOAT3(0.0f, 4.0f, -30.0f);
 	XMFLOAT3 startingOrientation = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	float fov = XM_PIDIV4;
 	float nearClip = 0.1f;
@@ -107,7 +115,7 @@ Game::Game()
 			farClip, cameraMovementSpeed, cameraMouseLookSpeed, isCameraPerspective);
 
 	// Create camera 2.
-	XMFLOAT3 startingPoint2 = XMFLOAT3(0.0f, 0.0f, -30.0f);
+	XMFLOAT3 startingPoint2 = XMFLOAT3(0.0f, 4.0f, -30.0f);
 	XMFLOAT3 startingOrientation2 = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	float fov2 = XM_PI / 6;
 	camera2 = std::make_shared<Camera>(
@@ -748,61 +756,6 @@ void Game::CreateGeometry()
 	//    knowing the exact size (in pixels) of the image/window/etc.  
 	// - Long story short: Resizing the window also resizes the triangle,
 	//    since we're describing the triangle in terms of the window itself
-	/* Make each vertices z.position 10f.*/
-	/*Vertex vertices[] =
-	{
-		{ XMFLOAT3(+0.0f, +0.5f, +1.0f), red },
-		{ XMFLOAT3(+0.5f, -0.5f, +1.0f), blue },
-		{ XMFLOAT3(-0.5f, -0.5f, +1.0f), green },
-	};*/
-
-	// Set up indices, which tell us which vertices to use and in which order
-	// - This is redundant for just 3 vertices, but will be more useful later
-	// - Indices are technically not required if the vertices are in the buffer 
-	//    in the correct order and each one will be used exactly once
-	// - But just to see how it's done...
-	//unsigned int indices[] = { 0, 1, 2 };
-
-	//// Test to see if the triangle is drawn using the mesh class.
-	//triangle = std::make_shared<Mesh>(vertices, indices, 
-	//	static_cast<int>(_countof(vertices)), 
-	//	static_cast<int>(_countof(indices)));
-
-	// Create vertices to draw square.
-	//Vertex squareVertices[] = 
-	//{
-	//	{ XMFLOAT3(+0.0f, +0.2f, -4.0f), red },
-	//	{ XMFLOAT3(+0.2f, +0.0f, -4.0f), blue },
-	//	{ XMFLOAT3(-0.0f, -0.2f, -4.0f), white },
-	//	{ XMFLOAT3(-0.2f, +0.0f, -4.0f), green }
-	//};
-
-	//// Create intergers for the square.
-	//unsigned int squareIndices[] = { 0, 1, 2, 2, 3, 0 };
-
-	//// Initialize the square.
-	//square = std::make_shared<Mesh>(squareVertices, squareIndices,
-	//	static_cast<int>(_countof(squareVertices)), 
-	//	static_cast<int>(_countof(squareIndices)));
-
-	//// Create vertices to draw a right traingle.
-	//Vertex rightTriangleVertices[] = 
-	//{
-	//	{ XMFLOAT3(+0.0f, +0.5f, +0.0f), red },
-	//	{ XMFLOAT3(+0.5f, -0.5f, +0.0f), blue },
-	//	{ XMFLOAT3(-0.0f, -0.5f, +0.0f), white },
-	//	//{ XMFLOAT3(-0.0f, -0.5f, +0.0f), white }
-	//};
-
-	// Create indices for the right triangle.
-	// unsigned int rightTriangleIndices[] = { 0, 1, 2 };
-
-	// Intialize the right triangle.
-	/*rightTriangle = std::make_shared<Mesh>(
-		rightTriangleVertices,
-		rightTriangleIndices,
-		static_cast<int>(_countof(rightTriangleVertices)),
-		static_cast<int>(_countof(rightTriangleIndices)));*/
 
 	// .. / .. /
 	// Create meshes using the imported .obj data.
@@ -816,32 +769,75 @@ void Game::CreateGeometry()
 
 	// Create entities.
 	entity1 = Entity(*(cube.get()), materialForShaders1);
-	entity2 = Entity(*(cylinder.get()), materialForShaders2);
-	entity3 = Entity(*(helix.get()), customMaterialForShaders);
+	entity2 = Entity(*(cylinder.get()), materialForShaders1);
+	entity3 = Entity(*(helix.get()), materialForShaders1);
 
 	// Create two entities that have the same shared mesh as entity3
-	entity4 = Entity(*(quad.get()), materialForShaders2);
-	entity5 = Entity(*(quad_Double_Sided.get()), materialForShaders2);
-	entity6 = Entity(*(sphere.get()), materialForShaders2);
-	entity7 = Entity(*(torus.get()), materialForShaders2);
+	entity4 = Entity(*(quad.get()), materialForShaders1);
+	entity5 = Entity(*(quad_Double_Sided.get()), materialForShaders1);
+	entity6 = Entity(*(sphere.get()), materialForShaders1);
+	entity7 = Entity(*(torus.get()), materialForShaders1);
 
 	// Use mesh to create and push in three distinct entities with different meshes.
-	listOfEntities.push_back(entity7);
-	listOfEntities.push_back(entity6);
-	listOfEntities.push_back(entity5);
-	listOfEntities.push_back(entity4);
-	listOfEntities.push_back(entity3);
-	listOfEntities.push_back(entity2);
-	listOfEntities.push_back(entity1);
+	// Create a for loop the that push the entities 3 times.
+	for (int x = 0; x < 3; x++)
+	{
+		// Create a shared pointer material that holds a different material for each loop.
+		std::shared_ptr<Material> loopMaterial;
 
-	// Transform the meshes position to their new position.
-	listOfEntities[0].GetTransform().SetPosition(-9, 0, 0);
-	listOfEntities[1].GetTransform().SetPosition(-6, 0, 0);
-	listOfEntities[2].GetTransform().SetPosition(-3, 0, 0);
-	listOfEntities[3].GetTransform().SetPosition(0, 0, 0);
-	listOfEntities[4].GetTransform().SetPosition(3, 0, 0);
-	listOfEntities[5].GetTransform().SetPosition(6, 0, 0);
-	listOfEntities[6].GetTransform().SetPosition(9, 0, 0);
+		if (x == 1)
+		{
+			loopMaterial = materialForShaders2;
+		}
+
+		if (x == 2)
+		{
+			loopMaterial = customMaterialForShaders;
+		}
+
+		// If the loop is greater than 0 *and less than 3*.
+		if (x > 0)
+		{
+			// Set loop material type for each group of looped entities.
+			// Create entities.
+			entity1.SetMaterial(loopMaterial);
+			entity2.SetMaterial(loopMaterial);
+			entity3.SetMaterial(loopMaterial);
+			entity4.SetMaterial(loopMaterial);
+			entity5.SetMaterial(loopMaterial);
+			entity6.SetMaterial(loopMaterial);
+			entity7.SetMaterial(loopMaterial);
+		}
+		
+		
+		// Push the entities with a changed material in the list.
+		listOfEntities.push_back(entity7);
+		listOfEntities.push_back(entity6);
+		listOfEntities.push_back(entity5);
+		listOfEntities.push_back(entity4);
+		listOfEntities.push_back(entity3);
+		listOfEntities.push_back(entity2);
+		listOfEntities.push_back(entity1);
+	}
+
+	// For each entities group in the list, transform their y position by 3.
+	for (int i = 0; i < 3; i++)
+	{
+		// Get the index of the entities.
+		int indexMultiple = 7 * i;
+
+		// Move the y of the enties position by 4 each time.
+		float y = static_cast<float>(4 * i);
+
+		// Transform the meshes position to their new position.
+		listOfEntities[0 + indexMultiple].GetTransform().SetPosition(-9, y, 0);
+		listOfEntities[1 + indexMultiple].GetTransform().SetPosition(-6, y, 0);
+		listOfEntities[2 + indexMultiple].GetTransform().SetPosition(-3, y, 0);
+		listOfEntities[3 + indexMultiple].GetTransform().SetPosition(0, y, 0);
+		listOfEntities[4 + indexMultiple].GetTransform().SetPosition(3, y, 0);
+		listOfEntities[5 + indexMultiple].GetTransform().SetPosition(6, y, 0);
+		listOfEntities[6 + indexMultiple].GetTransform().SetPosition(9, y, 0);
+	}
 }
 
 

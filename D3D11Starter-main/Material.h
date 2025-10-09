@@ -2,12 +2,18 @@
 #include <d3d11.h>
 #include <DirectXMath.h>
 #include <wrl/client.h>
+#include <string>
 
 class Material
 {
 public:
 	Material();
-	Material(Microsoft::WRL::ComPtr<ID3D11VertexShader> vs, Microsoft::WRL::ComPtr<ID3D11PixelShader> ps, Microsoft::WRL::ComPtr<ID3D11InputLayout> il, DirectX::XMFLOAT4 color);
+	Material(
+		Microsoft::WRL::ComPtr<ID3D11VertexShader> vs,
+		Microsoft::WRL::ComPtr<ID3D11PixelShader> ps,
+		Microsoft::WRL::ComPtr<ID3D11InputLayout> il,
+		const std::wstring& psFileName,
+		DirectX::XMFLOAT4 color);
 	~Material();
 	//Material(const Material& material) = delete;
 	//Material& operator=(const Material& material) = delete;
@@ -33,5 +39,6 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
+	std::wstring pixelShaderFileName;
 };
 

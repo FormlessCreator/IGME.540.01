@@ -39,7 +39,7 @@ std::shared_ptr<Mesh> Entity::GetMesh()
 void Entity::Draw()
 {
 	// Set the material input layout, vertex and pixel shader here.
-			// Using the new material for shaders set the input laout.
+	// Using the new material for shaders set the input laout.
 	Graphics::Context->IASetInputLayout(material.get()->GetInputLayout().Get());
 
 	// Set the active vertex and pixel shaders
