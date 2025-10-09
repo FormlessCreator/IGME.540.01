@@ -2,6 +2,7 @@
 cbuffer PSExternalData1 : register(b0)
 {
     float4 colorTint;
+    float2 time;
 }
 
 // Struct representing the data we expect to receive from earlier pipeline stages

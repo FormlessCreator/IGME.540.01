@@ -144,5 +144,8 @@ private:
 	std::vector<std::shared_ptr<Camera>> cameras;
 	std::shared_ptr<Camera> activeCamera;
 	bool swapCamera;
+
+	// Get the current total time.
+	float tTime;
 };
 

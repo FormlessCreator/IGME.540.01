@@ -44,7 +44,7 @@ Game::Game()
 	pShader = std::make_shared<Material>(vertexShader, pixelShader, inputLayout, ps, XMFLOAT4(1.0f, 1.0f, 1.0f, 0.0f));
 	materialForShaders1 = std::make_shared<Material>(vertexShader, debugNormalsPS, inputLayout, debugNormalShader, XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f));
 	materialForShaders2 = std::make_shared<Material>(vertexShader, debugUVsPS, inputLayout, debugUVShader, XMFLOAT4(1.0f, 1.0f, 1.0f, 0.0f));
-	customMaterialForShaders = std::make_shared<Material>(vertexShader, customPS, inputLayout, customPShader, XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f));
+	customMaterialForShaders = std::make_shared<Material>(vertexShader, customPS, inputLayout, customPShader, XMFLOAT4(0.0f, 1.0f, 0.0f, 0.0f));
 
 	// Make material directly:
 	//Material material1(vertexShader, pixelShader, inputLayout, XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f));
@@ -906,6 +906,9 @@ void Game::Update(float deltaTime, float totalTime)
 	// SwapCamera();Call the swap camera function.
 	SwapCamera(this->swapCamera);
 
+	// Pass in the total time:
+	tTime = totalTime;
+
 	//// Make an oscilating number.
 	//float wave = static_cast<float>(sin(totalTime * 4) * 0.5 + 2.0f);
 	//
@@ -955,6 +958,7 @@ void Game::Draw(float deltaTime, float totalTime)
 
 		// Set the color tint of pixel shader cbuffer to the material color.
 		psCB1.colorTint = listOfEntities[i].GetMaterial().get()->GetColorTint();
+		psCB1.time = DirectX::XMFLOAT2(tTime, tTime);
 
 		// Map out or get the data of the constant buffer to pause data use and
 		// address moving in the GPU.

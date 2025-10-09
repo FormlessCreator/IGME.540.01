@@ -15,5 +15,6 @@ struct BufferStructs
 struct PixelDataStruct
 {
 	DirectX::XMFLOAT4 colorTint;
+	DirectX::XMFLOAT2 time;
 };
 
