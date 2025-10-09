@@ -153,8 +153,8 @@ void Material::LoadPixelShader()
 		// - Essentially just "open the file and plop its contents here"
 		// - Uses the custom FixPath() helper from Helpers.h to ensure relative paths
 		// - Note the "L" before the string - this tells the compiler the string uses wide characters
-		//D3DReadFileToBlob(FixPath(pixelShaderFileName).c_str(), &pixelShaderBlob);
-		D3DReadFileToBlob(FixPath(L"PixelShader.cso").c_str(), &pixelShaderBlob);
+		D3DReadFileToBlob(FixPath(pixelShaderFileName).c_str(), &pixelShaderBlob);
+		//D3DReadFileToBlob(FixPath(L"PixelShader.cso").c_str(), &pixelShaderBlob);
 
 		// Create the actual Direct3D shaders on the GPU
 		Graphics::Device->CreatePixelShader(

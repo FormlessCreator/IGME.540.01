@@ -98,6 +98,9 @@ private:
 	std::shared_ptr<Material> materialForShaders2;
 	std::shared_ptr<Material> customMaterialForShaders;
 
+	// Create a material vector list to hold created shared pointer materials.
+	std::vector <std::shared_ptr<Material>> listOfMaterials;
+
 	// Create a test material that is not shared.
 	//Material testMaterial;
 

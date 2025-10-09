@@ -37,14 +37,14 @@ Game::Game()
 {
 	const std::wstring ps = L"PixelShader.cso";
 	const std::wstring debugUVShader = L"DebugUVsPS.cso";
-	const std::wstring debugNormalShader = L"DebugNormalPS.cso";
+	const std::wstring debugNormalShader = L"DebugNormalsPS.cso";
 	const std::wstring customPShader = L"CustomPS.cso";
 
 	// Create material class to hold vertex & input shaders with the input layout.
-	pShader = std::make_shared<Material>(vertexShader, pixelShader, inputLayout, ps, XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f));
+	pShader = std::make_shared<Material>(vertexShader, pixelShader, inputLayout, ps, XMFLOAT4(1.0f, 1.0f, 1.0f, 0.0f));
 	materialForShaders1 = std::make_shared<Material>(vertexShader, debugNormalsPS, inputLayout, debugNormalShader, XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f));
 	materialForShaders2 = std::make_shared<Material>(vertexShader, debugUVsPS, inputLayout, debugUVShader, XMFLOAT4(1.0f, 1.0f, 1.0f, 0.0f));
-	customMaterialForShaders = std::make_shared<Material>(vertexShader, customPS, inputLayout, customPShader, XMFLOAT4(1.0f, 0.0f, 0.0f, 0.0f));
+	customMaterialForShaders = std::make_shared<Material>(vertexShader, customPS, inputLayout, customPShader, XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f));
 
 	// Make material directly:
 	//Material material1(vertexShader, pixelShader, inputLayout, XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f));
@@ -54,20 +54,35 @@ Game::Game()
 	// geometry to draw and some simple camera matrices.
 	//  - You'll be expanding and/or replacing these later.
 	//LoadShaders();
+
+	// Add all the materials to a material vector.
+	listOfMaterials.push_back(customMaterialForShaders);
+	listOfMaterials.push_back(pShader);
+	listOfMaterials.push_back(materialForShaders1);
+	listOfMaterials.push_back(materialForShaders2);
+
+	// Create a for loop that loads all the materials to:
+	// Load their unique shader hlsl.
+	// Create the same vertex shader and unique pixel buffer for the material.
+	for (int i = 0; i < listOfMaterials.size(); i++)
+	{
+		listOfMaterials[i]->LoadVertexShader();
+		listOfMaterials[i]->LoadPixelShader();
+	}
 	
 	// Load the material for shaders1 vertices.
-	materialForShaders1.get()->LoadVertexShader();
-	materialForShaders1.get()->LoadPixelShader();
+	//listOfMaterials[1].get()->LoadVertexShader();
+	//listOfMaterials[1].get()->LoadPixelShader();
 
-	// Load material 2.
-	materialForShaders2.get()->SetVertexShader(materialForShaders1.get()->GetVertexShader());
-	materialForShaders2.get()->SetPixelShader(materialForShaders1.get()->GetPixelShader());
-	materialForShaders2.get()->SetInputlayout(materialForShaders1.get()->GetInputLayout());
+	//// Load material 2.
+	//materialForShaders2.get()->SetVertexShader(listOfMaterials[1].get()->GetVertexShader());
+	//materialForShaders2.get()->SetPixelShader(listOfMaterials[1].get()->GetPixelShader());
+	//materialForShaders2.get()->SetInputlayout(listOfMaterials[1].get()->GetInputLayout());
 
-	// Load custom material for shaders.
-	customMaterialForShaders.get()->SetVertexShader(materialForShaders1.get()->GetVertexShader());
-	customMaterialForShaders.get()->SetPixelShader(materialForShaders1.get()->GetPixelShader());
-	customMaterialForShaders.get()->SetInputlayout(materialForShaders1.get()->GetInputLayout());
+	//// Load custom material for shaders.
+	//customMaterialForShaders.get()->SetVertexShader(listOfMaterials[1].get()->GetVertexShader());
+	//customMaterialForShaders.get()->SetPixelShader(listOfMaterials[1].get()->GetPixelShader());
+	//customMaterialForShaders.get()->SetInputlayout(listOfMaterials[1].get()->GetInputLayout());
 
 	CreateGeometry();
 
@@ -99,7 +114,7 @@ Game::Game()
 
 	// Initialize the camera class with the window aspect ratio.
 	float aspectRatio = Window::AspectRatio();
-	XMFLOAT3 startingPoint = XMFLOAT3(0.0f, 4.0f, -30.0f);
+	XMFLOAT3 startingPoint = XMFLOAT3(0.0f, 6.0f, -30.0f);
 	XMFLOAT3 startingOrientation = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	float fov = XM_PIDIV4;
 	float nearClip = 0.1f;
@@ -114,7 +129,7 @@ Game::Game()
 			farClip, cameraMovementSpeed, cameraMouseLookSpeed, isCameraPerspective);
 
 	// Create camera 2.
-	XMFLOAT3 startingPoint2 = XMFLOAT3(0.0f, 4.0f, -30.0f);
+	XMFLOAT3 startingPoint2 = XMFLOAT3(0.0f, 6.0f, -30.0f);
 	XMFLOAT3 startingOrientation2 = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	float fov2 = XM_PI / 6;
 	camera2 = std::make_shared<Camera>(
@@ -766,32 +781,37 @@ void Game::CreateGeometry()
 	sphere = std::make_shared<Mesh>(FixPath("../../Assets/Meshes/sphere.obj").c_str());
 	torus = std::make_shared<Mesh>(FixPath("../../Assets/Meshes/torus.obj").c_str());
 
-	// Create entities.
-	entity1 = Entity(*(cube.get()), materialForShaders1);
-	entity2 = Entity(*(cylinder.get()), materialForShaders1);
-	entity3 = Entity(*(helix.get()), materialForShaders1);
+	// Create entities using the first list of materials.
+	entity1 = Entity(*(cube.get()), listOfMaterials[0]);
+	entity2 = Entity(*(cylinder.get()), listOfMaterials[0]);
+	entity3 = Entity(*(helix.get()), listOfMaterials[0]);
 
 	// Create two entities that have the same shared mesh as entity3
-	entity4 = Entity(*(quad.get()), materialForShaders1);
-	entity5 = Entity(*(quad_Double_Sided.get()), materialForShaders1);
-	entity6 = Entity(*(sphere.get()), materialForShaders1);
-	entity7 = Entity(*(torus.get()), materialForShaders1);
+	entity4 = Entity(*(quad.get()), listOfMaterials[0]);
+	entity5 = Entity(*(quad_Double_Sided.get()), listOfMaterials[0]);
+	entity6 = Entity(*(sphere.get()), listOfMaterials[0]);
+	entity7 = Entity(*(torus.get()), listOfMaterials[0]);
 
 	// Use mesh to create and push in three distinct entities with different meshes.
 	// Create a for loop the that push the entities 3 times.
-	for (int x = 0; x < 3; x++)
+	for (int x = 0; x < 4; x++)
 	{
 		// Create a shared pointer material that holds a different material for each loop.
 		std::shared_ptr<Material> loopMaterial;
 
 		if (x == 1)
 		{
-			loopMaterial = materialForShaders2;
+			loopMaterial = listOfMaterials[x];
 		}
 
 		if (x == 2)
 		{
-			loopMaterial = customMaterialForShaders;
+			loopMaterial = listOfMaterials[x];
+		}
+
+		if (x == 3)
+		{
+			loopMaterial = listOfMaterials[x];
 		}
 
 		// If the loop is greater than 0 *and less than 3*.
@@ -820,7 +840,7 @@ void Game::CreateGeometry()
 	}
 
 	// For each entities group in the list, transform their y position by 3.
-	for (int i = 0; i < 3; i++)
+	for (int i = 0; i < 4; i++)
 	{
 		// Get the index of the entities.
 		int indexMultiple = 7 * i;
