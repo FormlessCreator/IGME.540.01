@@ -35,6 +35,7 @@ using namespace DirectX;
 // --------------------------------------------------------
 Game::Game()
 {
+	// Create a wide string for the names of all the shaders.
 	const std::wstring ps = L"PixelShader.cso";
 	const std::wstring debugUVShader = L"DebugUVsPS.cso";
 	const std::wstring debugNormalShader = L"DebugNormalsPS.cso";
@@ -199,6 +200,22 @@ Game::Game()
 	offsetData[1] = 0.0f;
 	offsetData[2] = 0.0f;
 
+	// -------------------------------------------------------------------------------------
+	// Set the context of the constant heap.
+	Graphics::Context->QueryInterface<ID3D11DeviceContext>(ringBufferContext.GetAddressOf());
+
+	// The location of the constant buffer heap in byte starts at 0.
+	cbHeapOffsetInByte = 0;
+
+	// Cb Buffer needed for 50 object * with 2 constant buffer each * 3 frames = 300 Cb.
+	// Constant buffer heap size of: 1000 * 256 bytes = 266,000 bytes.
+	// It is enough for a 266 object or a 1000 Cb.
+	cbHeapSizeInByte = 1000 * 256;
+
+	// The heap size must be in the next multiple of 256 (needed byte size).
+	cbHeapSizeInByte = (cbHeapSizeInByte + 255) / 256 * 256;
+	// -------------------------------------------------------------------------------------
+
 	// Initialize the constant buffer.
 	// Get the data size of the constant buffer struct for to create a constant
 	// buffer in memory.
@@ -277,7 +294,6 @@ Game::Game()
 		//Graphics::Context->PSSetShader(materialForShaders1.get()->GetPixelShader().Get(), 0, 0);
 	}
 }
-
 
 // --------------------------------------------------------
 // Clean up memory or objects created by this class
@@ -851,6 +867,26 @@ void Game::OnResize()
 		// Update the update projection matrix with the new window aspect.
 		float aspectRatio = Window::AspectRatio();
 		activeCamera.get()->UpdateProjectionMatrix(aspectRatio);
+	}
+}
+
+/// <summary>
+/// Create a method to fill a potion of the constant buffer heap memory and
+/// immedialy bind the constant buffer before the draw method.
+/// </summary>
+void Game::FillAndBindNextConstantBuffer(void* data, unsigned int dataSizeInBytes, D3D11_SHADER_TYPE shaderType, unsigned int registerSlot)
+{
+	// How much byte space will we need for this cb heap data.
+	// It has to be a multiple of 256.
+	unsigned int reservationDataSize = (dataSizeInBytes + 255) / 256 * 256;
+
+	// If the next location byte in memory plus the new data byte size for the data
+	// is greater||= than the total heap bype size, it is out of bounds and reset the
+	// ring buffer loop location to the start 0.
+	if (cbHeapOffsetInByte + dataSizeInBytes >= cbHeapSizeInByte)
+	{
+		// Set cb heap location in byte to 0.
+		cbHeapOffsetInByte = 0;
 	}
 }
 

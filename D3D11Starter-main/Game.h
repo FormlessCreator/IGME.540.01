@@ -18,6 +18,10 @@
 // Include a material class.
 #include "Material.h"
 
+// Include library for constant buffer heap.
+// For ring buffer:
+#include <d3d11shadertracing.h>
+
 class Game
 {
 public:
@@ -46,6 +50,13 @@ public:
 	void Update(float deltaTime, float totalTime);
 	void Draw(float deltaTime, float totalTime);
 	void OnResize();
+
+	// Fill constant buffer heap portion and set it active before the drawing method.
+	void FillAndBindNextConstantBuffer(
+		void* data,
+		unsigned int dataSizeInBytes,
+		D3D11_SHADER_TYPE shaderType,
+		unsigned int registerSlot);
 
 private:
 
@@ -106,6 +117,20 @@ private:
 
 	// Create a constant buffer.
 	Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer;
+
+	// Create a device context for the vertex buffer.
+	Microsoft::WRL::ComPtr<ID3D11DeviceContext> ringBufferContext;
+
+	// Craete a constant buffer heap for the constant buffer.
+	Microsoft::WRL::ComPtr<ID3D11Buffer> constantBufferHeap;
+
+	// Create a size of the ring constant buffer heap in byte for the memory.
+	unsigned int cbHeapSizeInByte;
+
+	// Create a size for the position of the next empty unused portion of the
+	// constant buffer heap memory to keep track of unallocated byte space in
+	// the memory.
+	unsigned int cbHeapOffsetInByte;
 
 	// Create a pixel constant buffer using the pixeldata struct.
 	Microsoft::WRL::ComPtr<ID3D11Buffer> psConstantBuffer;
