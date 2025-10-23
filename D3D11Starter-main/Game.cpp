@@ -41,6 +41,7 @@ Game::Game()
 	const std::wstring debugNormalShader = L"DebugNormalsPS.cso";
 	const std::wstring customPShader = L"CustomPS.cso";
 
+	// Optimize the shader class so you only initialize and use the same shader once.
 	//// Using Chris Casiolio code reference for the input layout:
 	//// Create an input layout 
 	////  - This describes the layout of data sent to a vertex shader
@@ -201,7 +202,7 @@ Game::Game()
 	offsetData[2] = 0.0f;
 
 	// -------------------------------------------------------------------------------------
-	// Set the context of the constant heap.
+	// Set the context of the constant buffer heap.
 	Graphics::Context->QueryInterface<ID3D11DeviceContext>(ringBufferContext.GetAddressOf());
 
 	// The location of the constant buffer heap in byte starts at 0.
@@ -876,18 +877,39 @@ void Game::OnResize()
 /// </summary>
 void Game::FillAndBindNextConstantBuffer(void* data, unsigned int dataSizeInBytes, D3D11_SHADER_TYPE shaderType, unsigned int registerSlot)
 {
-	// How much byte space will we need for this cb heap data.
+	// How much reserved byte space is avialiable for this cb heap data.
 	// It has to be a multiple of 256.
 	unsigned int reservationDataSize = (dataSizeInBytes + 255) / 256 * 256;
 
 	// If the next location byte in memory plus the new data byte size for the data
 	// is greater||= than the total heap bype size, it is out of bounds and reset the
-	// ring buffer loop location to the start 0.
+	// ring buffer loop location to the start 0. If byte location after the last byte.
 	if (cbHeapOffsetInByte + dataSizeInBytes >= cbHeapSizeInByte)
 	{
 		// Set cb heap location in byte to 0.
 		cbHeapOffsetInByte = 0;
 	}
+
+	// Map/Find the CBH data by overwiting data not used by the GPU.
+	D3D11_MAPPED_SUBRESOURCE map{};
+	Graphics::Context->Map(
+		constantBufferHeap.Get(),
+		0,
+		D3D11_MAP_WRITE_NO_OVERWRITE,
+		0,
+		&map);
+
+	// Get the address of the location of the unpecified type of data using the
+	// address index of the mapped{} CHB in and the added index of the location
+	// in the CBH. The right index for the data location to be copied into.
+	void* uploadAddress = reinterpret_cast<void*>((UINT64)map.pData + cbHeapOffsetInByte);
+
+	// Memcopy the data into the right data location and size in the cb heap with 
+	// the right size.
+	memcpy(uploadAddress, data, dataSizeInBytes);
+
+	// Unmap and release the mapped CBH after data is copied in the CBH
+	Graphics::Context->Unmap(constantBufferHeap.Get(), 0);
 }
 
 
