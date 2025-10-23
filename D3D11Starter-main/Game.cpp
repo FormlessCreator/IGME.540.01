@@ -203,7 +203,7 @@ Game::Game()
 
 	// -------------------------------------------------------------------------------------
 	// Set the context of the constant buffer heap.
-	Graphics::Context->QueryInterface<ID3D11DeviceContext>(ringBufferContext.GetAddressOf());
+	Graphics::Context->QueryInterface<ID3D11DeviceContext1>(ringBufferContext.GetAddressOf());
 
 	// The location of the constant buffer heap in byte starts at 0.
 	cbHeapOffsetInByte = 0;
@@ -892,7 +892,7 @@ void Game::FillAndBindNextConstantBuffer(void* data, unsigned int dataSizeInByte
 
 	// Map/Find the CBH data by overwiting data not used by the GPU.
 	D3D11_MAPPED_SUBRESOURCE map{};
-	Graphics::Context->Map(
+	ringBufferContext->Map(
 		constantBufferHeap.Get(),
 		0,
 		D3D11_MAP_WRITE_NO_OVERWRITE,
@@ -910,6 +910,26 @@ void Game::FillAndBindNextConstantBuffer(void* data, unsigned int dataSizeInByte
 
 	// Unmap and release the mapped CBH after data is copied in the CBH
 	Graphics::Context->Unmap(constantBufferHeap.Get(), 0);
+
+	// Bind or set the data that is part of the CBH data location active.
+	// Uising the CBH data location plus the data size = area of data in memory.
+	// For that we have to convert the data location and size to 16-byte.
+	unsigned int firstConstant = cbHeapOffsetInByte / 16;
+	unsigned int numConstants = reservationDataSize / 16;
+
+	// Depending on the given data type, I set the part of the CBH active
+	// for the given shader type (vertex or pixel).
+	switch (shaderType)
+	{
+		// If the shader type is a vertex type.
+		case D3D11_VERTEX_SHADER:
+			ringBufferContext->VSSetConstantBuffers1(
+				registerSlot,
+				1,
+				constantBufferHeap.GetAddressOf(),
+				&firstConstant,
+				&numConstants);
+	}
 }
 
 

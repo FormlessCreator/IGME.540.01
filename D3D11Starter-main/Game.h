@@ -1,6 +1,7 @@
 #pragma once
 
 #include <d3d11.h>
+#include <d3d11_1.h>
 #include <wrl/client.h>
 #include <vector>
 #include <memory>
@@ -119,8 +120,8 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer;
 
 	// Create a device context for the vertex buffer.
-	Microsoft::WRL::ComPtr<ID3D11DeviceContext> ringBufferContext;
-
+	Microsoft::WRL::ComPtr<ID3D11DeviceContext1> ringBufferContext;
+    
 	// Craete a constant buffer heap for the constant buffer.
 	Microsoft::WRL::ComPtr<ID3D11Buffer> constantBufferHeap;
 
