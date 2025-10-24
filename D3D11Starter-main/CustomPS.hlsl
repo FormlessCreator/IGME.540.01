@@ -41,7 +41,7 @@ float4 ColorChange(float4 value)
     return x;
 }
 
-// Using Chris Casioli Helper code.
+// Using Professor Chris Casioli Helper code.
 float random(float2 s)
 {
     return frac(sin(dot(s, float2(12.9898, 78.233))) * 43758.5453123);
@@ -68,7 +68,7 @@ float4 main(VertexToPixel input) : SV_TARGET
     float randomFloat = random(float2(input.normal.x, input.normal.z));
     float magnitudeOfUv = distance(input.uv.x, input.uv.y);
     float4 output = ColorChange(magnitudeOfUv);
-    magnitudeOfUv = sin(magnitudeOfUv * 8 + time + randomFloat) / 8.06;
+    magnitudeOfUv = sin(magnitudeOfUv * 8.0 + time.x + randomFloat) / 8.06;
     magnitudeOfUv =  abs(magnitudeOfUv) + frac((sin(randomFloat / 250.0f)));
     magnitudeOfUv = 0.03 / magnitudeOfUv;
     output *= magnitudeOfUv + colorTint;

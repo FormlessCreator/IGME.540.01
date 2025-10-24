@@ -112,20 +112,6 @@ Game::Game()
 		listOfMaterials[i]->LoadVertexShader();
 		listOfMaterials[i]->LoadPixelShader();
 	}
-	
-	// Load the material for shaders1 vertices.
-	//listOfMaterials[1].get()->LoadVertexShader();
-	//listOfMaterials[1].get()->LoadPixelShader();
-
-	//// Load material 2.
-	//materialForShaders2.get()->SetVertexShader(listOfMaterials[1].get()->GetVertexShader());
-	//materialForShaders2.get()->SetPixelShader(listOfMaterials[1].get()->GetPixelShader());
-	//materialForShaders2.get()->SetInputlayout(listOfMaterials[1].get()->GetInputLayout());
-
-	//// Load custom material for shaders.
-	//customMaterialForShaders.get()->SetVertexShader(listOfMaterials[1].get()->GetVertexShader());
-	//customMaterialForShaders.get()->SetPixelShader(listOfMaterials[1].get()->GetPixelShader());
-	//customMaterialForShaders.get()->SetInputlayout(listOfMaterials[1].get()->GetInputLayout());
 
 	CreateGeometry();
 
@@ -215,57 +201,68 @@ Game::Game()
 
 	// The heap size must be in the next multiple of 256 (needed byte size).
 	cbHeapSizeInByte = (cbHeapSizeInByte + 255) / 256 * 256;
-	// -------------------------------------------------------------------------------------
 
+	// Create the set of options or instructions to create the CBH.
+	D3D11_BUFFER_DESC cbHeapDesc = {};
+	cbHeapDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	cbHeapDesc.ByteWidth = cbHeapSizeInByte;
+	cbHeapDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	cbHeapDesc.Usage = D3D11_USAGE_DYNAMIC;
+
+	// Create the CBH.
+	Graphics::Device->CreateBuffer(&cbHeapDesc, 0, constantBufferHeap.GetAddressOf());
+
+	// -------------------------------------------------------------------------------------
 	// Initialize the constant buffer.
 	// Get the data size of the constant buffer struct for to create a constant
 	// buffer in memory.
 	unsigned int dataSize = sizeof(BufferStructs);
 
-	// Adjust the size to always be a multiple of 16.
-	dataSize = ((dataSize + 15) / 16) * 16;
+	//// Adjust the size to always be a multiple of 16.
+	//dataSize = ((dataSize + 15) / 16) * 16;
 
-	// Create a set of instructions that describes constant buffer object.
-	D3D11_BUFFER_DESC cbDesc = {};
-	cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	cbDesc.ByteWidth = dataSize;
-	cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	cbDesc.Usage = D3D11_USAGE_DYNAMIC;
+	//// Create a set of instructions that describes constant buffer object.
+	//D3D11_BUFFER_DESC cbDesc = {};
+	//cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	//cbDesc.ByteWidth = dataSize;
+	//cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	//cbDesc.Usage = D3D11_USAGE_DYNAMIC;
 
-	// Create the constant buffer.
-	Graphics::Device->CreateBuffer(&cbDesc, 0, constantBuffer.GetAddressOf());
+	//// Create the constant buffer.
+	//Graphics::Device->CreateBuffer(&cbDesc, 0, constantBuffer.GetAddressOf());
 
-	// Bind the constant buffer to set it active.
-	Graphics::Context->VSSetConstantBuffers(
-		0,
-		1,
-		constantBuffer.GetAddressOf());
+	//// Bind the constant buffer to set it active.
+	//Graphics::Context->VSSetConstantBuffers(
+	//	0,
+	//	1,
+	//	constantBuffer.GetAddressOf());
 
 	// -------------------------------------------------------------------------
 	// Initialize the pixel shader constant buffer.
 	// Get the data size of the constant buffer struct for to create a constant
 	// buffer in memory.
-	unsigned int psdataSize = sizeof(PixelDataStruct);
+	//unsigned int psdataSize = sizeof(PixelDataStruct);
 
-	// Adjust the size to always be a multiple of 16.
-	psdataSize = ((dataSize + 15) / 16) * 16;
+	//// Adjust the size to always be a multiple of 16.
+	//psdataSize = ((dataSize + 15) / 16) * 16;
 
-	// Create a set of instructions that describes constant buffer object.
-	D3D11_BUFFER_DESC pssDesc = {};
-	pssDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	pssDesc.ByteWidth = psdataSize;
-	pssDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	pssDesc.Usage = D3D11_USAGE_DYNAMIC;
+	//// Create a set of instructions that describes constant buffer object.
+	//D3D11_BUFFER_DESC pssDesc = {};
+	//pssDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	//pssDesc.ByteWidth = psdataSize;
+	//pssDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	//pssDesc.Usage = D3D11_USAGE_DYNAMIC;
 
-	// Create the pixel shader constant buffer.
-	Graphics::Device->CreateBuffer(&pssDesc, 0, psConstantBuffer.GetAddressOf());
+	//// Create the pixel shader constant buffer.
+	//Graphics::Device->CreateBuffer(&pssDesc, 0, psConstantBuffer.GetAddressOf());
 
-	// Bind the pixel shader constant buffer to set it active.
-	// using Context->PSSetConstantBuffers.
-	Graphics::Context->PSSetConstantBuffers(
-		0,
-		1,
-		psConstantBuffer.GetAddressOf());
+	//// Bind the pixel shader constant buffer to set it active.
+	//// using Context->PSSetConstantBuffers.
+	//Graphics::Context->PSSetConstantBuffers(
+	//	0,
+	//	1,
+	//	psConstantBuffer.GetAddressOf());
+	// -------------------------------------------------------------------------
 
 	// Set initial graphics API state
 	//  - These settings persist until we change them
@@ -884,7 +881,7 @@ void Game::FillAndBindNextConstantBuffer(void* data, unsigned int dataSizeInByte
 	// If the next location byte in memory plus the new data byte size for the data
 	// is greater||= than the total heap bype size, it is out of bounds and reset the
 	// ring buffer loop location to the start 0. If byte location after the last byte.
-	if (cbHeapOffsetInByte + dataSizeInBytes >= cbHeapSizeInByte)
+	if (cbHeapOffsetInByte + reservationDataSize >= cbHeapSizeInByte)
 	{
 		// Set cb heap location in byte to 0.
 		cbHeapOffsetInByte = 0;
@@ -929,7 +926,20 @@ void Game::FillAndBindNextConstantBuffer(void* data, unsigned int dataSizeInByte
 				constantBufferHeap.GetAddressOf(),
 				&firstConstant,
 				&numConstants);
+			break;
+
+		case D3D11_PIXEL_SHADER:
+			ringBufferContext->PSSetConstantBuffers1(
+				registerSlot,
+				1,
+				constantBufferHeap.GetAddressOf(),
+				&firstConstant,
+				&numConstants);
+			break;
 	}
+
+	// Get the new offest position for the next data location memcopy.
+	cbHeapOffsetInByte += reservationDataSize;
 }
 
 
@@ -998,33 +1008,6 @@ void Game::Draw(float deltaTime, float totalTime)
 	// Use a for each to draw the mesh.
 	for (int i = 0; i < listOfEntities.size(); i++)
 	{
-		// Create a psConstantBuffer using the pixel shader struct.
-		PixelDataStruct psCB1 = {};
-
-		// Set the color tint of pixel shader cbuffer to the material color.
-		psCB1.colorTint = listOfEntities[i].GetMaterial().get()->GetColorTint();
-		psCB1.time = DirectX::XMFLOAT2(tTime, tTime);
-
-		// Map out or get the data of the constant buffer to pause data use and
-		// address moving in the GPU.
-		D3D11_MAPPED_SUBRESOURCE mappedPSBuffer = {};
-		Graphics::Context->Map(
-			psConstantBuffer.Get(),
-			0,
-			D3D11_MAP_WRITE_DISCARD,
-			0,
-			&mappedPSBuffer
-		);
-
-		// Copy the new struct data into the constant buffer with the approximate size.
-		memcpy(mappedPSBuffer.pData, &psCB1, sizeof(psCB1));
-
-		// Unmap or realease the address of the constant buffer for the GPU to use and
-		// move the files if necessary.
-		Graphics::Context->Unmap(psConstantBuffer.Get(), 0);
-
-		// ---------------------------------------------------------------------------------------
-
 		// Create two new variables that hold the new struct data for the constant buffer.
 		// Using the buffer struct model.
 		BufferStructs cbStruct = {};
@@ -1048,23 +1031,63 @@ void Game::Draw(float deltaTime, float totalTime)
 		XMFLOAT4X4 cameraProjectionMatrix = activeCamera.get()->GetProjectionMatrix();
 		cbStruct.projectionMatrix = XMLoadFloat4x4(&cameraProjectionMatrix);
 
+		// Call the CBH method for copying data.
+		FillAndBindNextConstantBuffer(
+			&cbStruct,
+			sizeof(cbStruct),
+			D3D11_VERTEX_SHADER,
+			0);
+
 		// Map out or get the data of the constant buffer to pause data use and
 		// address moving in the GPU.
-		D3D11_MAPPED_SUBRESOURCE mappedBuffer = {};
-		Graphics::Context->Map(
-			constantBuffer.Get(),
-			0,
-			D3D11_MAP_WRITE_DISCARD,
-			0,
-			&mappedBuffer
-		);
+		//D3D11_MAPPED_SUBRESOURCE mappedPSBuffer = {};
+		//Graphics::Context->Map(
+		//	psConstantBuffer.Get(),
+		//	0,
+		//	D3D11_MAP_WRITE_DISCARD,
+		//	0,
+		//	&mappedPSBuffer
+		//);
 
-		// Copy the new struct data into the constant buffer with the approximate size.
-		memcpy(mappedBuffer.pData, &cbStruct, sizeof(cbStruct));
+		//// Copy the new struct data into the constant buffer with the approximate size.
+		//memcpy(mappedPSBuffer.pData, &psCB1, sizeof(psCB1));
 
-		// Unmap or realease the address of the constant buffer for the GPU to use and
-		// move the files if necessary.
-		Graphics::Context->Unmap(constantBuffer.Get(), 0);
+		//// Unmap or realease the address of the constant buffer for the GPU to use and
+		//// move the files if necessary.
+		//Graphics::Context->Unmap(psConstantBuffer.Get(), 0);
+
+		// Create a psConstantBuffer using the pixel shader struct.
+		PixelDataStruct psCB1 = {};
+
+		// Set the color tint of pixel shader cbuffer to the material color.
+		psCB1.colorTint = listOfEntities[i].GetMaterial().get()->GetColorTint();
+		psCB1.time = DirectX::XMFLOAT2(tTime, tTime);
+
+		FillAndBindNextConstantBuffer(
+			&psCB1,
+			sizeof(PixelDataStruct),
+			D3D11_PIXEL_SHADER,
+			0);
+
+		// ---------------------------------------------------------------------------------------
+
+		// Map out or get the data of the constant buffer to pause data use and
+		// address moving in the GPU.
+		//D3D11_MAPPED_SUBRESOURCE mappedBuffer = {};
+		//Graphics::Context->Map(
+		//	constantBuffer.Get(),
+		//	0,
+		//	D3D11_MAP_WRITE_DISCARD,
+		//	0,
+		//	&mappedBuffer
+		//);
+
+		//// Copy the new struct data into the constant buffer with the approximate size.
+		//memcpy(mappedBuffer.pData, &cbStruct, sizeof(cbStruct));
+
+		//// Unmap or realease the address of the constant buffer for the GPU to use and
+		//// move the files if necessary.
+		//Graphics::Context->Unmap(constantBuffer.Get(), 0);
 
 		// Draw the entities after their world matrix have be updated in the vertex shader
 		// using the constant shader.

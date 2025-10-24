@@ -117,7 +117,7 @@ private:
 	//Material testMaterial;
 
 	// Create a constant buffer.
-	Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer;
+	//Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer;
 
 	// Create a device context for the vertex buffer.
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext1> ringBufferContext;
