@@ -169,17 +169,44 @@ void Material::LoadPixelShader()
 void Material::AddTextureSRV(unsigned int shaderRegisterIndex, Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> srvData)
 {
 	textureSRVs[shaderRegisterIndex] = srvData;
+
+	// Store the index.
+	currentSRVTextureIndex = shaderRegisterIndex;
 }
 
 // Create method that add texture shader resources to the sampler array.
 void Material::AddSampler(unsigned int shaderRegisterIndex, Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerData)
 {
 	samplers[shaderRegisterIndex] = samplerData;
+
+	// Store the index.
+	currentSamplerIndex = shaderRegisterIndex;
 }
 
 // Create a method that sets all the textue SRV and samplers active.
 void Material::BindTexturesAndSamplers()
 {
+	// If the current SRV index is not 0.
+	if (currentSamplerIndex != 0)
+	{
+		// Using a for loop and the current index of the textureSRV.
+		for (int i = 0; i < currentSRVTextureIndex; i++)
+		{
+			// In the right shader registry, set the right texture srv active.
+			Graphics::Context->PSSetShaderResources(i, 1, textureSRVs[i].GetAddressOf());
+		}
+	}
+
+	// If the current Sampler index is not 0.
+	if (currentSamplerIndex != 0)
+	{
+		// Create a for loop with the current index.
+		for (int i = 0; i < currentSamplerIndex; i++)
+		{
+			// Set the right sampler state for the right pShader registry active.
+			Graphics::Context->PSSetSamplers(i, 1, samplers[i].GetAddressOf());
+		}
+	}
 }
 
 //#include "Material.h"

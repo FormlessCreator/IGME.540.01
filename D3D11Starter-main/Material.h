@@ -54,5 +54,9 @@ private:
 	// std::unordered_map<unsigned int, Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> textureSRVs;.
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> textureSRVs[128];
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> samplers[16];
+
+	// Store the current index of the texture shader resources and the sampler array.
+	unsigned int currentSRVTextureIndex = 0;
+	unsigned int currentSamplerIndex = 0;
 };
 

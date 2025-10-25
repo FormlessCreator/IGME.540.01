@@ -108,11 +108,6 @@ Game::Game()
 	// Create sampler state.
 	Graphics::Device->CreateSamplerState(&sampDesc, sampler.GetAddressOf());
 
-	// A maaterial might need textures and various sampler to use so its right have a 
-	// texture and sampler array or //unordered map: 
-	// std::unordered_map<unsigned int, Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> textureSRVs;.
-
-	
 
 	// Bind the textures and sampler state for the pixel shaders to access.
 	// Graphics::Context->PSGetShaderResources(0, 1, )
@@ -164,6 +159,11 @@ Game::Game()
 	materialForShaders1 = std::make_shared<Material>(vertexShader, debugNormalsPS, inputLayout, debugNormalShader, XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f));
 	materialForShaders2 = std::make_shared<Material>(vertexShader, debugUVsPS, inputLayout, debugUVShader, XMFLOAT4(1.0f, 1.0f, 1.0f, 0.0f));
 	customMaterialForShaders = std::make_shared<Material>(vertexShader, customPS, inputLayout, customPShader, XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f));
+
+	// Add both of the textures and sampler to the pshader Material by calling the methods.
+	pShader->AddTextureSRV(0, pavementSRV);
+	pShader->AddTextureSRV(1, solarCellSRV);
+	pShader->AddSampler(0, sampler);
 
 	// Make material directly:
 	//Material material1(vertexShader, pixelShader, inputLayout, XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f));
@@ -1139,6 +1139,10 @@ void Game::Draw(float deltaTime, float totalTime)
 		//// Unmap or realease the address of the constant buffer for the GPU to use and
 		//// move the files if necessary.
 		//Graphics::Context->Unmap(constantBuffer.Get(), 0);
+
+		// Get the material of the current entity and set its texture srv's and sampler state 
+		// active by binding it to its pshaders register for use.
+		listOfEntities[i].GetMaterial()->BindTexturesAndSamplers();
 
 		// Draw the entities after their world matrix have be updated in the vertex shader
 		// using the constant shader.
