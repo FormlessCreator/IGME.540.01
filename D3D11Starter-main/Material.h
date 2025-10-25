@@ -34,11 +34,25 @@ public:
 	void LoadVertexShader();
 	void LoadPixelShader();
 
+	// Create method that add texture shader resources to the texture SRV array 
+	// and the samplers array.
+	void AddTextureSRV(unsigned int shaderRegisterIndex, Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> srvData);
+	void AddSampler(unsigned int shaderRegisterIndex, Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerData);
+	
+	// Create a method that sets all the textue SRV and samplers active.
+	void BindTexturesAndSamplers();
+
 private:
 	DirectX::XMFLOAT4 colorTint;
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
 	std::wstring pixelShaderFileName;
+
+	// A maaterial might need textures and various sampler to use so its right have a 
+	// texture and sampler array or //unordered map: 
+	// std::unordered_map<unsigned int, Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> textureSRVs;.
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> textureSRVs[128];
+	Microsoft::WRL::ComPtr<ID3D11SamplerState> samplers[16];
 };
 

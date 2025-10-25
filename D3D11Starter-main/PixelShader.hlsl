@@ -1,3 +1,11 @@
+// Store the refrences to the texture and the sampler.
+// Create a 2D texture surface data.
+texture2D PavementSurfaceTexture : register(t0);
+texture2D SolarCellSurfaceTexture : register(t1);
+
+// Create a sampler state.
+SamplerState BasicSampler : register(s0);
+
 // Create a cbuffer struct for the pixel shader.
 cbuffer PSExternalData1 : register(b0)
 {

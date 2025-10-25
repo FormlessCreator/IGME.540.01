@@ -165,6 +165,23 @@ void Material::LoadPixelShader()
 	}
 }
 
+// Create method that add texture shader resources to the texture SRV array.
+void Material::AddTextureSRV(unsigned int shaderRegisterIndex, Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> srvData)
+{
+	textureSRVs[shaderRegisterIndex] = srvData;
+}
+
+// Create method that add texture shader resources to the sampler array.
+void Material::AddSampler(unsigned int shaderRegisterIndex, Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerData)
+{
+	samplers[shaderRegisterIndex] = samplerData;
+}
+
+// Create a method that sets all the textue SRV and samplers active.
+void Material::BindTexturesAndSamplers()
+{
+}
+
 //#include "Material.h"
 //#include "Graphics.h"
 //#include "PathHelpers.h"

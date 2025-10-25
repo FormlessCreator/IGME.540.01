@@ -26,6 +26,9 @@
 #pragma comment(lib, "d3dcompiler.lib")
 #include <d3dcompiler.h>
 
+// Add the WIC texture loader package.
+#include "WICTextureLoader.h"
+
 // For the DirectX Math library
 using namespace DirectX;
 
@@ -40,6 +43,79 @@ Game::Game()
 	const std::wstring debugUVShader = L"DebugUVsPS.cso";
 	const std::wstring debugNormalShader = L"DebugNormalsPS.cso";
 	const std::wstring customPShader = L"CustomPS.cso";
+
+	// -------------------------------------------------------------------------------------
+	// Set the context of the constant buffer heap.
+	Graphics::Context->QueryInterface<ID3D11DeviceContext1>(ringBufferContext.GetAddressOf());
+
+	// The location of the constant buffer heap in byte starts at 0.
+	cbHeapOffsetInByte = 0;
+
+	// Cb Buffer needed for 50 object * with 2 constant buffer each * 3 frames = 300 Cb.
+	// Constant buffer heap size of: 1000 * 256 bytes = 266,000 bytes.
+	// It is enough for a 266 object or a 1000 Cb.
+	cbHeapSizeInByte = 1000 * 256;
+
+	// The heap size must be in the next multiple of 256 (needed byte size).
+	cbHeapSizeInByte = (cbHeapSizeInByte + 255) / 256 * 256;
+
+	// Create the set of options or instructions to create the CBH.
+	D3D11_BUFFER_DESC cbHeapDesc = {};
+	cbHeapDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	cbHeapDesc.ByteWidth = cbHeapSizeInByte;
+	cbHeapDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	cbHeapDesc.Usage = D3D11_USAGE_DYNAMIC;
+
+	// Create the CBH.
+	Graphics::Device->CreateBuffer(&cbHeapDesc, 0, constantBufferHeap.GetAddressOf());
+
+	// Get the wide string asset path of both pictures.
+	const std::wstring pavement = L"..\\..\\Assets\\Textures\\Pavement.png";
+	const std::wstring solarCell = L"..\\..\\Assets\\Textures\\SolarCell.png";
+
+	// Create a shader resource view to load the textures.
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pavementSRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> solarCellSRV;
+
+	// Call the create WIC  texture from file for both texture and use thier SRV.
+	CreateWICTextureFromFile(
+		Graphics::Device.Get(),
+		Graphics::Context.Get(),
+		FixPath(pavement).c_str(),
+		0,
+		pavementSRV.GetAddressOf());
+
+	CreateWICTextureFromFile(
+		Graphics::Device.Get(),
+		Graphics::Context.Get(),
+		FixPath(solarCell).c_str(),
+		0,
+		solarCellSRV.GetAddressOf());
+
+	// Load specific textures to generate mipmaps and refrences.
+	// By sampling.
+	Microsoft::WRL::ComPtr<ID3D11SamplerState> sampler;
+
+	// Create a destination object for the folder.
+	D3D11_SAMPLER_DESC sampDesc = {};
+	sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.Filter = D3D11_FILTER_ANISOTROPIC;
+	sampDesc.MaxAnisotropy = 16;
+	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+	// Create sampler state.
+	Graphics::Device->CreateSamplerState(&sampDesc, sampler.GetAddressOf());
+
+	// A maaterial might need textures and various sampler to use so its right have a 
+	// texture and sampler array or //unordered map: 
+	// std::unordered_map<unsigned int, Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> textureSRVs;.
+
+	
+
+	// Bind the textures and sampler state for the pixel shaders to access.
+	// Graphics::Context->PSGetShaderResources(0, 1, )
 
 	// Optimize the shader class so you only initialize and use the same shader once.
 	//// Using Chris Casiolio code reference for the input layout:
@@ -186,31 +262,6 @@ Game::Game()
 	offsetData[0] = 0.0f;
 	offsetData[1] = 0.0f;
 	offsetData[2] = 0.0f;
-
-	// -------------------------------------------------------------------------------------
-	// Set the context of the constant buffer heap.
-	Graphics::Context->QueryInterface<ID3D11DeviceContext1>(ringBufferContext.GetAddressOf());
-
-	// The location of the constant buffer heap in byte starts at 0.
-	cbHeapOffsetInByte = 0;
-
-	// Cb Buffer needed for 50 object * with 2 constant buffer each * 3 frames = 300 Cb.
-	// Constant buffer heap size of: 1000 * 256 bytes = 266,000 bytes.
-	// It is enough for a 266 object or a 1000 Cb.
-	cbHeapSizeInByte = 1000 * 256;
-
-	// The heap size must be in the next multiple of 256 (needed byte size).
-	cbHeapSizeInByte = (cbHeapSizeInByte + 255) / 256 * 256;
-
-	// Create the set of options or instructions to create the CBH.
-	D3D11_BUFFER_DESC cbHeapDesc = {};
-	cbHeapDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	cbHeapDesc.ByteWidth = cbHeapSizeInByte;
-	cbHeapDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	cbHeapDesc.Usage = D3D11_USAGE_DYNAMIC;
-
-	// Create the CBH.
-	Graphics::Device->CreateBuffer(&cbHeapDesc, 0, constantBufferHeap.GetAddressOf());
 
 	// -------------------------------------------------------------------------------------
 	// Initialize the constant buffer.
