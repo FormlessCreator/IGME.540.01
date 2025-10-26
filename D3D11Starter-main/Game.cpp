@@ -40,6 +40,8 @@ Game::Game()
 {
 	// Create a wide string for the names of all the shaders.
 	const std::wstring ps = L"PixelShader.cso";
+	const std::wstring ps1 = L"PixelShader1.cso";
+	const std::wstring psTextureCombine = L"PixelShaderTC.cso";
 	const std::wstring debugUVShader = L"DebugUVsPS.cso";
 	const std::wstring debugNormalShader = L"DebugNormalsPS.cso";
 	const std::wstring customPShader = L"CustomPS.cso";
@@ -156,6 +158,8 @@ Game::Game()
 
 	// Create material class to hold vertex & input shaders with the input layout.
 	pShader = std::make_shared<Material>(vertexShader, pixelShader, inputLayout, ps, XMFLOAT4(1.0f, 1.0f, 1.0f, 0.0f));
+	pShader1 = std::make_shared<Material>(vertexShader, pixelShader1, inputLayout, ps1, XMFLOAT4(1.0f, 0.0f, 0.0f, 0.0f));
+	pShaderTC = std::make_shared<Material>(vertexShader, pixelShaderTextureCombine, inputLayout, psTextureCombine, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 	materialForShaders1 = std::make_shared<Material>(vertexShader, debugNormalsPS, inputLayout, debugNormalShader, XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f));
 	materialForShaders2 = std::make_shared<Material>(vertexShader, debugUVsPS, inputLayout, debugUVShader, XMFLOAT4(1.0f, 1.0f, 1.0f, 0.0f));
 	customMaterialForShaders = std::make_shared<Material>(vertexShader, customPS, inputLayout, customPShader, XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f));
@@ -164,6 +168,15 @@ Game::Game()
 	pShader->AddTextureSRV(0, pavementSRV);
 	pShader->AddTextureSRV(1, solarCellSRV);
 	pShader->AddSampler(0, sampler);
+
+	// Add Texture and smaple for the pShader1 and pShaderTC.
+	pShader1->AddTextureSRV(0, pavementSRV);
+	pShader1->AddTextureSRV(1, solarCellSRV);
+	pShader1->AddSampler(0, sampler);
+
+	pShaderTC->AddTextureSRV(0, pavementSRV);
+	pShaderTC->AddTextureSRV(1, solarCellSRV);
+	pShaderTC->AddSampler(0, sampler);
 
 	// Make material directly:
 	//Material material1(vertexShader, pixelShader, inputLayout, XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f));
@@ -177,6 +190,8 @@ Game::Game()
 	// Add all the materials to a material vector.
 	listOfMaterials.push_back(customMaterialForShaders);
 	listOfMaterials.push_back(pShader);
+	listOfMaterials.push_back(pShader1);
+	listOfMaterials.push_back(pShaderTC);
 	listOfMaterials.push_back(materialForShaders1);
 	listOfMaterials.push_back(materialForShaders2);
 
@@ -219,12 +234,12 @@ Game::Game()
 
 	// Initialize the camera class with the window aspect ratio.
 	float aspectRatio = Window::AspectRatio();
-	XMFLOAT3 startingPoint = XMFLOAT3(0.0f, 6.0f, -30.0f);
+	XMFLOAT3 startingPoint = XMFLOAT3(0.0f, 10.0f, -40.0f);
 	XMFLOAT3 startingOrientation = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	float fov = XM_PIDIV4;
 	float nearClip = 0.1f;
 	float farClip = 1000.f;
-	float cameraMovementSpeed = 2.0f;
+	float cameraMovementSpeed = 10.0f;
 	float cameraMouseLookSpeed = 0.02f;
 	bool isCameraPerspective = true;
 
@@ -234,7 +249,7 @@ Game::Game()
 			farClip, cameraMovementSpeed, cameraMouseLookSpeed, isCameraPerspective);
 
 	// Create camera 2.
-	XMFLOAT3 startingPoint2 = XMFLOAT3(0.0f, 6.0f, -30.0f);
+	XMFLOAT3 startingPoint2 = XMFLOAT3(0.0f, 10.0f, -60.0f);
 	XMFLOAT3 startingOrientation2 = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	float fov2 = XM_PI / 6;
 	camera2 = std::make_shared<Camera>(
@@ -826,7 +841,7 @@ void Game::CreateGeometry()
 
 	// Use mesh to create and push in three distinct entities with different meshes.
 	// Create a for loop the that push the entities 3 times.
-	for (int x = 0; x < 4; x++)
+	for (int x = 0; x < 6; x++)
 	{
 		// Create a shared pointer material that holds a different material for each loop.
 		std::shared_ptr<Material> loopMaterial;
@@ -842,6 +857,16 @@ void Game::CreateGeometry()
 		}
 
 		if (x == 3)
+		{
+			loopMaterial = listOfMaterials[x];
+		}
+
+		if (x == 4)
+		{
+			loopMaterial = listOfMaterials[x];
+		}
+
+		if (x == 5)
 		{
 			loopMaterial = listOfMaterials[x];
 		}
@@ -872,7 +897,7 @@ void Game::CreateGeometry()
 	}
 
 	// For each entities group in the list, transform their y position by 3.
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 6; i++)
 	{
 		// Get the index of the entities.
 		int indexMultiple = 7 * i;
@@ -1113,6 +1138,9 @@ void Game::Draw(float deltaTime, float totalTime)
 		// Set the color tint of pixel shader cbuffer to the material color.
 		psCB1.colorTint = listOfEntities[i].GetMaterial().get()->GetColorTint();
 		psCB1.time = DirectX::XMFLOAT2(tTime, tTime);
+
+		// Get the time and the offset of the entity material.
+		//psCB1.scale = listOfEntities[i].
 
 		FillAndBindNextConstantBuffer(
 			&psCB1,

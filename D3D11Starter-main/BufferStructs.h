@@ -16,5 +16,7 @@ struct PixelDataStruct
 {
 	DirectX::XMFLOAT4 colorTint;
 	DirectX::XMFLOAT2 time;
+	DirectX::XMFLOAT2 scale;
+	DirectX::XMFLOAT2 offset;
 };
 

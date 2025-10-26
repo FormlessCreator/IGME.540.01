@@ -42,6 +42,14 @@ public:
 	// Create a method that sets all the textue SRV and samplers active.
 	void BindTexturesAndSamplers();
 
+	// Get method for the scale and offset.
+	DirectX::XMFLOAT2 GetTextureScale();
+	DirectX::XMFLOAT2 GetTextureOffset();
+
+	// Create a set for the texture scale and texture.
+	DirectX::XMFLOAT2 SetTextureScale(DirectX::XMFLOAT2 scale);
+	DirectX::XMFLOAT2 SetTextureOffset(DirectX::XMFLOAT2 offset);
+
 private:
 	DirectX::XMFLOAT4 colorTint;
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
@@ -58,5 +66,9 @@ private:
 	// Store the current index of the texture shader resources and the sampler array.
 	unsigned int currentSRVTextureIndex = 0;
 	unsigned int currentSamplerIndex = 0;
+
+	// Add variables to hold scaling and the offset for the given texture in materials.
+	DirectX::XMFLOAT2 textureScale;
+	DirectX::XMFLOAT2 textureOffset;
 };
 

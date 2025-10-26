@@ -170,8 +170,8 @@ void Material::AddTextureSRV(unsigned int shaderRegisterIndex, Microsoft::WRL::C
 {
 	textureSRVs[shaderRegisterIndex] = srvData;
 
-	// Store the index.
-	currentSRVTextureIndex = shaderRegisterIndex;
+	// Increase the index count by 1.
+	currentSRVTextureIndex += 1;
 }
 
 // Create method that add texture shader resources to the sampler array.
@@ -179,15 +179,15 @@ void Material::AddSampler(unsigned int shaderRegisterIndex, Microsoft::WRL::ComP
 {
 	samplers[shaderRegisterIndex] = samplerData;
 
-	// Store the index.
-	currentSamplerIndex = shaderRegisterIndex;
+	// Increase the index count by 1.
+	currentSamplerIndex += 1;
 }
 
 // Create a method that sets all the textue SRV and samplers active.
 void Material::BindTexturesAndSamplers()
 {
 	// If the current SRV index is not 0.
-	if (currentSamplerIndex != 0)
+	if (currentSRVTextureIndex >= 0)
 	{
 		// Using a for loop and the current index of the textureSRV.
 		for (int i = 0; i < currentSRVTextureIndex; i++)
@@ -198,7 +198,7 @@ void Material::BindTexturesAndSamplers()
 	}
 
 	// If the current Sampler index is not 0.
-	if (currentSamplerIndex != 0)
+	if (currentSamplerIndex >= 0)
 	{
 		// Create a for loop with the current index.
 		for (int i = 0; i < currentSamplerIndex; i++)
@@ -207,6 +207,29 @@ void Material::BindTexturesAndSamplers()
 			Graphics::Context->PSSetSamplers(i, 1, samplers[i].GetAddressOf());
 		}
 	}
+
+	// Set the right sampler state for the right pShader registry active.
+	//Graphics::Context->PSSetSamplers(0, 1, samplers[0].GetAddressOf());
+}
+
+DirectX::XMFLOAT2 Material::GetTextureScale()
+{
+	return textureScale;
+}
+
+DirectX::XMFLOAT2 Material::GetTextureOffset()
+{
+	return textureOffset;
+}
+
+DirectX::XMFLOAT2 Material::SetTextureScale(DirectX::XMFLOAT2 scale)
+{
+	return textureScale = scale;
+}
+
+DirectX::XMFLOAT2 Material::SetTextureOffset(DirectX::XMFLOAT2 offset)
+{
+	return textureOffset = offset;
 }
 
 //#include "Material.h"

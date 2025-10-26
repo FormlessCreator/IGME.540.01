@@ -103,9 +103,18 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> debugNormalsPS;
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> customPS;
 
+	// Create another shader for the solar cell texture.
+	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader1;
+
+	// Create a pixel shader for texture combination.
+	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShaderTextureCombine;
+
+
 	// Shaders and shader-related constructs will be now placed in the material class:
 	// Create a shared pointer for material.
 	std::shared_ptr<Material> pShader;
+	std::shared_ptr<Material> pShader1;
+	std::shared_ptr<Material> pShaderTC;
 	std::shared_ptr<Material> materialForShaders1;
 	std::shared_ptr<Material> materialForShaders2;
 	std::shared_ptr<Material> customMaterialForShaders;
