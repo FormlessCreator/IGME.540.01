@@ -41,6 +41,8 @@ struct VertexToPixel
 	float4 screenPosition	: SV_POSITION;	// XYZW position (System Value Position)
     float2 uv				: TEXCOORD;		// Texture coordinate.
     float3 normal			: NORMAL;		// The vertex normal.
+    //float2 scale			: SCALE;
+    //float2 offset			: OFFSET;
 };
 
 // --------------------------------------------------------

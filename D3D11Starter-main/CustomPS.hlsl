@@ -3,6 +3,8 @@ cbuffer PSExternalData1 : register(b0)
 {
     float4 colorTint;
     float2 time;
+    float2 scale;
+    float2 offset;
 }
 
 // Struct representing the data we expect to receive from earlier pipeline stages
@@ -17,9 +19,11 @@ struct VertexToPixel
 	//  |   Name          Semantic
 	//  |    |                |
 	//  v    v                v
-    float4 screenPosition : SV_POSITION;
-    float2 uv : TEXCOORD;
-    float3 normal : NORMAL;
+    float4 screenPosition   : SV_POSITION;
+    float2 uv               : TEXCOORD;
+    float3 normal           : NORMAL;
+    //float2 scale            : SCALE;
+    //float2 offset           : OFFSET;
 	
 	// Remove the color.
 	//float4 color			: COLOR;

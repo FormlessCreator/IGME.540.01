@@ -634,6 +634,11 @@ void Game::buildImGuiCustomizedUI()
 			{
 				// Get the transform address to get its data.
 				Transform& entityTransform = listOfEntities[i].GetTransform();
+				
+				// Get the material of the entity.
+				//Material& entityMaterial = *(listOfEntities[i].GetMaterial().get());
+				// Changing the material shared pointer will change its material properties.
+				std::shared_ptr<Material> entityMaterial = listOfEntities[i].GetMaterial();
 
 				// Create Push ID to make an edited variable of transform 
 				// element to be unique to each entity for each loop.
@@ -644,15 +649,28 @@ void Game::buildImGuiCustomizedUI()
 				XMFLOAT3 scale = XMFLOAT3(entityTransform.GetScale());
 				XMFLOAT3 rotation = XMFLOAT3(entityTransform.GetPitchYawRoll());
 
+				// Get the entities material texture scale and offest values.
+				XMFLOAT2 textureScale = XMFLOAT2(entityMaterial->GetTextureScale());
+				XMFLOAT2 textureOffset = XMFLOAT2(entityMaterial->GetTextureOffset());
+
 				// Create a drag float that chages the transformation of the entities.
 				ImGui::DragFloat3("Position", &position.x, 0.1f);
 				ImGui::DragFloat3("Scale", &scale.x, 0.1f);
 				ImGui::DragFloat3("Rotation", &rotation.x, 0.1f);
 
+				// Create a drag float for the material texture scale and offset.
+				ImGui::DragFloat2("Material Texture Scale", &textureScale.x, 0.1f);
+				ImGui::DragFloat2("Material Texture Offset", &textureOffset.x, 0.1f);
+
 				// Set the tranform data to the new values.
 				entityTransform.SetPosition(position);
 				entityTransform.SetRotation(rotation);
 				entityTransform.SetScale(scale);
+
+				// Set the xmfloat scale and offset values of the entities material texture
+				// to its new values.
+				entityMaterial->SetTextureScale(textureScale);
+				entityMaterial->SetTextureOffset(textureOffset);
 
 				// Remove the Id after loop ends and changes are made.
 				ImGui::PopID();
@@ -1133,17 +1151,18 @@ void Game::Draw(float deltaTime, float totalTime)
 		//Graphics::Context->Unmap(psConstantBuffer.Get(), 0);
 
 		// Create a psConstantBuffer using the pixel shader struct.
-		PixelDataStruct psCB1 = {};
+		PixelDataStruct psCBH1 = {};
 
 		// Set the color tint of pixel shader cbuffer to the material color.
-		psCB1.colorTint = listOfEntities[i].GetMaterial().get()->GetColorTint();
-		psCB1.time = DirectX::XMFLOAT2(tTime, tTime);
+		psCBH1.colorTint = listOfEntities[i].GetMaterial().get()->GetColorTint();
+		psCBH1.time = DirectX::XMFLOAT2(tTime, tTime);
 
 		// Get the time and the offset of the entity material.
-		//psCB1.scale = listOfEntities[i].
+		psCBH1.scale = listOfEntities[i].GetMaterial()->GetTextureScale();
+		psCBH1.offset = listOfEntities[i].GetMaterial()->GetTextureOffset();
 
 		FillAndBindNextConstantBuffer(
-			&psCB1,
+			&psCBH1,
 			sizeof(PixelDataStruct),
 			D3D11_PIXEL_SHADER,
 			0);

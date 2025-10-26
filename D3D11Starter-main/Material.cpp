@@ -7,6 +7,8 @@
 Material::Material()
 {
 	colorTint = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
+	textureOffset = DirectX::XMFLOAT2(0.0f, 0.0f);
+	textureScale = DirectX::XMFLOAT2(0.0f, 0.0f);
 }
 
 Material::Material(
@@ -22,6 +24,10 @@ Material::Material(
 	inputLayout = il;
 	colorTint = color;
 	pixelShaderFileName = psFileName;
+
+	// Intialize the material texture scale and offset values.
+	textureOffset = DirectX::XMFLOAT2(1.0f, 1.0f);
+	textureScale = DirectX::XMFLOAT2(1.0f, 1.0f);
 }
 
 Material::~Material()
@@ -190,7 +196,7 @@ void Material::BindTexturesAndSamplers()
 	if (currentSRVTextureIndex >= 0)
 	{
 		// Using a for loop and the current index of the textureSRV.
-		for (int i = 0; i < currentSRVTextureIndex; i++)
+		for (unsigned int i = 0; i < currentSRVTextureIndex; i++)
 		{
 			// In the right shader registry, set the right texture srv active.
 			Graphics::Context->PSSetShaderResources(i, 1, textureSRVs[i].GetAddressOf());
@@ -201,7 +207,7 @@ void Material::BindTexturesAndSamplers()
 	if (currentSamplerIndex >= 0)
 	{
 		// Create a for loop with the current index.
-		for (int i = 0; i < currentSamplerIndex; i++)
+		for (unsigned int i = 0; i < currentSamplerIndex; i++)
 		{
 			// Set the right sampler state for the right pShader registry active.
 			Graphics::Context->PSSetSamplers(i, 1, samplers[i].GetAddressOf());

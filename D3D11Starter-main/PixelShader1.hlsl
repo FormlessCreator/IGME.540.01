@@ -11,6 +11,8 @@ cbuffer PSExternalData1 : register(b0)
 {
     float4 colorTint;
     float2 time;
+    float2 scale;
+    float2 offset;
 }
 
 // Struct representing the data we expect to receive from earlier pipeline stages
@@ -25,9 +27,11 @@ struct VertexToPixel
 	//  |   Name          Semantic
 	//  |    |                |
 	//  v    v                v
-    float4 screenPosition : SV_POSITION;
-    float2 uv : TEXCOORD;
-    float3 normal : NORMAL;
+    float4 screenPosition	: SV_POSITION;
+    float2 uv				: TEXCOORD;
+    float3 normal			: NORMAL;
+    //float2 scale			: SCALE;
+    //float2 offset			: OFFSET;
 	
 	// Remove the color.
 	//float4 color			: COLOR;
@@ -44,16 +48,22 @@ struct VertexToPixel
 // --------------------------------------------------------
 float4 main(VertexToPixel input) : SV_TARGET
 {
+	// Scale input uv texture with material texture scale and offset.
+    input.uv = input.uv * scale + offset;
+	
 	// Create and get a texture color from the texture using the texture,
 	// the sampler state and the given input uv coordinate.
     //float4 surfaceColor1 = PavementSurfaceTexture.Sample(BasicSampler, input.uv);
-    float surfaceColor2 = SolarCellSurfaceTexture.Sample(BasicSampler, input.uv);
+    float3 surfaceColor2 = SolarCellSurfaceTexture.Sample(BasicSampler, input.uv).rgb;
 	
 	// Just return the input color
 	// - This color (like most values passing through the rasterizer) is 
 	//   interpolated for each pixel between the corresponding vertices 
 	//   of the triangle we're rendering
-    return colorTint * surfaceColor2;
+    surfaceColor2 *= colorTint;
+	
+	// Return a float4 color.
+    return float4(surfaceColor2, 1.0f);
 	
 	// Test:
 	//return float4(input.uv, 0, 1);
