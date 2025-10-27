@@ -50,6 +50,13 @@ public:
 	DirectX::XMFLOAT2 SetTextureScale(DirectX::XMFLOAT2 scale);
 	DirectX::XMFLOAT2 SetTextureOffset(DirectX::XMFLOAT2 offset);
 
+	// Get the individual shader resources view in the comPtr array of the material.
+	// By returning the address of the first pointer.
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> GetShaderResourceViewArray(unsigned int index);
+
+	// Get the SRV current index.
+	unsigned int GetCurrentSRVIndex();
+
 private:
 	DirectX::XMFLOAT4 colorTint;
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
@@ -57,7 +64,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
 	std::wstring pixelShaderFileName;
 
-	// A maaterial might need textures and various sampler to use so its right have a 
+	// A material might need textures and various sampler to use so its right have a 
 	// texture and sampler array or //unordered map: 
 	// std::unordered_map<unsigned int, Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> textureSRVs;.
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> textureSRVs[128];

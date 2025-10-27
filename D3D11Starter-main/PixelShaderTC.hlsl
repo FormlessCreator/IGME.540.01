@@ -53,17 +53,32 @@ float4 main(VertexToPixel input) : SV_TARGET
 	
 	// Create and get a texture color from the texture using the texture,
 	// the sampler state and the given input uv coordinate.
-    //float4 surfaceColor1 = PavementSurfaceTexture.Sample(BasicSampler, input.uv);
+    float3 surfaceColor1 = PavementSurfaceTexture.Sample(BasicSampler, input.uv).rgb;
     float3 surfaceColor2 = SolarCellSurfaceTexture.Sample(BasicSampler, input.uv).rgb;
 	
 	// Just return the input color
 	// - This color (like most values passing through the rasterizer) is 
 	//   interpolated for each pixel between the corresponding vertices 
 	//   of the triangle we're rendering
-    surfaceColor2 *= colorTint;
+	// Get the combination of both texture for the texture tint.
+    // float3 surfaceCombination = surfaceColor1 * surfaceColor2;
+	
+	// Combine both texture together by adding.
+    float3 surfaceCombination = surfaceColor1 + surfaceColor2;
+	
+	// Make the color brighter by adding new surface texture combination 
+	// again (+ 1 brightness).
+    surfaceCombination += surfaceCombination;
+	
+	// Make the color less bright(its intial combination brightness) or
+	// or darker by subtracting.
+    // surfaceCombination -= surfaceCombination;
+	
+	// Combine the surface with the color tint.
+    surfaceCombination *= colorTint;
 	
 	// Return a float4 color.
-    return float4(surfaceColor2, 1.0f);
+    return float4(surfaceCombination, 1.0f);
 	
 	// Test:
 	//return float4(input.uv, 0, 1);

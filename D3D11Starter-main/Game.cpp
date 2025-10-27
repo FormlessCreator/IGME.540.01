@@ -649,28 +649,76 @@ void Game::buildImGuiCustomizedUI()
 				XMFLOAT3 scale = XMFLOAT3(entityTransform.GetScale());
 				XMFLOAT3 rotation = XMFLOAT3(entityTransform.GetPitchYawRoll());
 
-				// Get the entities material texture scale and offest values.
-				XMFLOAT2 textureScale = XMFLOAT2(entityMaterial->GetTextureScale());
-				XMFLOAT2 textureOffset = XMFLOAT2(entityMaterial->GetTextureOffset());
-
 				// Create a drag float that chages the transformation of the entities.
 				ImGui::DragFloat3("Position", &position.x, 0.1f);
 				ImGui::DragFloat3("Scale", &scale.x, 0.1f);
 				ImGui::DragFloat3("Rotation", &rotation.x, 0.1f);
-
-				// Create a drag float for the material texture scale and offset.
-				ImGui::DragFloat2("Material Texture Scale", &textureScale.x, 0.1f);
-				ImGui::DragFloat2("Material Texture Offset", &textureOffset.x, 0.1f);
 
 				// Set the tranform data to the new values.
 				entityTransform.SetPosition(position);
 				entityTransform.SetRotation(rotation);
 				entityTransform.SetScale(scale);
 
-				// Set the xmfloat scale and offset values of the entities material texture
-				// to its new values.
-				entityMaterial->SetTextureScale(textureScale);
-				entityMaterial->SetTextureOffset(textureOffset);
+				// Create a material information node.
+				if (ImGui::TreeNode("Material Information"))
+				{
+					// Get the entities material texture scale and offest values.
+					XMFLOAT2 textureScale = XMFLOAT2(entityMaterial->GetTextureScale());
+					XMFLOAT2 textureOffset = XMFLOAT2(entityMaterial->GetTextureOffset());
+
+					// Allow the user to chage the color tint of the material and its texture.
+					XMFLOAT4 materialTint4 = entityMaterial->GetColorTint();
+
+					// Create a drag float for the material texture scale and offset.
+					ImGui::DragFloat2("Material Texture Scale", &textureScale.x, 0.1f);
+					ImGui::DragFloat2("Material Texture Offset", &textureOffset.x, 0.1f);
+
+					// Set the xmfloat scale and offset values of the entities material texture
+					// to its new values.
+					entityMaterial->SetTextureScale(textureScale);
+					entityMaterial->SetTextureOffset(textureOffset);
+
+					// Color from material is already xmfloat4.
+					// Create a materialTint xmflaot3 variable.
+					//XMFLOAT3 materialTint3;
+					// Convert the color tint to xmfloat3 by storing.
+					//XMStoreFloat3(&materialTint3, XMLoadFloat4(&materialTint4));
+
+					// Create a float array for the color edit.
+					float color[4] = { materialTint4.x, materialTint4.y, materialTint4.z, materialTint4.w };
+
+					// Use Drag3 float to change the color tint.
+					if (ImGui::ColorEdit4("Material Color Tint", color))
+					{
+						// Set the material color tint to the new color values
+						entityMaterial->SetColorTint(XMFLOAT4(color[0], color[1], color[2], color[3]));
+					}
+
+					// Get the material texture image.
+					// Using the comptr to the SRV texture array of the material and its current index.
+					// Using the IMGui Image.
+					unsigned int currentSRVIndex = entityMaterial->GetCurrentSRVIndex();
+
+					// Using a for loop.
+					for (unsigned int i = 0; i < currentSRVIndex; i++)
+					{
+						// Get the srv of the material in its array using the index and the GetSRV method.
+						Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> currentSRV = 
+							entityMaterial->GetShaderResourceViewArray(i);
+
+						// Create a Text to specify texture by converting loop number to string.
+						std::string textureText = "Texture " + std::to_string(i + 1);
+
+						// Convert string to const string to use for Imgui::Text
+						ImGui::Text(textureText.c_str());
+
+						// Use the ImGui image to draw the image from the srv.
+						ImGui::Image((void*)currentSRV.Get(), ImVec2(100, 100));
+					}
+
+					// Pop the Tree node.
+					ImGui::TreePop();
+				}
 
 				// Remove the Id after loop ends and changes are made.
 				ImGui::PopID();

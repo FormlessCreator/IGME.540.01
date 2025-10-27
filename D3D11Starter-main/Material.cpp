@@ -238,6 +238,17 @@ DirectX::XMFLOAT2 Material::SetTextureOffset(DirectX::XMFLOAT2 offset)
 	return textureOffset = offset;
 }
 
+Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> Material::GetShaderResourceViewArray(unsigned int index)
+{
+	// TODO: insert return statement here
+	return textureSRVs[index];
+}
+
+unsigned int Material::GetCurrentSRVIndex()
+{
+	return currentSRVTextureIndex;
+}
+
 //#include "Material.h"
 //#include "Graphics.h"
 //#include "PathHelpers.h"
