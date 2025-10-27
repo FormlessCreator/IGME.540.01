@@ -31,7 +31,7 @@ public:
 	void SetInputlayout(Microsoft::WRL::ComPtr<ID3D11InputLayout> il);
 
 	// Load Vertex and Pixel Shaders
-	void LoadVertexShader();
+	//void LoadVertexShader();
 	void LoadPixelShader();
 
 	// Create method that add texture shader resources to the texture SRV array 

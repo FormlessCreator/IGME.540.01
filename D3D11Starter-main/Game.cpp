@@ -38,14 +38,6 @@ using namespace DirectX;
 // --------------------------------------------------------
 Game::Game()
 {
-	// Create a wide string for the names of all the shaders.
-	const std::wstring ps = L"PixelShader.cso";
-	const std::wstring ps1 = L"PixelShader1.cso";
-	const std::wstring psTextureCombine = L"PixelShaderTC.cso";
-	const std::wstring debugUVShader = L"DebugUVsPS.cso";
-	const std::wstring debugNormalShader = L"DebugNormalsPS.cso";
-	const std::wstring customPShader = L"CustomPS.cso";
-
 	// -------------------------------------------------------------------------------------
 	// Set the context of the constant buffer heap.
 	Graphics::Context->QueryInterface<ID3D11DeviceContext1>(ringBufferContext.GetAddressOf());
@@ -110,51 +102,18 @@ Game::Game()
 	// Create sampler state.
 	Graphics::Device->CreateSamplerState(&sampDesc, sampler.GetAddressOf());
 
+	// Load Vertex Shader.
+	LoadVertexShader();
+	
+	// Create a wide string for the names of all the shaders.
+	const std::wstring ps = L"PixelShader.cso";
+	const std::wstring ps1 = L"PixelShader1.cso";
+	const std::wstring psTextureCombine = L"PixelShaderTC.cso";
+	const std::wstring debugUVShader = L"DebugUVsPS.cso";
+	const std::wstring debugNormalShader = L"DebugNormalsPS.cso";
+	const std::wstring customPShader = L"CustomPS.cso";
 
-	// Bind the textures and sampler state for the pixel shaders to access.
-	// Graphics::Context->PSGetShaderResources(0, 1, )
-
-	// Optimize the shader class so you only initialize and use the same shader once.
-	//// Using Chris Casiolio code reference for the input layout:
-	//// Create an input layout 
-	////  - This describes the layout of data sent to a vertex shader
-	////  - In other words, it describes how to interpret data (numbers) in a vertex buffer
-	////  - Doing this NOW because it requires a vertex shader's byte code to verify against!
-	////  - Luckily, we already have that loaded (the vertex shader blob above)
-	//{
-	//	D3D11_INPUT_ELEMENT_DESC inputElements[3] = {};
-
-	//	// Set up the first element - a position, which is 3 float values
-	//	inputElements[0].Format = DXGI_FORMAT_R32G32B32_FLOAT;				// Most formats are described as color channels; really it just means "Three 32-bit floats"
-	//	inputElements[0].SemanticName = "POSITION";							// This is "POSITION" - needs to match the semantics in our vertex shader input!
-	//	inputElements[0].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;	// How far into the vertex is this?  Assume it's after the previous element
-
-	//	// Create the input layout information for the vertex buffer uv texture coordinate.
-	//	inputElements[1].Format = DXGI_FORMAT_R32G32_FLOAT;					// The uv float bit sizes format.
-	//	inputElements[1].SemanticName = "TEXCOORD";							// The uv texture coordinate sematic name.
-	//	inputElements[1].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;	// Order in which the vertex uv byte is read - After the previous element.
-
-	//	// Create the input layout information for the normal direction.
-	//	inputElements[2].Format = DXGI_FORMAT_R32G32B32_FLOAT;				// The float float bit sizes format.
-	//	inputElements[2].SemanticName = "NORMAL";							// The uv texture coordinate sematic name.
-	//	inputElements[2].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;	// Order in which the vertex normal byte info is read - After the previous element.
-
-	//	// Remove the input layout information for the color.
-	//	// Set up the second element - a color, which is 4 more float values
-	//	//inputElements[1].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;			// 4x 32-bit floats
-	//	//inputElements[1].SemanticName = "COLOR";							// Match our vertex shader input!
-	//	//inputElements[1].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;	// After the previous element
-
-	//	// Create the input layout, verifying our description against actual shader code:
-	//	// Create a vertex shader blob:
-	//	ID3D10Blob* vertexShaderBlob;
-	//	Graphics::Device->CreateInputLayout(
-	//		inputElements,							// An array of descriptions
-	//		3,										// How many elements in that array? // 2 -> 3 now!
-	//		vertexShaderBlob->GetBufferPointer(),	// Pointer to the code of a shader that uses this layout
-	//		vertexShaderBlob->GetBufferSize(),		// Size of the shader code that uses this layout
-	//		inputLayout.GetAddressOf());			// Address of the resulting ID3D11InputLayout pointer
-	//}
+	//D3DReadFileToBlob(FixPath(L"PixelShader.cso").c_str(), &pixelShaderBlob);
 
 	// Create material class to hold vertex & input shaders with the input layout.
 	pShader = std::make_shared<Material>(vertexShader, pixelShader, inputLayout, ps, XMFLOAT4(1.0f, 1.0f, 1.0f, 0.0f));
@@ -200,7 +159,7 @@ Game::Game()
 	// Create the same vertex shader and unique pixel buffer for the material.
 	for (int i = 0; i < listOfMaterials.size(); i++)
 	{
-		listOfMaterials[i]->LoadVertexShader();
+		//listOfMaterials[i]->LoadVertexShader();
 		listOfMaterials[i]->LoadPixelShader();
 	}
 
@@ -391,6 +350,62 @@ void Game::Initialize()
 
 		// Increase the count by one.
 		(count)++;
+	}
+}
+
+//Load the vertex shader.
+void Game::LoadVertexShader()
+{
+	// -------------------------------------------------------------------------
+	ID3DBlob* vertexShaderBlob;
+	D3DReadFileToBlob(FixPath(L"VertexShader.cso").c_str(), &vertexShaderBlob);
+	Graphics::Device->CreateVertexShader(
+		vertexShaderBlob->GetBufferPointer(), // Pointer to start of binary data
+		vertexShaderBlob->GetBufferSize(), // How big is that data?
+		0, // No classes in this shader
+		vertexShader.GetAddressOf());
+
+	// Bind the textures and sampler state for the pixel shaders to access.
+	// Graphics::Context->PSGetShaderResources(0, 1, )
+
+	// Optimize the shader class so you only initialize and use the same shader once.
+		// Using Chris Casiolio code reference for the input layout:
+	// Create an input layout 
+	//  - This describes the layout of data sent to a vertex shader
+	//  - In other words, it describes how to interpret data (numbers) in a vertex buffer
+	//  - Doing this NOW because it requires a vertex shader's byte code to verify against!
+	//  - Luckily, we already have that loaded (the vertex shader blob above)
+	{
+		D3D11_INPUT_ELEMENT_DESC inputElements[3] = {};
+
+		// Set up the first element - a position, which is 3 float values
+		inputElements[0].Format = DXGI_FORMAT_R32G32B32_FLOAT;				// Most formats are described as color channels; really it just means "Three 32-bit floats"
+		inputElements[0].SemanticName = "POSITION";							// This is "POSITION" - needs to match the semantics in our vertex shader input!
+		inputElements[0].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;	// How far into the vertex is this?  Assume it's after the previous element
+
+		// Create the input layout information for the vertex buffer uv texture coordinate.
+		inputElements[1].Format = DXGI_FORMAT_R32G32_FLOAT;					// The uv float bit sizes format.
+		inputElements[1].SemanticName = "TEXCOORD";							// The uv texture coordinate sematic name.
+		inputElements[1].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;	// Order in which the vertex uv byte is read - After the previous element.
+
+		// Create the input layout information for the normal direction.
+		inputElements[2].Format = DXGI_FORMAT_R32G32B32_FLOAT;				// The float float bit sizes format.
+		inputElements[2].SemanticName = "NORMAL";							// The uv texture coordinate sematic name.
+		inputElements[2].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;	// Order in which the vertex normal byte info is read - After the previous element.
+
+		// Remove the input layout information for the color.
+		// Set up the second element - a color, which is 4 more float values
+		//inputElements[1].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;			// 4x 32-bit floats
+		//inputElements[1].SemanticName = "COLOR";							// Match our vertex shader input!
+		//inputElements[1].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;	// After the previous element
+
+		// Create the input layout, verifying our description against actual shader code
+		Graphics::Device->CreateInputLayout(
+			inputElements,							// An array of descriptions
+			3,										// How many elements in that array? // 2 -> 3 now!
+			vertexShaderBlob->GetBufferPointer(),	// Pointer to the code of a shader that uses this layout
+			vertexShaderBlob->GetBufferSize(),		// Size of the shader code that uses this layout
+			inputLayout.GetAddressOf());			// Address of the resulting ID3D11InputLayout pointer
 	}
 }
 
@@ -1025,7 +1040,7 @@ void Game::FillAndBindNextConstantBuffer(void* data, unsigned int dataSizeInByte
 	// ring buffer loop location to the start 0. If byte location after the last byte.
 	if (cbHeapOffsetInByte + reservationDataSize >= cbHeapSizeInByte)
 	{
-		// Set cb heap location in byte to 0.
+		// Set cb heap location in byte to 0 (loop back).
 		cbHeapOffsetInByte = 0;
 	}
 

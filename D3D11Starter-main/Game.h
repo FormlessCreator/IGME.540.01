@@ -59,6 +59,9 @@ public:
 		D3D11_SHADER_TYPE shaderType,
 		unsigned int registerSlot);
 
+	void LoadVertexShader();
+	void LoadPixelShader(std::wstring shaderCso, Microsoft::WRL::ComPtr<ID3D11PixelShader>& pixelShaderType);
+
 private:
 
 	// Initialization helper methods - feel free to customize, combine, remove, etc.
