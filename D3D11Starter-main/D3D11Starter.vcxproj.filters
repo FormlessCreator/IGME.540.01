@@ -19,6 +19,9 @@
     <Filter Include="Source Files\ImGui">
       <UniqueIdentifier>{614f391e-b8c7-4f4f-b333-b9c0e8c0adf3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\ShaderIncludesFiles">
+      <UniqueIdentifier>{782fe456-eb74-45b2-b20f-60bba4e45616}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -166,5 +169,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="ShaderIncludeFile.hlsli">
+      <Filter>Shaders\ShaderIncludesFiles</Filter>
+    </None>
   </ItemGroup>
 </Project>

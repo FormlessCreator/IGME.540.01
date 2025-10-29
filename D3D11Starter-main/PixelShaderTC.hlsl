@@ -1,3 +1,6 @@
+// Add a shader include file.
+#include "ShaderIncludeFile.hlsli"
+
 // Store the refrences to the texture and the sampler.
 // Create a 2D texture surface data.
 Texture2D PavementSurfaceTexture : register(t0);
@@ -14,28 +17,6 @@ cbuffer PSExternalData1 : register(b0)
     float2 scale;
     float2 offset;
 }
-
-// Struct representing the data we expect to receive from earlier pipeline stages
-// - Should match the output of our corresponding vertex shader
-// - The name of the struct itself is unimportant
-// - The variable names don't have to match other shaders (just the semantics)
-// - Each variable must have a semantic, which defines its usage
-struct VertexToPixel
-{
-	// Data type
-	//  |
-	//  |   Name          Semantic
-	//  |    |                |
-	//  v    v                v
-    float4 screenPosition	: SV_POSITION;
-    float2 uv				: TEXCOORD;
-    float3 normal			: NORMAL;
-    //float2 scale			: SCALE;
-    //float2 offset			: OFFSET;
-	
-	// Remove the color.
-	//float4 color			: COLOR;
-};
 
 // --------------------------------------------------------
 // The entry point (main method) for our pixel shader
@@ -75,7 +56,7 @@ float4 main(VertexToPixel input) : SV_TARGET
     // surfaceCombination -= surfaceCombination;
 	
 	// Combine the surface with the color tint.
-    surfaceCombination *= colorTint;
+    surfaceCombination *= colorTint.xyz;
 	
 	// Return a float4 color.
     return float4(surfaceCombination, 1.0f);

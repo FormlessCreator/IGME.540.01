@@ -111,7 +111,7 @@ Game::Game()
 	const std::wstring psTextureCombine = L"PixelShaderTC.cso";
 	const std::wstring debugUVShader = L"DebugUVsPS.cso";
 	const std::wstring debugNormalShader = L"DebugNormalsPS.cso";
-	const std::wstring customPShader = L"CustomPS.cso";
+	const std::wstring customPShader = L"CustomPS.cso";	
 
 	//D3DReadFileToBlob(FixPath(L"PixelShader.cso").c_str(), &pixelShaderBlob);
 
