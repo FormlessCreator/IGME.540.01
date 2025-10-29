@@ -31,7 +31,7 @@ float4 main(VertexToPixel input) : SV_TARGET
     // and other calculations.
     float randomFloat = random(float2(input.normal.x, input.normal.z));
     float magnitudeOfUv = distance(input.uv.x, input.uv.y);
-    float4 output = ColorChange(magnitudeOfUv, time.x);
+    float4 output = ColorChange(magnitudeOfUv, time.x * 2.0f);
     magnitudeOfUv = sin(magnitudeOfUv * 8.0 + time.x + randomFloat) / 8.06;
     magnitudeOfUv =  abs(magnitudeOfUv) + frac((sin(randomFloat / 250.0f)));
     magnitudeOfUv = 0.03 / magnitudeOfUv;

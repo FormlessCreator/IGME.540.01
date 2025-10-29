@@ -10,6 +10,11 @@ struct BufferStructs
 	DirectX::XMMATRIX worldMatrix;
 	DirectX::XMMATRIX viewMatrix;
 	DirectX::XMMATRIX projectionMatrix;
+
+	// Add the inverse transpose matrix of the wSpace to get the right 
+	// rotation and scaling for the normals of the all objects in the
+	// world spacein relation to the camera.
+	DirectX::XMMATRIX worldInverseTransposeMatrix;
 };
 
 struct PixelDataStruct

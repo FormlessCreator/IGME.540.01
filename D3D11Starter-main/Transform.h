@@ -43,5 +43,6 @@ private:
 	DirectX::XMFLOAT4X4 worldMatrix;
 	DirectX::XMFLOAT4X4 worldInverseTransposeMatrix;
 	bool matrixUpdate;
+	bool setUpITMatrix;
 };
 

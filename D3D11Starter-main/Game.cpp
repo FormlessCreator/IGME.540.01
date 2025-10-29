@@ -1135,9 +1135,17 @@ void Game::Update(float deltaTime, float totalTime)
 	//// Make entity 4 and 5 move back and forth each time.
 	//listOfEntities[0].GetTransform().SetPosition(XMFLOAT3(wave2, 0.0f, 0.0f));
 	//listOfEntities[1].GetTransform().SetPosition(XMFLOAT3(-wave2, 0.0f, 0.0f));
-
+	// 
 	//// Rotate the third square with time on its z axis.
 	//listOfEntities[2].GetTransform().Rotate(XMFLOAT3(0.0f, 0.0f, static_cast<float>(deltaTime * 3.5)));
+
+	// Rotate all the object with time.
+	for (int i = 0; i < listOfEntities.size(); i++)
+	{
+		// Get the object transformation and rotate with time.
+		listOfEntities[i].GetTransform().Rotate(XMFLOAT3(0.0f, 1.0f * deltaTime, 0.0f));
+	}
+
 
 	// Update the input and view matrix camera each frame.
 	// Get update the active camera each time.
@@ -1187,6 +1195,12 @@ void Game::Draw(float deltaTime, float totalTime)
 
 		XMFLOAT4X4 cameraProjectionMatrix = activeCamera.get()->GetProjectionMatrix();
 		cbStruct.projectionMatrix = XMLoadFloat4x4(&cameraProjectionMatrix);
+
+		// Get the inverse transpose matrix of the world space for the all the objects in the scene.
+		XMFLOAT4X4 entityWorldInverseTransposeMatrix = listOfEntities[i].GetTransform().GetInverseTransposeMatrix();
+
+		// Load the stored entity world IT matrix into the CBH struct.
+		cbStruct.worldInverseTransposeMatrix = XMLoadFloat4x4(&entityWorldInverseTransposeMatrix);
 
 		// Call the CBH method for copying data.
 		FillAndBindNextConstantBuffer(

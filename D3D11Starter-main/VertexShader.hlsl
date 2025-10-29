@@ -9,6 +9,9 @@ cbuffer VSExternalData : register(b0)
     matrix worldMatrix;
     matrix viewMatrix;
     matrix projectionMatrix;
+	
+	// Add the object inverse transpose matrix in the world space.
+    matrix worldInverseTransposeMatrix;
 }
 
 // --------------------------------------------------------
@@ -38,12 +41,29 @@ VertexToPixel main( VertexShaderInput input )
 	
 	// Add the input information to the output.
     output.uv = input.uv;
-    output.normal = input.normal;
+	
+	// Change the input normal by calculating the object's correct normal
+	// rotation and scaling in world space (Do not calculate Translation as
+	// normal needs to be normalize before and after the out put stage).
+	// IT matrix rotation unit is 1,1,1 always normalized.
+	// IT matrix scale is always 1,1,1 normalized to.
+    output.normal = mul((float3x3)worldInverseTransposeMatrix, input.normal);
+	
+	// Not correct! Normal of vertex does not not change or move with object's rotation.
+    // output.normal = input.normal;
+	
+	// Not completely correct! Normal of vertex does not change or move with the object's
+	// scale but it moves with the object's world space rotation matrix.
+    //output.normal = mul((float3x3) worldMatrix, input.normal);
 
 	// Pass the color through 
 	// - The values will be interpolated per-pixel by the rasterizer
 	// - We don't need to alter it here, but we do need to send it to the pixel shader
 	//output.color = tint;
+	
+	// Normalize the normals for light calculation for the next input to distribute the
+	// corrected scale version of normals that has be set to unit normals.
+    output.normal = normalize(output.normal);
 
 	// Whatever we return will make its way through the pipeline to the
 	// next programmable stage we're using (the pixel shader for now)

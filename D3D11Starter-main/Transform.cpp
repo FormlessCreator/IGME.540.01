@@ -15,6 +15,9 @@ Transform::Transform()
 	// If any method is used update the world and world inverse matrix.
 	// If any changes is made to the tranform data, get the new world matrix.
 	matrixUpdate = true;
+
+	// Make set up IT matrix false.
+	setUpITMatrix = true;
 }
 
 Transform::~Transform()
@@ -28,6 +31,7 @@ void Transform::SetScale(float x, float y, float z)
 	
 	// Update matrix is true.
 	matrixUpdate = true;
+	setUpITMatrix = true;
 }
 
 void Transform::SetScale(DirectX::XMFLOAT3 position)
@@ -37,6 +41,7 @@ void Transform::SetScale(DirectX::XMFLOAT3 position)
 
 	// Update matrix is true.
 	matrixUpdate = true;
+	setUpITMatrix = true;
 }
 
 void Transform::SetRotation(float x, float y, float z)
@@ -46,6 +51,7 @@ void Transform::SetRotation(float x, float y, float z)
 
 	// Update matrix is true.
 	matrixUpdate = true;
+	setUpITMatrix = true;
 }
 
 void Transform::SetRotation(DirectX::XMFLOAT3 rotationInput)
@@ -55,6 +61,7 @@ void Transform::SetRotation(DirectX::XMFLOAT3 rotationInput)
 
 	// Update matrix is true.
 	matrixUpdate = true;
+	setUpITMatrix = true;
 }
 
 void Transform::SetPosition(float x, float y, float z)
@@ -64,6 +71,7 @@ void Transform::SetPosition(float x, float y, float z)
 
 	// Update matrix is true.
 	matrixUpdate = true;
+	setUpITMatrix = true;
 }
 
 void Transform::SetPosition(DirectX::XMFLOAT3 translate)
@@ -73,6 +81,7 @@ void Transform::SetPosition(DirectX::XMFLOAT3 translate)
 
 	// Update matrix is true.
 	matrixUpdate = true;
+	setUpITMatrix = true;
 }
 
 DirectX::XMFLOAT3 Transform::GetScale()
@@ -109,6 +118,18 @@ DirectX::XMFLOAT4X4 Transform::GetWorldMatrix()
 
 		// Set the update matrix to false.
 		matrixUpdate = false;
+
+
+		//if (!setUpITMatrix)
+		//{
+		//	// Using the world.
+		//	// Store in the world inverse transpose matrix.
+		//	XMStoreFloat4x4(&worldInverseTransposeMatrix,
+		//		XMMatrixInverse(0, XMMatrixTranspose(world)));
+
+		//	// Make the bool setup true.
+		//	setUpITMatrix = true;
+		//}
 	}
 
 	// Else return the previously store matrix with no changes.
@@ -119,7 +140,7 @@ DirectX::XMFLOAT4X4 Transform::GetWorldMatrix()
 DirectX::XMFLOAT4X4 Transform::GetInverseTransposeMatrix()
 {
 	// If the matrix matrix is true as tranform data changes, calculate a new matrix.
-	if (matrixUpdate)
+	if (setUpITMatrix)
 	{
 		// Create a xmmatrix variables to use for calculations.
 		// Convert each floats variables to their respective matrix.
@@ -135,8 +156,24 @@ DirectX::XMFLOAT4X4 Transform::GetInverseTransposeMatrix()
 			XMMatrixInverse(0, XMMatrixTranspose(world)));
 
 		// Set the update matrix to false.
-		matrixUpdate = false;
+		setUpITMatrix = false;
 	}
+
+	//// Create a xmmatrix variables to use for calculations.
+	//	// Convert each floats variables to their respective matrix.
+	//XMMATRIX scaleMatrix = XMMatrixScaling(scale.x, scale.y, scale.z);
+	//XMMATRIX rotationMatrix = XMMatrixRotationRollPitchYaw(rotation.x, rotation.y, rotation.z);
+	//XMMATRIX translationMatrix = XMMatrixTranslation(position.x, position.y, position.z);
+
+	//// Calculate the world matrix.
+	//XMMATRIX world = scaleMatrix * rotationMatrix * translationMatrix;
+
+	//// Store in the world inverse transpose matrix.
+	//XMStoreFloat4x4(&worldInverseTransposeMatrix,
+	//	XMMatrixInverse(0, XMMatrixTranspose(world)));
+
+	//// Set the update matrix to false.
+	//matrixUpdate = false;
 
 	// Else return the previously store matrix with no changes.
 	// Return the stored matrix.
@@ -153,6 +190,7 @@ void Transform::Scale(float x, float y, float z)
 
 	// Update matrix is true.
 	matrixUpdate = true;
+	setUpITMatrix = true;
 }
 
 void Transform::Scale(DirectX::XMFLOAT3 scaleAmount)
@@ -168,6 +206,7 @@ void Transform::Scale(DirectX::XMFLOAT3 scaleAmount)
 
 	// Update matrix is true.
 	matrixUpdate = true;
+	setUpITMatrix = true;
 }
 
 void Transform::Rotate(float x, float y, float z)
@@ -178,6 +217,7 @@ void Transform::Rotate(float x, float y, float z)
 
 	// Update matrix is true.
 	matrixUpdate = true;
+	setUpITMatrix = true;
 }
 
 void Transform::Rotate(DirectX::XMFLOAT3 rotationAmount)
@@ -190,6 +230,7 @@ void Transform::Rotate(DirectX::XMFLOAT3 rotationAmount)
 
 	// Update matrix is true.
 	matrixUpdate = true;
+	setUpITMatrix = true;
 }
 
 void Transform::MoveAbsolute(float x, float y, float z)
@@ -199,6 +240,7 @@ void Transform::MoveAbsolute(float x, float y, float z)
 
 	// Update matrix is true.
 	matrixUpdate = true;
+	setUpITMatrix = true;
 }
 
 void Transform::MoveAbsolute(DirectX::XMFLOAT3 offset)
@@ -209,6 +251,7 @@ void Transform::MoveAbsolute(DirectX::XMFLOAT3 offset)
 
 	// Update matrix is true.
 	matrixUpdate = true;
+	setUpITMatrix = true;
 }
 
 void Transform::MoveRelative(float x, float y, float z)
