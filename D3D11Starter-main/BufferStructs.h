@@ -19,9 +19,25 @@ struct BufferStructs
 
 struct PixelDataStruct
 {
+	// Add padding to fit HLSL 16 bytes standard.
 	DirectX::XMFLOAT4 colorTint;
+
 	DirectX::XMFLOAT2 time;
+	DirectX::XMFLOAT2 timePad;
+
 	DirectX::XMFLOAT2 scale;
+	DirectX::XMFLOAT2 scalePadding;
+
 	DirectX::XMFLOAT2 offset;
+	DirectX::XMFLOAT2 offsetPadding;
+
+	// Add and pass the current camera position and the entity's roughness for
+	// the only the pixel shader.
+	DirectX::XMFLOAT4 cameraCurrentPosition;
+
+	DirectX::XMFLOAT2 roughness;
+	DirectX::XMFLOAT2 roughnessPadding;
+
+	DirectX::XMFLOAT4 ambientColor;
 };
 

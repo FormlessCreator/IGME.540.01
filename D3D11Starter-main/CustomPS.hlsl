@@ -5,9 +5,23 @@
 cbuffer PSExternalData1 : register(b0)
 {
     float4 colorTint;
+	
     float2 time;
+    float2 timePadding;
+	
     float2 scale;
+    float2 scalePadding;
+	
     float2 offset;
+    float2 offsetPadding;
+	
+	// Get the camera position and the entity material object.
+    float4 cameraCurrentPosition;
+	
+    float2 roughness;
+    float2 roughnessPadding;
+	
+    float4 ambientColor;
 }
 
 // --------------------------------------------------------

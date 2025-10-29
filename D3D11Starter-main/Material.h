@@ -57,6 +57,10 @@ public:
 	// Get the SRV current index.
 	unsigned int GetCurrentSRVIndex();
 
+	// Get and set roughness;
+	DirectX::XMFLOAT2 GetRoughness();
+	void SetRoughness(DirectX::XMFLOAT2 value);
+
 private:
 	DirectX::XMFLOAT4 colorTint;
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
@@ -77,5 +81,8 @@ private:
 	// Add variables to hold scaling and the offset for the given texture in materials.
 	DirectX::XMFLOAT2 textureScale;
 	DirectX::XMFLOAT2 textureOffset;
+
+	// Add a roughness or the shininess scale of the material.
+	DirectX::XMFLOAT2 roughness;
 };
 

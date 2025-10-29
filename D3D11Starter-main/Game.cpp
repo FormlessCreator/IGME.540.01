@@ -179,9 +179,9 @@ Game::Game()
 	// Convert the float value to colors between 0 - 1.
 	// By normalization.
 	colorPicker =  XMFLOAT4(
-		(233.0f / 255.0f), 
-		(188.0f / 255.0f), 
-		(188.0f / 255.0f), 
+		(30.0f / 255.0f), 
+		(20.0f / 255.0f), 
+		(40.0f / 255.0f), 
 		(0.0f / 255.0f));
 
 	// Set boolean variables to false by casting.
@@ -1229,6 +1229,8 @@ void Game::Draw(float deltaTime, float totalTime)
 
 		// Create a psConstantBuffer using the pixel shader struct.
 		PixelDataStruct psCBH1 = {};
+		
+		// Add paddings to
 
 		// Set the color tint of pixel shader cbuffer to the material color.
 		psCBH1.colorTint = listOfEntities[i].GetMaterial().get()->GetColorTint();
@@ -1237,6 +1239,19 @@ void Game::Draw(float deltaTime, float totalTime)
 		// Get the time and the offset of the entity material.
 		psCBH1.scale = listOfEntities[i].GetMaterial()->GetTextureScale();
 		psCBH1.offset = listOfEntities[i].GetMaterial()->GetTextureOffset();
+
+		// Get the camera position and the entity material rougness value.
+		DirectX::XMFLOAT3 cameraPos = activeCamera->GetTransform().GetPosition();
+
+		// Get the camera position.
+		psCBH1.cameraCurrentPosition = DirectX::XMFLOAT4(cameraPos.x, cameraPos.y, cameraPos.z, 0.0f);
+
+		// Get the roughness of the material.
+		psCBH1.roughness = listOfEntities[i].GetMaterial()->GetRoughness();
+
+		// Get the ambient color.
+		// Use the background color picker.
+		psCBH1.ambientColor = colorPicker;
 
 		FillAndBindNextConstantBuffer(
 			&psCBH1,

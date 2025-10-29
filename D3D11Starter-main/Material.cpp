@@ -9,6 +9,7 @@ Material::Material()
 	colorTint = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
 	textureOffset = DirectX::XMFLOAT2(0.0f, 0.0f);
 	textureScale = DirectX::XMFLOAT2(0.0f, 0.0f);
+	roughness = DirectX::XMFLOAT2(0.0f, 0.0f);
 }
 
 Material::Material(
@@ -28,6 +29,9 @@ Material::Material(
 	// Intialize the material texture scale and offset values.
 	textureOffset = DirectX::XMFLOAT2(1.0f, 1.0f);
 	textureScale = DirectX::XMFLOAT2(1.0f, 1.0f);
+
+	// Set roughness.
+	roughness = DirectX::XMFLOAT2(0.2f, 0.8f);
 }
 
 Material::~Material()
@@ -181,6 +185,17 @@ Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> Material::GetShaderResourceView
 unsigned int Material::GetCurrentSRVIndex()
 {
 	return currentSRVTextureIndex;
+}
+
+DirectX::XMFLOAT2 Material::GetRoughness()
+{
+	return roughness;
+}
+
+void Material::SetRoughness(DirectX::XMFLOAT2 value)
+{
+	// Set roughness value.
+	roughness = value;
 }
 
 //#include "Material.h"

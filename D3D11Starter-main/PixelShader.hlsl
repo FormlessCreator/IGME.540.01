@@ -13,9 +13,23 @@ SamplerState BasicSampler : register(s0);
 cbuffer PSExternalData1 : register(b0)
 {
     float4 colorTint;
+	
     float2 time;
+    float2 timePadding;
+	
     float2 scale;
+    float2 scalePadding;
+	
     float2 offset;
+    float2 offsetPadding;
+	
+	// Get the camera position and the entity material object.
+    float4 cameraCurrentPosition;
+	
+    float2 roughness;
+    float2 roughnessPadding;
+	
+    float4 ambientColor;
 }
 
 // --------------------------------------------------------
@@ -41,10 +55,10 @@ float4 main(VertexToPixel input) : SV_TARGET
 	// - This color (like most values passing through the rasterizer) is 
 	//   interpolated for each pixel between the corresponding vertices 
 	//   of the triangle we're rendering
-    surfaceColor1 = surfaceColor1 * colorTint.xyz;
+    surfaceColor1 = surfaceColor1 * ambientColor.xyz * colorTint.xyz;
 	
 	// Return a float4 color.
-    return float4(surfaceColor1, 1.0f);
+    return float4(surfaceColor1.xyz, 1.0f);
 	
 	// Test:
 	//return float4(input.uv, 0, 1);
