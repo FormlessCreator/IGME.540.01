@@ -2,6 +2,9 @@
 #include <d3d11.h>
 #include <DirectXMath.h>
 
+// Add the light header struct.
+#include "Lights.h"
+
 // using namespace DirectX;
 
 struct BufferStructs
@@ -39,5 +42,12 @@ struct PixelDataStruct
 	DirectX::XMFLOAT2 roughnessPadding;
 
 	DirectX::XMFLOAT4 ambientColor;
+
+	// Add the Light struct object in the pixel shader struct.
+	Lights directionalLight1;
+	/*Lights directionalLight2;
+	Lights pointLight1;
+	Lights spotLight1;
+	Lights spotLight2;*/
 };
 

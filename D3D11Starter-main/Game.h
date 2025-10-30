@@ -19,6 +19,9 @@
 // Include a material class.
 #include "Material.h"
 
+// Add and include the Light header file.
+#include "Lights.h"
+
 // Include library for constant buffer heap.
 // For ring buffer:
 #include <d3d11shadertracing.h>
@@ -60,7 +63,7 @@ public:
 		unsigned int registerSlot);
 
 	void LoadVertexShader();
-	void LoadPixelShader(std::wstring shaderCso, Microsoft::WRL::ComPtr<ID3D11PixelShader>& pixelShaderType);
+	//void LoadPixelShader(std::wstring shaderCso, Microsoft::WRL::ComPtr<ID3D11PixelShader>& pixelShaderType);
 
 private:
 
@@ -185,5 +188,8 @@ private:
 
 	// Get the current total time.
 	float tTime;
+
+	// Create a Light struct object and fill it with data values.
+	Lights dLight1;
 };
 

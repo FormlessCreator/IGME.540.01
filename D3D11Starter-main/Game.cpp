@@ -13,6 +13,9 @@
 #include <memory>
 #include <vector>
 
+// Add the Lights header.
+#include "Lights.h"
+
 // Include buffer struct header.
 #include "BufferStructs.h"
 #include "Transform.h"
@@ -316,6 +319,9 @@ Game::Game()
 		//Graphics::Context->VSSetShader(materialForShaders1.get()->GetVertexShader().Get(), 0, 0);
 		//Graphics::Context->PSSetShader(materialForShaders1.get()->GetPixelShader().Get(), 0, 0);
 	}
+
+	// Intilize an empty object with all 0 initial values first.
+	dLight1 = {};
 }
 
 // --------------------------------------------------------
@@ -351,6 +357,12 @@ void Game::Initialize()
 		// Increase the count by one.
 		(count)++;
 	}
+
+	// Initialize the lights here:
+	dLight1.type = LIGHT_TYPE_DIRECTIONAL;
+	dLight1.direction = DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f);
+	dLight1.color = DirectX::XMFLOAT3(0.6f, 0.6f, 0.6f);
+	dLight1.intensity = 1.0f;
 }
 
 //Load the vertex shader.
@@ -1252,6 +1264,10 @@ void Game::Draw(float deltaTime, float totalTime)
 		// Get the ambient color.
 		// Use the background color picker.
 		psCBH1.ambientColor = colorPicker;
+
+		// Copy the initialized direction light struct of the game class to 
+		// the pixel shader struct light using memcpy.
+		memcpy(&psCBH1.directionalLight1, &dLight1, sizeof(Lights));
 
 		FillAndBindNextConstantBuffer(
 			&psCBH1,
