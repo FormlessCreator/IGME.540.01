@@ -37,6 +37,10 @@ struct VertexToPixel
     float4 screenPosition : SV_POSITION;
     float2 uv : TEXCOORD;
     float3 normal : NORMAL;
+	
+	// Add the world position of the pixel.
+    float3 worldPosition : POSITION;
+	
     //float2 scale			: SCALE;
     //float2 offset			: OFFSET;
 	

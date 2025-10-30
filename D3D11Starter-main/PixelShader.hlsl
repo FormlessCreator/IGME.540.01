@@ -55,7 +55,7 @@ float4 main(VertexToPixel input) : SV_TARGET
 	// - This color (like most values passing through the rasterizer) is 
 	//   interpolated for each pixel between the corresponding vertices 
 	//   of the triangle we're rendering
-    surfaceColor1 = surfaceColor1 * ambientColor.xyz * colorTint.xyz;
+    surfaceColor1 = ambientColor.xyz * surfaceColor1 * colorTint.xyz;
 	
 	// Return a float4 color.
     return float4(surfaceColor1.xyz, 1.0f);

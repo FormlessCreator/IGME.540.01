@@ -22,6 +22,15 @@
     <Filter Include="Shaders\ShaderIncludesFiles">
       <UniqueIdentifier>{782fe456-eb74-45b2-b20f-60bba4e45616}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\DirectXTK Package">
+      <UniqueIdentifier>{b38d7f7c-cb72-4485-9dc1-608f3d7dfdb8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Structs Cpp Files">
+      <UniqueIdentifier>{203e3126-745c-488f-8eb0-30358f6a469b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Structs Header Files">
+      <UniqueIdentifier>{31bcc10c-5fa6-4f14-adcd-ede904329952}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -66,9 +75,6 @@
     <ClCompile Include="Mesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="BufferStructs.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Transform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -80,6 +86,12 @@
     </ClCompile>
     <ClCompile Include="Material.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BufferStructs.cpp">
+      <Filter>Source Files\Structs Cpp Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Lights.cpp">
+      <Filter>Source Files\Structs Cpp Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -128,9 +140,6 @@
     <ClInclude Include="Mesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="BufferStructs.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Transform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -142,6 +151,12 @@
     </ClInclude>
     <ClInclude Include="Material.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BufferStructs.h">
+      <Filter>Header Files\Structs Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Lights.h">
+      <Filter>Header Files\Structs Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -168,9 +183,11 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
     <None Include="ShaderIncludeFile.hlsli">
       <Filter>Shaders\ShaderIncludesFiles</Filter>
+    </None>
+    <None Include="packages.config">
+      <Filter>Source Files\DirectXTK Package</Filter>
     </None>
   </ItemGroup>
 </Project>

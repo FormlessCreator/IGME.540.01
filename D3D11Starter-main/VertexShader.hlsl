@@ -64,6 +64,9 @@ VertexToPixel main( VertexShaderInput input )
 	// Normalize the normals for light calculation for the next input to distribute the
 	// corrected scale version of normals that has be set to unit normals.
     output.normal = normalize(output.normal);
+	
+	// Get the world position of the vertex using the local position and the world matrix.
+    output.worldPosition = mul(worldMatrix, float4(input.localPosition, 1.0f)).xyz;
 
 	// Whatever we return will make its way through the pipeline to the
 	// next programmable stage we're using (the pixel shader for now)
