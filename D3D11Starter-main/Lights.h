@@ -9,14 +9,14 @@
 
 class Lights
 {
-	int type;
-	DirectX::XMFLOAT3 direction;
-	float range;
-	DirectX::XMFLOAT3 position;
-	float intensity;
-	DirectX::XMFLOAT3 color;
-	float spotInnerAngle;
-	float spotOuterAngle;
-	DirectX::XMFLOAT2 padding;
+	int type;						// Which kind of light? 0, 1 or 2 (see above)
+	DirectX::XMFLOAT3 direction;	// Directional and Spot lights need a direction
+	float range;					// Point and Spot lights have a max range for attenuation
+	DirectX::XMFLOAT3 position;		// Point and Spot lights have a position in space
+	float intensity;				// All lights need an intensity
+	DirectX::XMFLOAT3 color;		// All lights need a color
+	float spotInnerAngle;			// Inner cone angle (in radians) – Inside this, full light!
+	float spotOuterAngle;			// Outer cone angle (radians) – Outside this, no light!
+	DirectX::XMFLOAT2 padding;		// Purposefully padding to hit the 16-byte boundary.
 };
 
