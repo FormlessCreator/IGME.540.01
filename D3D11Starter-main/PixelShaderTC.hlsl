@@ -43,7 +43,7 @@ cbuffer PSExternalData1 : register(b0)
 float4 main(VertexToPixel input) : SV_TARGET
 {
 	// Modify the input uv texture by its material texture scale and offset.
-    input.uv = input.uv * scale * offset;
+    input.uv = input.uv * scale + offset;
 	
 	// Create and get a texture color from the texture using the texture,
 	// the sampler state and the given input uv coordinate.

@@ -367,10 +367,46 @@ void Game::Initialize()
 	// Make five directional lights and add them to the array.
 	for (int i = 0; i < 5; i++)
 	{
-		lightArray[i].type = LIGHT_TYPE_DIRECTIONAL;
-		lightArray[i].direction = XMFLOAT3(static_cast<float>(i), 0.0f, 0.0f);
+		// If i is less than 3 set type and direction to directional light.
+		if (i < 3)
+		{
+			lightArray[i].type = LIGHT_TYPE_DIRECTIONAL;
+			lightArray[i].direction = XMFLOAT3(static_cast<float>(i + 1), 0.0f, 0.0f);
+		}
+		
+		// Add a position of the light, change the light type to point, direction, 
+		// and add a range.
+		if (i == 3)
+		{
+			lightArray[i].type = LIGHT_TYPE_POINT;
+			lightArray[i].position = XMFLOAT3(0.0f, 2.0f, -2.0f);
+			lightArray[i].range = 10.0f;
+			lightArray[i].direction = XMFLOAT3(static_cast<float>(i + 1), 0.0f, 0.0f);
+		}
+
+		// Change the type, position, range, spot inner angle, direction, 
+		// and spot outer angle of the light.
+		if (i == 4)
+		{
+			lightArray[i].type = LIGHT_TYPE_SPOT;
+			lightArray[i].position = XMFLOAT3(0.0f, 20.0f, 0.0f);
+			lightArray[i].range = 20.0f;
+
+			// Set the inner and outer degree.
+			float innerDegree = 45.0f;
+			float outerDegree = 90.0f;
+
+			// Convert the degree to radians using directX XMConvertToRadians().
+			lightArray[i].spotInnerAngle = XMConvertToRadians(innerDegree);
+			lightArray[i].spotOuterAngle = XMConvertToRadians(outerDegree);
+
+			// Direction.
+			lightArray[i].direction = XMFLOAT3(0.0f, 2.0f, 0.0f);
+		}
+
+		// Set all the light color and increase the light intensity each loop.
 		lightArray[i].color = XMFLOAT3(0.8f, 0.8f, 0.8f);
-		lightArray[i].intensity = 10.f;
+		lightArray[i].intensity = 10.f + (i * 2);
 	}
 }
 
