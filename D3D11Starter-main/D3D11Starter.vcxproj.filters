@@ -22,9 +22,6 @@
     <Filter Include="Shaders\ShaderIncludesFiles">
       <UniqueIdentifier>{782fe456-eb74-45b2-b20f-60bba4e45616}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\DirectXTK Package">
-      <UniqueIdentifier>{b38d7f7c-cb72-4485-9dc1-608f3d7dfdb8}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Structs Cpp Files">
       <UniqueIdentifier>{203e3126-745c-488f-8eb0-30358f6a469b}</UniqueIdentifier>
     </Filter>
@@ -186,8 +183,6 @@
     <None Include="ShaderIncludeFile.hlsli">
       <Filter>Shaders\ShaderIncludesFiles</Filter>
     </None>
-    <None Include="packages.config">
-      <Filter>Source Files\DirectXTK Package</Filter>
-    </None>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

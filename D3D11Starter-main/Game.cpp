@@ -361,8 +361,17 @@ void Game::Initialize()
 	// Initialize the lights here:
 	dLight1.type = LIGHT_TYPE_DIRECTIONAL;
 	dLight1.direction = DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f);
-	dLight1.color = DirectX::XMFLOAT3(0.6f, 0.6f, 0.6f);
-	dLight1.intensity = 1.0f;
+	dLight1.color = DirectX::XMFLOAT3(0.8f, 0.8f, 0.8f);
+	dLight1.intensity = 10.0f;
+
+	// Make five directional lights and add them to the array.
+	for (int i = 0; i < 5; i++)
+	{
+		lightArray[i].type = LIGHT_TYPE_DIRECTIONAL;
+		lightArray[i].direction = XMFLOAT3(static_cast<float>(i), 0.0f, 0.0f);
+		lightArray[i].color = XMFLOAT3(0.8f, 0.8f, 0.8f);
+		lightArray[i].intensity = 10.f;
+	}
 }
 
 //Load the vertex shader.
@@ -1268,6 +1277,9 @@ void Game::Draw(float deltaTime, float totalTime)
 		// Copy the initialized direction light struct of the game class to 
 		// the pixel shader struct light using memcpy.
 		memcpy(&psCBH1.directionalLight1, &dLight1, sizeof(Lights));
+
+		// Copy the light array to the struct for the CBH.
+		memcpy(&psCBH1.lightArray[0], &lightArray[0], sizeof(Lights) * 5);
 
 		FillAndBindNextConstantBuffer(
 			&psCBH1,

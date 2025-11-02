@@ -191,5 +191,8 @@ private:
 
 	// Create a Light struct object and fill it with data values.
 	Lights dLight1;
+
+	// Create five light and place them in an array.
+	Lights lightArray[5];
 };
 

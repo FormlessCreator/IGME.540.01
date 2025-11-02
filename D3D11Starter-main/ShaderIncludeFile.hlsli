@@ -3,6 +3,31 @@
 #ifndef _GGP_SHADER_INCLUDES_FILE_
 #define _GGP_SHADER_INCLUDES_FILE_
 
+// Add the directX 11 header files.
+//#include <d3d11.h>
+//#include <DirectXMath.h>
+
+// Define 5 major light types for the light structs.
+#define LIGHT_TYPE_DIRECTIONAL		0
+#define LIGHT_TYPE_POINT			1
+#define LIGHT_TYPE_SPOT				2
+
+// Create a define for the maximum specular exponent.
+#define MAX_SPECULAR_EXPONENT 250.0f
+
+struct Lights
+{
+    int type; // Which kind of light? 0, 1 or 2 (see above)
+    float3 direction; // Directional and Spot lights need a direction
+    float range; // Point and Spot lights have a max range for attenuation
+    float3 position; // Point and Spot lights have a position in space
+    float intensity; // All lights need an intensity
+    float3 color; // All lights need a color
+    float spotInnerAngle; // Inner cone angle (in radians) – Inside this, full light!
+    float spotOuterAngle; // Outer cone angle (radians) – Outside this, no light!
+    float2 padding; // Purposefully padding to hit the 16-byte boundary.
+};
+
 // Include and move all structs from the vertex and pixel shaders here:
 
 // Struct representing a single vertex worth of data
@@ -71,6 +96,8 @@ float random(float2 s)
 {
     return frac(sin(dot(s, float2(12.9898, 78.233))) * 43758.5453123);
 }
+
+// Create a helper function for normalizing the direction of light.
 
 // Close the if guard defination.
 #endif

@@ -45,6 +45,10 @@ struct PixelDataStruct
 
 	// Add the Light struct object in the pixel shader struct.
 	Lights directionalLight1;
+
+	// Create an array of lights.
+	Lights lightArray[5];
+
 	/*Lights directionalLight2;
 	Lights pointLight1;
 	Lights spotLight1;
