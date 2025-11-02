@@ -84,7 +84,7 @@ float4 main(VertexToPixel input) : SV_TARGET
     float3 light1Dir = directionalLight1.direction;
 	
 	// Check to see if the light array directional light is working.
-	
+	// ...
 	
 	// Get the normalized direction of the light.
     float3 normalizeLight1Dir = normalize(light1Dir);
