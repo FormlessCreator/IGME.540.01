@@ -395,7 +395,7 @@ void Game::Initialize()
 		if (i == 3)
 		{
 			lightArray[i].type = LIGHT_TYPE_POINT;
-			lightArray[i].position = XMFLOAT3(0.0f, 10.0f, 10.0f);
+			lightArray[i].position = XMFLOAT3(0.0f, 10.0f, 0.0f);
 			lightArray[i].range = 20.0f;
 			lightArray[i].direction = XMFLOAT3(static_cast<float>(i + 1), static_cast<float>(i + 1), 0.0f);
 		}
@@ -422,7 +422,7 @@ void Game::Initialize()
 
 		// Set all the light color and increase the light intensity each loop.
 		lightArray[i].color = XMFLOAT3(0.8f, 0.8f, 0.8f);
-		lightArray[i].intensity = (i + 1) * 2.0f;
+		lightArray[i].intensity = (i + 1) * 1.2f;
 	}
 }
 

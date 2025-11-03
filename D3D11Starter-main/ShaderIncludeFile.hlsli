@@ -28,6 +28,24 @@ struct Lights
     float2 padding; // Purposefully padding to hit the 16-byte boundary.
 };
 
+// Create an attentuate method for point and spot light so that light
+// lessens with range and does not keep traveling infinetely.
+// Using the light range and the world position of the pixel in contact
+// with the light.
+float Attenuate(Lights light, float3 worldPosition)
+{
+	// Get the distance of light to the input pixel world surface position.
+    float dist = distance(light.position, worldPosition);
+	
+	// Get the diminishing light by distance by attenuating.
+	// If distance to the light & surface is greater than light range.
+    float attenuate = saturate(1.0f - (dist * dist / (light.range * light.range)));
+	
+	// Mutiply the attenuate value by itself to cut of infinite distance and
+	// reduce brightness exponetially to 0 over distance.
+    return attenuate * attenuate;
+}
+
 // Include and move all structs from the vertex and pixel shaders here:
 
 // Struct representing a single vertex worth of data
@@ -72,6 +90,173 @@ struct VertexToPixel
 	// Remove the color.
 	//float4 color			: COLOR;
 };
+
+// Create a directional light method.
+float3 DirectionalLight(
+Lights light,
+float3 inputNormal,
+float3 normalizedLightDirection,
+float3 inputPixelWorldPosition,
+float4 cameraPosition,
+float roughness,
+float3 surfaceColor,
+float maxSpecularReflection)
+{
+	// DIFFUSE LIGHT:
+	// Calculate the overall diffuse color of light 1.
+	// Get the dot product of the light:
+	// Using the and the normalize input pixel normal and normalize -direction of the light.
+	// Using saturate or max or clamp to make so that the light does not fall beyond 0.
+	// Does the pixel normal direction point to the same direction as the light?
+	// How much light is shined on the given pixels?
+    float Ndot1 = saturate(dot(inputNormal, -normalizedLightDirection));
+	
+	// Create a diffuse term color by combining the normalize dot light with:
+	// The light intensity
+	// The light color
+	// The surface color.
+    float3 diffuseTermColor = Ndot1 * light.intensity * light.color * surfaceColor;
+	
+	// SPECULAR LIGHT:
+	// USING THE DIRECTIONAL LIGHT:
+	
+	// Get the view vector or direction of the camera using camera position and the world position of the pixel
+	// normal that the light is hitting.
+    float3 viewVectorDirOfTheCamera = cameraPosition.xyz - inputPixelWorldPosition;
+	
+	// Normalize the view vector direction to resolve non-unit direction.
+    float3 normalVVDirOfCam = normalize(viewVectorDirOfTheCamera);
+	
+	// Get the reflection of the light using the normalized light direction and input normal.
+    float3 lightReflection = reflect(normalizedLightDirection, inputNormal);
+	
+	// Get the max specular.
+    //float maxSpecularReflection = MAX_SPECULAR_EXPONENT;
+	// Create a specular reflection using the dot product of the 
+	// light reflection and the view vector camera direction.
+    float specularLightReflectToTheCamera = pow(max(dot(lightReflection, normalVVDirOfCam), 0.0f), maxSpecularReflection / roughness);
+	
+	// Create a final color by adding the:
+	// pixel normal surface color for the unlit part of the object
+	// to the diffuse part of the object.
+    float3 finalColor = surfaceColor + diffuseTermColor + specularLightReflectToTheCamera;
+	
+	// Return the final 
+    return finalColor;
+}
+
+// Create a point light method.
+float3 PointLight(
+Lights light,
+float3 inputNormal,
+float3 inputPixelWorldPosition,
+float4 cameraPosition,
+float roughness,
+float3 surfaceColor,
+float maxSpecularReflection)
+{
+	// Point light uses position and direction of the light from the the pixel position.
+    float3 dirOfLightPosFromPixelPos = light.position - inputPixelWorldPosition;
+	
+	// Normalize the light direction.
+    float normalizedLightDirection = normalize(-dirOfLightPosFromPixelPos);
+	
+	// DIFFUSE LIGHT:
+	// Calculate the overall diffuse color of light 1.
+	// Get the dot product of the light:
+	// Using the and the normalize input pixel normal and normalize -direction of the light.
+	// Using saturate or max or clamp to make so that the light does not fall beyond 0.
+	// Does the pixel normal direction point to the same direction as the light?
+	// How much light is shined on the given pixels?
+    float Ndot1 = saturate(dot(inputNormal, -normalizedLightDirection));
+	
+	// Create a diffuse term color by combining the normalize dot light with:
+	// The light intensity
+	// The light color
+	// The surface color.
+    float3 diffuseTermColor = Ndot1 * light.intensity * light.color * surfaceColor;
+	
+	// SPECULAR LIGHT:
+	// USING THE DIRECTIONAL LIGHT:
+	
+	// Get the view vector or direction of the camera using camera position and the world position of the pixel
+	// normal that the light is hitting.
+    float3 viewVectorDirOfTheCamera = cameraPosition.xyz - inputPixelWorldPosition;
+	
+	// Normalize the view vector direction to resolve non-unit direction.
+    float3 normalVVDirOfCam = normalize(viewVectorDirOfTheCamera);
+	
+	// Get the reflection of the light using the normalized light direction and input normal.
+    float3 lightReflection = reflect(normalizedLightDirection, inputNormal);
+	
+	// Get the max specular.
+    //float maxSpecularReflection = MAX_SPECULAR_EXPONENT;
+	// Create a specular reflection using the dot product of the 
+	// light reflection and the view vector camera direction.
+    float specularLightReflectToTheCamera = pow(max(dot(lightReflection, normalVVDirOfCam), 0.0f), maxSpecularReflection / roughness);
+	
+	// Create a final color by adding the:
+	// pixel normal surface color for the unlit part of the object
+	// to the diffuse part of the object.
+    float3 finalColor = surfaceColor + diffuseTermColor + specularLightReflectToTheCamera;
+	
+	// Return the final 
+    return finalColor;
+}
+
+// Create a spot light method.
+float3 SpotLight(
+Lights light,
+float3 inputNormal,
+float3 normalizedLightDirection,
+float3 inputPixelWorldPosition,
+float4 cameraPosition,
+float roughness,
+float3 surfaceColor,
+float maxSpecularReflection)
+{
+	// DIFFUSE LIGHT:
+	// Calculate the overall diffuse color of light 1.
+	// Get the dot product of the light:
+	// Using the and the normalize input pixel normal and normalize -direction of the light.
+	// Using saturate or max or clamp to make so that the light does not fall beyond 0.
+	// Does the pixel normal direction point to the same direction as the light?
+	// How much light is shined on the given pixels?
+    float Ndot1 = saturate(dot(inputNormal, -normalizedLightDirection));
+	
+	// Create a diffuse term color by combining the normalize dot light with:
+	// The light intensity
+	// The light color
+	// The surface color.
+    float3 diffuseTermColor = Ndot1 * light.intensity * light.color * surfaceColor;
+	
+	// SPECULAR LIGHT:
+	// USING THE DIRECTIONAL LIGHT:
+	
+	// Get the view vector or direction of the camera using camera position and the world position of the pixel
+	// normal that the light is hitting.
+    float3 viewVectorDirOfTheCamera = cameraPosition.xyz - inputPixelWorldPosition;
+	
+	// Normalize the view vector direction to resolve non-unit direction.
+    float3 normalVVDirOfCam = normalize(viewVectorDirOfTheCamera);
+	
+	// Get the reflection of the light using the normalized light direction and input normal.
+    float3 lightReflection = reflect(normalizedLightDirection, inputNormal);
+	
+	// Get the max specular.
+    //float maxSpecularReflection = MAX_SPECULAR_EXPONENT;
+	// Create a specular reflection using the dot product of the 
+	// light reflection and the view vector camera direction.
+    float specularLightReflectToTheCamera = pow(max(dot(lightReflection, normalVVDirOfCam), 0.0f), maxSpecularReflection / roughness);
+	
+	// Create a final color by adding the:
+	// pixel normal surface color for the unlit part of the object
+	// to the diffuse part of the object.
+    float3 finalColor = surfaceColor + diffuseTermColor + specularLightReflectToTheCamera;
+	
+	// Return the final 
+    return finalColor;
+}
 
 // Helper functions:
 
