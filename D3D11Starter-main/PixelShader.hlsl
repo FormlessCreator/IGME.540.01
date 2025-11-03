@@ -85,7 +85,7 @@ float maxSpecularReflection)
     //float maxSpecularReflection = MAX_SPECULAR_EXPONENT;
 	// Create a specular reflection using the dot product of the 
 	// light reflection and the view vector camera direction.
-    float specularLightReflectToTheCamera = pow(max(dot(lightReflection, normalVVDirOfCam), 0.0f), maxSpecularReflection);
+    float specularLightReflectToTheCamera = pow(max(dot(lightReflection, normalVVDirOfCam), 0.0f), maxSpecularReflection / roughness);
 	
 	// Create a final color by adding the:
 	// pixel normal surface color for the unlit part of the object
@@ -139,7 +139,7 @@ float maxSpecularReflection)
     //float maxSpecularReflection = MAX_SPECULAR_EXPONENT;
 	// Create a specular reflection using the dot product of the 
 	// light reflection and the view vector camera direction.
-    float specularLightReflectToTheCamera = pow(max(dot(lightReflection, normalVVDirOfCam), 0.0f), maxSpecularReflection);
+    float specularLightReflectToTheCamera = pow(max(dot(lightReflection, normalVVDirOfCam), 0.0f), maxSpecularReflection / roughness);
 	
 	// Create a final color by adding the:
 	// pixel normal surface color for the unlit part of the object
@@ -193,7 +193,7 @@ float maxSpecularReflection)
     //float maxSpecularReflection = MAX_SPECULAR_EXPONENT;
 	// Create a specular reflection using the dot product of the 
 	// light reflection and the view vector camera direction.
-    float specularLightReflectToTheCamera = pow(max(dot(lightReflection, normalVVDirOfCam), 0.0f), maxSpecularReflection);
+    float specularLightReflectToTheCamera = pow(max(dot(lightReflection, normalVVDirOfCam), 0.0f), maxSpecularReflection / roughness);
 	
 	// Create a final color by adding the:
 	// pixel normal surface color for the unlit part of the object
@@ -266,7 +266,7 @@ float4 main(VertexToPixel input) : SV_TARGET
 	// Create a for loop that gets the light in an array, does some calculation
 	// based on its type using a switch statement and adds the light color to
 	// the total light color combination for the pixel.
-    for (int i = 0; i < lightCount; i++)
+    for (int i = 0; i < 5; i++)
     {
 		// Get the light in the current loop.
         Lights light = lightsArray[i];
@@ -275,12 +275,13 @@ float4 main(VertexToPixel input) : SV_TARGET
         float3 normalizedLightDirection = normalize(-light.direction);
 		
 		// Create a switch statement that gets the current light type.
-        switch (directionalLight1.type)
+        switch (light.type)
         {
-		// If the light is a directional light.
+		// If the light is a directional light, calculate light on the pixel surface
+		// and add to all the lights in the scene.
             case 0:
                 totalLight +=
-			SpotLight(
+			DirectionalLight(
 			light,
 			input.normal,
 			normalizedLightDirection,
@@ -292,9 +293,33 @@ float4 main(VertexToPixel input) : SV_TARGET
                 break;
 		
             case 1:
+			// If the light is a point light, calculate light on the pixel surface
+			// and add to all the lights in the scene.
+			totalLight +=
+			PointLight(
+			light,
+			input.normal,
+			normalizedLightDirection,
+			input.worldPosition,
+			cameraCurrentPosition,
+			roughness.x,
+			surfaceColor,
+			MAX_SPECULAR_EXPONENT);
                 break;
 		
             case 2:
+			// If the light is a spot light, calculate light on the pixel surface
+			// and add to all the lights in the scene.
+			totalLight +=
+            SpotLight(
+			light,
+			input.normal,
+			normalizedLightDirection,
+			input.worldPosition,
+			cameraCurrentPosition,
+			roughness.y,
+			surfaceColor,
+			MAX_SPECULAR_EXPONENT);
                 break;
         }
     }

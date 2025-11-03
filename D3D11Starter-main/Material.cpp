@@ -31,7 +31,7 @@ Material::Material(
 	textureScale = DirectX::XMFLOAT2(1.0f, 1.0f);
 
 	// Set roughness.
-	roughness = DirectX::XMFLOAT2(0.2f, 0.8f);
+	roughness = DirectX::XMFLOAT2(1.0f, 5.0f);
 }
 
 Material::~Material()

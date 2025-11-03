@@ -126,6 +126,8 @@ Game::Game()
 	materialForShaders2 = std::make_shared<Material>(vertexShader, debugUVsPS, inputLayout, debugUVShader, XMFLOAT4(1.0f, 1.0f, 1.0f, 0.0f));
 	customMaterialForShaders = std::make_shared<Material>(vertexShader, customPS, inputLayout, customPShader, XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f));
 
+	// Set pshader material roughness.
+
 	// Add both of the textures and sampler to the pshader Material by calling the methods.
 	pShader->AddTextureSRV(0, pavementSRV);
 	pShader->AddTextureSRV(1, solarCellSRV);
@@ -371,7 +373,21 @@ void Game::Initialize()
 		if (i < 3)
 		{
 			lightArray[i].type = LIGHT_TYPE_DIRECTIONAL;
-			lightArray[i].direction = XMFLOAT3(static_cast<float>(i + 1), 0.0f, 0.0f);
+
+			if (i == 0)
+			{
+				lightArray[i].direction = XMFLOAT3(static_cast<float>(i + 1), 0.0f, 0.0f);
+			}
+
+			if (i == 1)
+			{
+				lightArray[i].direction = XMFLOAT3(-(static_cast<float>(i + 1)), 0.0f, 0.0f);
+			}
+
+			if (i == 2)
+			{
+				lightArray[i].direction = XMFLOAT3(0.0f, -(static_cast<float>(i + 1)), 0.0f);
+			}
 		}
 		
 		// Add a position of the light, change the light type to point, direction, 
@@ -381,7 +397,7 @@ void Game::Initialize()
 			lightArray[i].type = LIGHT_TYPE_POINT;
 			lightArray[i].position = XMFLOAT3(0.0f, 2.0f, -2.0f);
 			lightArray[i].range = 10.0f;
-			lightArray[i].direction = XMFLOAT3(static_cast<float>(i + 1), 0.0f, 0.0f);
+			lightArray[i].direction = XMFLOAT3(static_cast<float>(i + 1), static_cast<float>(i + 1), 0.0f);
 		}
 
 		// Change the type, position, range, spot inner angle, direction, 
@@ -406,7 +422,7 @@ void Game::Initialize()
 
 		// Set all the light color and increase the light intensity each loop.
 		lightArray[i].color = XMFLOAT3(0.8f, 0.8f, 0.8f);
-		lightArray[i].intensity = 10.f + (i * 2);
+		lightArray[i].intensity = (i + 1) * 2.0f;
 	}
 }
 
