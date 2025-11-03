@@ -161,47 +161,17 @@ float maxSpecularReflection)
 	// Normalize the light direction.
     float normalizedLightDirection = normalize(-dirOfLightPosFromPixelPos);
 	
-	// DIFFUSE LIGHT:
-	// Calculate the overall diffuse color of light 1.
-	// Get the dot product of the light:
-	// Using the and the normalize input pixel normal and normalize -direction of the light.
-	// Using saturate or max or clamp to make so that the light does not fall beyond 0.
-	// Does the pixel normal direction point to the same direction as the light?
-	// How much light is shined on the given pixels?
-    float Ndot1 = saturate(dot(inputNormal, -normalizedLightDirection));
-	
-	// Create a diffuse term color by combining the normalize dot light with:
-	// The light intensity
-	// The light color
-	// The surface color.
-    float3 diffuseTermColor = Ndot1 * light.intensity * light.color * surfaceColor;
-	
-	// SPECULAR LIGHT:
-	// USING THE DIRECTIONAL LIGHT:
-	
-	// Get the view vector or direction of the camera using camera position and the world position of the pixel
-	// normal that the light is hitting.
-    float3 viewVectorDirOfTheCamera = cameraPosition.xyz - inputPixelWorldPosition;
-	
-	// Normalize the view vector direction to resolve non-unit direction.
-    float3 normalVVDirOfCam = normalize(viewVectorDirOfTheCamera);
-	
-	// Get the reflection of the light using the normalized light direction and input normal.
-    float3 lightReflection = reflect(normalizedLightDirection, inputNormal);
-	
-	// Get the max specular.
-    //float maxSpecularReflection = MAX_SPECULAR_EXPONENT;
-	// Create a specular reflection using the dot product of the 
-	// light reflection and the view vector camera direction.
-    float specularLightReflectToTheCamera = pow(max(dot(lightReflection, normalVVDirOfCam), 0.0f), maxSpecularReflection / roughness);
-	
-	// Create a final color by adding the:
-	// pixel normal surface color for the unlit part of the object
-	// to the diffuse part of the object.
-    float3 finalColor = surfaceColor + diffuseTermColor + specularLightReflectToTheCamera;
-	
-	// Return the final 
-    return finalColor;
+	// Return the directional light color but use the normalized direction of the light
+	// and the pixel world surface position.
+    return DirectionalLight(
+	light, 
+	inputNormal, 
+	normalizedLightDirection, 
+	inputPixelWorldPosition, 
+	cameraPosition, 
+	roughness, 
+	surfaceColor, 
+	maxSpecularReflection);
 }
 
 // Create a spot light method.
