@@ -210,8 +210,16 @@ float maxSpecularReflection)
 // with the light.
 float Attenuate(Lights light, float3 worldPosition)
 {
+	// Get the distance of light to the input pixel world surface position.
+    float dist = distance(light.position, worldPosition);
 	
-    return 0.0f;
+	// Get the diminishing light by distance by attenuating.
+	// If distance to the light & surface is greater than light range.
+    float attenuate = saturate(1.0f - (dist * dist / (light.range * light.range)));
+	
+	// Mutiply the attenuate value by itself to cut of infinite distance and
+	// reduce brightness exponetially to 0 over distance.
+    return attenuate * attenuate;
 }
 
 // --------------------------------------------------------
@@ -295,7 +303,7 @@ float4 main(VertexToPixel input) : SV_TARGET
             case 1:
 			// If the light is a point light, calculate light on the pixel surface
 			// and add to all the lights in the scene.
-			totalLight +=
+                totalLight +=
 			PointLight(
 			light,
 			input.normal,
@@ -304,13 +312,13 @@ float4 main(VertexToPixel input) : SV_TARGET
 			cameraCurrentPosition,
 			roughness.x,
 			surfaceColor,
-			MAX_SPECULAR_EXPONENT);
+			MAX_SPECULAR_EXPONENT) * Attenuate(light, input.worldPosition);
                 break;
 		
             case 2:
 			// If the light is a spot light, calculate light on the pixel surface
 			// and add to all the lights in the scene.
-			totalLight +=
+                totalLight +=
             SpotLight(
 			light,
 			input.normal,
@@ -319,7 +327,7 @@ float4 main(VertexToPixel input) : SV_TARGET
 			cameraCurrentPosition,
 			roughness.y,
 			surfaceColor,
-			MAX_SPECULAR_EXPONENT);
+			MAX_SPECULAR_EXPONENT) * Attenuate(light, input.worldPosition);
                 break;
         }
     }

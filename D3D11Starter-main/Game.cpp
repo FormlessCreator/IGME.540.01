@@ -395,8 +395,8 @@ void Game::Initialize()
 		if (i == 3)
 		{
 			lightArray[i].type = LIGHT_TYPE_POINT;
-			lightArray[i].position = XMFLOAT3(0.0f, 2.0f, -2.0f);
-			lightArray[i].range = 10.0f;
+			lightArray[i].position = XMFLOAT3(0.0f, 10.0f, 10.0f);
+			lightArray[i].range = 20.0f;
 			lightArray[i].direction = XMFLOAT3(static_cast<float>(i + 1), static_cast<float>(i + 1), 0.0f);
 		}
 
@@ -406,7 +406,7 @@ void Game::Initialize()
 		{
 			lightArray[i].type = LIGHT_TYPE_SPOT;
 			lightArray[i].position = XMFLOAT3(0.0f, 20.0f, 0.0f);
-			lightArray[i].range = 20.0f;
+			lightArray[i].range = 50.0f;
 
 			// Set the inner and outer degree.
 			float innerDegree = 45.0f;
