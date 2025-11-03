@@ -184,9 +184,9 @@ Game::Game()
 	// Convert the float value to colors between 0 - 1.
 	// By normalization.
 	colorPicker =  XMFLOAT4(
-		(30.0f / 255.0f), 
-		(20.0f / 255.0f), 
+		(62.0f / 255.0f), 
 		(40.0f / 255.0f), 
+		(78.0f / 255.0f), 
 		(0.0f / 255.0f));
 
 	// Set boolean variables to false by casting.
@@ -388,6 +388,12 @@ void Game::Initialize()
 			{
 				lightArray[i].direction = XMFLOAT3(0.0f, -(static_cast<float>(i + 1)), 0.0f);
 			}
+
+			// All the same white color.
+			lightArray[i].color = XMFLOAT3(0.8f, 0.8f, 0.8f);
+
+			// Increase the light intensity each loop.
+			lightArray[i].intensity = 1.0f;
 		}
 		
 		// Add a position of the light, change the light type to point, direction, 
@@ -395,9 +401,15 @@ void Game::Initialize()
 		if (i == 3)
 		{
 			lightArray[i].type = LIGHT_TYPE_POINT;
-			lightArray[i].position = XMFLOAT3(0.0f, 100.0f, 0.0f);
+			lightArray[i].position = XMFLOAT3(0.0f, 10.0f, 0.0f);
 			lightArray[i].range = 20.0f;
 			lightArray[i].direction = XMFLOAT3(static_cast<float>(i + 1), static_cast<float>(i + 1), 0.0f);
+
+			// A blue color
+			lightArray[i].color = XMFLOAT3(0.0f, 0.0f, 1.0f);
+
+			// Increase the light intensity each loop.
+			lightArray[i].intensity = 1.0f + static_cast<float>(i);
 		}
 
 		// Change the type, position, range, spot inner angle, direction, 
@@ -405,27 +417,29 @@ void Game::Initialize()
 		if (i == 4)
 		{
 			lightArray[i].type = LIGHT_TYPE_SPOT;
-			lightArray[i].position = XMFLOAT3(-3.0f, 5.0f, 0.0f);
+			lightArray[i].position = XMFLOAT3(-1.0f, 6.0f, 0.0f);
 			lightArray[i].range = 10.0f;
 
 			// Set the inner and outer degree.
 			/*float innerDegree = 15.0f;
 			float outerDegree = 30.0f;*/
-			float innerDegree = 90.0f;
-			float outerDegree = 180.0f;
+			float innerDegree = 30.0f;
+			float outerDegree = 60.0f;
 
 			// Convert the degree to radians using directX XMConvertToRadians().
 			lightArray[i].spotInnerAngle = XMConvertToRadians(innerDegree);
 			lightArray[i].spotOuterAngle = XMConvertToRadians(outerDegree);
 
 			// Direction.
-			lightArray[i].direction = XMFLOAT3(0.0f, -1.0f, 0.0f);
-			//lightArray[i].direction = XMFLOAT3(-1.0f, 0.0f, 0.0f);
+			lightArray[i].direction = XMFLOAT3(0.0f, 1.0f, 0.0f);
+
+			// Set light to red.
+			lightArray[i].color = XMFLOAT3(1.0f, 0.0f, 0.0f);
+
+			// Increase the light intensity each loop.
+			lightArray[i].intensity = 1.0f + static_cast<float>(i);
 		}
 
-		// Set all the light color and increase the light intensity each loop.
-		lightArray[i].color = XMFLOAT3(0.8f, 0.8f, 0.8f);
-		lightArray[i].intensity = (i + 1) * 1.2f;
 	}
 }
 
@@ -1216,11 +1230,11 @@ void Game::Update(float deltaTime, float totalTime)
 	//listOfEntities[2].GetTransform().Rotate(XMFLOAT3(0.0f, 0.0f, static_cast<float>(deltaTime * 3.5)));
 
 	// Rotate all the object with time.
-	//for (int i = 0; i < listOfEntities.size(); i++)
-	//{
-	//	// Get the object transformation and rotate with time.
-	//	listOfEntities[i].GetTransform().Rotate(XMFLOAT3(0.0f, 1.0f * deltaTime, 0.0f));
-	//}
+	for (int i = 0; i < listOfEntities.size(); i++)
+	{
+		// Get the object transformation and rotate with time.
+		listOfEntities[i].GetTransform().Rotate(XMFLOAT3(0.0f, 1.0f * deltaTime, 0.0f));
+	}
 
 
 	// Update the input and view matrix camera each frame.

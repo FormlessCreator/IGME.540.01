@@ -186,10 +186,16 @@ float3 surfaceColor,
 float maxSpecularReflection)
 {
 	// Get the direction of light from the pixel.
-    float3 dirOfLightFromThePixel = light.direction - inputPixelWorldPosition;
+    float3 dirOfLightFromThePixel = inputPixelWorldPosition - light.position;
+	
+	// Normalize the direction of the position to the light.
+    float3 normalizedLightPosDir = normalize(dirOfLightFromThePixel);
+	
+	// Normalize the direction to the light.
+    float3 normalizeLightDir = normalize(normalizedLightDirection);
 	
 	// Get the normalized dot product(cos angle) of light direction and the spot light direction.
-    float pixelAngle = saturate(dot(dirOfLightFromThePixel, normalizedLightDirection));
+    float pixelAngle = saturate(dot(normalizedLightPosDir, normalizeLightDir));
 	
 	// Get the cos angle of both inner and outer radian range of the light direction.
     float cosOfOuterRange = cos(light.spotOuterAngle);
