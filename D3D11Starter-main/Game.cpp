@@ -395,7 +395,7 @@ void Game::Initialize()
 		if (i == 3)
 		{
 			lightArray[i].type = LIGHT_TYPE_POINT;
-			lightArray[i].position = XMFLOAT3(0.0f, 10.0f, 0.0f);
+			lightArray[i].position = XMFLOAT3(0.0f, 100.0f, 0.0f);
 			lightArray[i].range = 20.0f;
 			lightArray[i].direction = XMFLOAT3(static_cast<float>(i + 1), static_cast<float>(i + 1), 0.0f);
 		}
@@ -405,19 +405,22 @@ void Game::Initialize()
 		if (i == 4)
 		{
 			lightArray[i].type = LIGHT_TYPE_SPOT;
-			lightArray[i].position = XMFLOAT3(0.0f, 20.0f, 0.0f);
-			lightArray[i].range = 50.0f;
+			lightArray[i].position = XMFLOAT3(-3.0f, 5.0f, 0.0f);
+			lightArray[i].range = 10.0f;
 
 			// Set the inner and outer degree.
-			float innerDegree = 45.0f;
-			float outerDegree = 90.0f;
+			/*float innerDegree = 15.0f;
+			float outerDegree = 30.0f;*/
+			float innerDegree = 90.0f;
+			float outerDegree = 180.0f;
 
 			// Convert the degree to radians using directX XMConvertToRadians().
 			lightArray[i].spotInnerAngle = XMConvertToRadians(innerDegree);
 			lightArray[i].spotOuterAngle = XMConvertToRadians(outerDegree);
 
 			// Direction.
-			lightArray[i].direction = XMFLOAT3(0.0f, 2.0f, 0.0f);
+			lightArray[i].direction = XMFLOAT3(0.0f, -1.0f, 0.0f);
+			//lightArray[i].direction = XMFLOAT3(-1.0f, 0.0f, 0.0f);
 		}
 
 		// Set all the light color and increase the light intensity each loop.
@@ -1213,11 +1216,11 @@ void Game::Update(float deltaTime, float totalTime)
 	//listOfEntities[2].GetTransform().Rotate(XMFLOAT3(0.0f, 0.0f, static_cast<float>(deltaTime * 3.5)));
 
 	// Rotate all the object with time.
-	for (int i = 0; i < listOfEntities.size(); i++)
-	{
-		// Get the object transformation and rotate with time.
-		listOfEntities[i].GetTransform().Rotate(XMFLOAT3(0.0f, 1.0f * deltaTime, 0.0f));
-	}
+	//for (int i = 0; i < listOfEntities.size(); i++)
+	//{
+	//	// Get the object transformation and rotate with time.
+	//	listOfEntities[i].GetTransform().Rotate(XMFLOAT3(0.0f, 1.0f * deltaTime, 0.0f));
+	//}
 
 
 	// Update the input and view matrix camera each frame.
