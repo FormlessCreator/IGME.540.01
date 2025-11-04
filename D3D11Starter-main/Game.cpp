@@ -324,6 +324,9 @@ Game::Game()
 
 	// Intilize an empty object with all 0 initial values first.
 	dLight1 = {};
+
+	// Set to false.
+	lightInitialized = false;
 }
 
 // --------------------------------------------------------
@@ -360,86 +363,92 @@ void Game::Initialize()
 		(count)++;
 	}
 
-	// Initialize the lights here:
-	dLight1.type = LIGHT_TYPE_DIRECTIONAL;
-	dLight1.direction = DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f);
-	dLight1.color = DirectX::XMFLOAT3(0.8f, 0.8f, 0.8f);
-	dLight1.intensity = 10.0f;
-
-	// Make five directional lights and add them to the array.
-	for (int i = 0; i < 5; i++)
+	if (!lightInitialized)
 	{
-		// If i is less than 3 set type and direction to directional light.
-		if (i < 3)
-		{
-			lightArray[i].type = LIGHT_TYPE_DIRECTIONAL;
+		// Initialize the lights here:
+		dLight1.type = LIGHT_TYPE_DIRECTIONAL;
+		dLight1.direction = DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f);
+		dLight1.color = DirectX::XMFLOAT3(0.8f, 0.8f, 0.8f);
+		dLight1.intensity = 10.0f;
 
-			if (i == 0)
+		// Make five directional lights and add them to the array.
+		for (int i = 0; i < 5; i++)
+		{
+			// If i is less than 3 set type and direction to directional light.
+			if (i < 3)
 			{
-				lightArray[i].direction = XMFLOAT3(static_cast<float>(i + 1), 0.0f, 0.0f);
+				lightArray[i].type = LIGHT_TYPE_DIRECTIONAL;
+
+				if (i == 0)
+				{
+					lightArray[i].direction = XMFLOAT3(static_cast<float>(i + 1), 0.0f, 0.0f);
+				}
+
+				if (i == 1)
+				{
+					lightArray[i].direction = XMFLOAT3(-(static_cast<float>(i + 1)), 0.0f, 0.0f);
+				}
+
+				if (i == 2)
+				{
+					lightArray[i].direction = XMFLOAT3(0.0f, -(static_cast<float>(i + 1)), 0.0f);
+				}
+
+				// All the same white color.
+				lightArray[i].color = XMFLOAT3(0.8f, 0.8f, 0.8f);
+
+				// Increase the light intensity each loop.
+				lightArray[i].intensity = 1.0f;
 			}
 
-			if (i == 1)
+			// Add a position of the light, change the light type to point, direction, 
+			// and add a range.
+			if (i == 3)
 			{
-				lightArray[i].direction = XMFLOAT3(-(static_cast<float>(i + 1)), 0.0f, 0.0f);
+				lightArray[i].type = LIGHT_TYPE_POINT;
+				lightArray[i].position = XMFLOAT3(0.0f, 10.0f, 0.0f);
+				lightArray[i].range = 20.0f;
+				lightArray[i].direction = XMFLOAT3(static_cast<float>(i + 1), static_cast<float>(i + 1), 0.0f);
+
+				// A blue color
+				lightArray[i].color = XMFLOAT3(0.0f, 0.0f, 1.0f);
+
+				// Increase the light intensity each loop.
+				lightArray[i].intensity = 1.0f + static_cast<float>(i);
 			}
 
-			if (i == 2)
+			// Change the type, position, range, spot inner angle, direction, 
+			// and spot outer angle of the light.
+			if (i == 4)
 			{
-				lightArray[i].direction = XMFLOAT3(0.0f, -(static_cast<float>(i + 1)), 0.0f);
+				lightArray[i].type = LIGHT_TYPE_SPOT;
+				lightArray[i].position = XMFLOAT3(-1.0f, 6.0f, 0.0f);
+				lightArray[i].range = 10.0f;
+
+				// Set the inner and outer degree.
+				/*float innerDegree = 15.0f;
+				float outerDegree = 30.0f;*/
+				float innerDegree = 30.0f;
+				float outerDegree = 60.0f;
+
+				// Convert the degree to radians using directX XMConvertToRadians().
+				lightArray[i].spotInnerAngle = XMConvertToRadians(innerDegree);
+				lightArray[i].spotOuterAngle = XMConvertToRadians(outerDegree);
+
+				// Direction.
+				lightArray[i].direction = XMFLOAT3(0.0f, 1.0f, 0.0f);
+
+				// Set light to red.
+				lightArray[i].color = XMFLOAT3(1.0f, 0.0f, 0.0f);
+
+				// Increase the light intensity each loop.
+				lightArray[i].intensity = 1.0f + static_cast<float>(i);
 			}
 
-			// All the same white color.
-			lightArray[i].color = XMFLOAT3(0.8f, 0.8f, 0.8f);
-
-			// Increase the light intensity each loop.
-			lightArray[i].intensity = 1.0f;
-		}
-		
-		// Add a position of the light, change the light type to point, direction, 
-		// and add a range.
-		if (i == 3)
-		{
-			lightArray[i].type = LIGHT_TYPE_POINT;
-			lightArray[i].position = XMFLOAT3(0.0f, 10.0f, 0.0f);
-			lightArray[i].range = 20.0f;
-			lightArray[i].direction = XMFLOAT3(static_cast<float>(i + 1), static_cast<float>(i + 1), 0.0f);
-
-			// A blue color
-			lightArray[i].color = XMFLOAT3(0.0f, 0.0f, 1.0f);
-
-			// Increase the light intensity each loop.
-			lightArray[i].intensity = 1.0f + static_cast<float>(i);
 		}
 
-		// Change the type, position, range, spot inner angle, direction, 
-		// and spot outer angle of the light.
-		if (i == 4)
-		{
-			lightArray[i].type = LIGHT_TYPE_SPOT;
-			lightArray[i].position = XMFLOAT3(-1.0f, 6.0f, 0.0f);
-			lightArray[i].range = 10.0f;
-
-			// Set the inner and outer degree.
-			/*float innerDegree = 15.0f;
-			float outerDegree = 30.0f;*/
-			float innerDegree = 30.0f;
-			float outerDegree = 60.0f;
-
-			// Convert the degree to radians using directX XMConvertToRadians().
-			lightArray[i].spotInnerAngle = XMConvertToRadians(innerDegree);
-			lightArray[i].spotOuterAngle = XMConvertToRadians(outerDegree);
-
-			// Direction.
-			lightArray[i].direction = XMFLOAT3(0.0f, 1.0f, 0.0f);
-
-			// Set light to red.
-			lightArray[i].color = XMFLOAT3(1.0f, 0.0f, 0.0f);
-
-			// Increase the light intensity each loop.
-			lightArray[i].intensity = 1.0f + static_cast<float>(i);
-		}
-
+		// Set to true.
+		lightInitialized = true;
 	}
 }
 
@@ -859,11 +868,8 @@ void Game::buildImGuiCustomizedUI()
 				if (ImGui::ColorEdit3("Light Color", lightColor))
 				{
 					// Set the light color to the new color.
-					lightArray[i].color = XMFLOAT3(lightColor[0] * 256.0f, lightColor[1] * 256.0f, lightColor[2] * 256.0f);
+					lightArray[i].color = XMFLOAT3(lightColor[0], lightColor[1], lightColor[2]);
 				}
-
-				// Set the light color to the new color.
-				lightArray[i].color = XMFLOAT3(lightColor[0] * 256.0f, lightColor[1] * 256.0f, lightColor[2] * 256.0f);
 
 				// Get the light intensity.
 				if (ImGui::TreeNode("Light intensity"))

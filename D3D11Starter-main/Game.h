@@ -194,5 +194,8 @@ private:
 
 	// Create five light and place them in an array.
 	Lights lightArray[5];
+
+	// Boolean to initialize once.
+	bool lightInitialized;
 };
 
