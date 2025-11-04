@@ -71,7 +71,7 @@ float4 main(VertexToPixel input) : SV_TARGET
 	
 	// Make the ambient color darker.
 	// Create an CBH value to make ambient color darker or brighter.
-    float4 darkerAmbientColor = float4(ambientColor.xyz / 0.6f, 1.0f);
+    float4 darkerAmbientColor = float4(ambientColor.xyz / 1.0f, 1.0f);
 	
 	// AMBIENT LIGHT:
 	// Just return the input color

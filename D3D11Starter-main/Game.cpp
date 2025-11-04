@@ -835,6 +835,77 @@ void Game::buildImGuiCustomizedUI()
 
 		ImGui::TreePop();
 	}
+
+	// Allow the user to change the color, direction, and intensity of the lights.
+	// With ambient light of the surface.
+	if (ImGui::TreeNode("Lights Information"))
+	{
+		// For all the lights.
+		for (int i = 0; i < 5; i++)
+		{
+			// Convert the loop number to a string.
+			std::string lightNumber = "Light " + std::to_string(i);
+
+			// Create a text by converting the string to a const character/string.
+			if (ImGui::TreeNode(lightNumber.c_str()))
+			{
+				ImGui::PushID(i);
+
+				// Get the light color and change it.
+				float lightColor[3] = { lightArray[i].color.x, lightArray[i].color.y, lightArray[i].color.z };
+				//float lightColor[3] = { 0.0f, 0.0f, 0.0f };
+
+				// Edit the color.
+				if (ImGui::ColorEdit3("Light Color", lightColor))
+				{
+					// Set the light color to the new color.
+					lightArray[i].color = XMFLOAT3(lightColor[0] * 256.0f, lightColor[1] * 256.0f, lightColor[2] * 256.0f);
+				}
+
+				// Set the light color to the new color.
+				lightArray[i].color = XMFLOAT3(lightColor[0] * 256.0f, lightColor[1] * 256.0f, lightColor[2] * 256.0f);
+
+				// Get the light intensity.
+				if (ImGui::TreeNode("Light intensity"))
+				{
+					// Change the light intensity.
+					ImGui::DragFloat("Light Intensity", &lightArray[i].intensity, 0.1f, 0.0f, 100.0f);
+
+					// Pop tree.
+					ImGui::TreePop();
+				}
+
+				ImGui::PopID();
+
+				// Pop the tree node.
+				ImGui::TreePop();
+			}
+		}
+
+		// Ambient color:
+		// Create tree node for changing the window color using color picker.
+		if (ImGui::TreeNode("Change Ambient Color"))
+		{
+			/* Create a float array(which is a non - static member pointer within this scope).
+			 * To get the changed float(*) values in colouredit4 using an if statement if a
+			 * a color is changed. */
+			float color[4] = { colorPicker.x, colorPicker.y, colorPicker.z, colorPicker.w };
+
+			// Create a new window color for the app using an if color edit4 statement.
+			if (ImGui::ColorEdit4("Ambient Color", color))
+			{
+				// Convert the float pointer to Xmfloat.
+				colorPicker = XMFLOAT4(color[0], color[1], color[2], color[3]);
+			}
+
+			// Create a tree pop to end node if closed
+			ImGui::TreePop();
+		}
+
+
+		// Pop the tree node.
+		ImGui::TreePop();
+	}
 	
 	if (ImGui::TreeNode("Swap Active Camera"))
 	{
