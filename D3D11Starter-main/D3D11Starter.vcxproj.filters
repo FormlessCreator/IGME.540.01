@@ -178,6 +178,7 @@
     <FxCompile Include="PixelShaderTC.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="SkyVertexShader.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ShaderIncludeFile.hlsli">

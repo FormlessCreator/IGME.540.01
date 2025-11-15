@@ -91,6 +91,17 @@ struct VertexToPixel
     float3 tangent : TANGENT;
 };
 
+struct VertexToPixel_SkyBox
+{
+	// Data type
+	//  |
+	//  |   Name          Semantic
+	//  |    |                |
+	//  v    v                v
+    float4 screenPosition : SV_POSITION;
+    float4 sampleDir : DIRECTION;
+};
+
 // Create a directional light method.
 float3 DirectionalLight(
 Lights light,
