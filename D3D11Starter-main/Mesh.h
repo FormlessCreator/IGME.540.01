@@ -36,6 +36,9 @@ public:
 	int GetVertexCount();
 	int GetIndexCount();
 
+	// Add a method to create the tangent U texture for the geometry.
+	void CalculateTangents(Vertex* verts, int numVerts, unsigned int* indices, int numIndices);
+
 	void Draw();
 
 private:

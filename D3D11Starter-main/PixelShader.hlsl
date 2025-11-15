@@ -8,6 +8,7 @@
 // Create a 2D texture surface data.
 Texture2D PavementSurfaceTexture : register(t0);
 Texture2D SolarCellSurfaceTexture : register(t1);
+Texture2D NormalMap : register(t2);
 
 // Create a sampler state.
 SamplerState BasicSampler : register(s0);
@@ -56,10 +57,34 @@ float4 main(VertexToPixel input) : SV_TARGET
 	// Enter the light count.
     int lightCount = 5;
 	
+	// Normalize the input tangent.
+    input.tangent = normalize(input.tangent);
+	
+	// Get the sample of the normal map texture.
+    float3 normalFromTexture = NormalMap.Sample(BasicSampler, input.uv).rgb;
+	
+	// Unpack the per pixel normal from the texture sample.
+    float3 unpackNormal = normalize(normalFromTexture * 2.0f - 1.0f);
+	
 	// Get the ambient color or average surface color for all the lights.
 	// Normalize the input normal.
 	// To create an non-linear interpolation of the pixel vertex normal.
     input.normal = normalize(input.normal);
+	
+	// Create a 90* Tangent, Bitangent and Normal matrix.
+    float3 N = normalize(input.normal);
+	
+	// Get the tangent.
+    float3 T = normalize(input.tangent - dot(input.tangent, N) * N);
+	
+	// Get the 90 degree Bi-tangent using the cross product of T & N.
+    float3 B = normalize(cross(T, N));
+	
+	// Create a 3x3 float matrix that creates a 3x3 world space of T = x or u, B = y or v, N = z.
+    float3x3 TBN = float3x3(T, B, N);
+	
+	// Transform the normal of the unpacked texture to the TBN coordinates.
+    float3 finalNormal = mul(unpackNormal, TBN);
 	
 	// Get the new input scale and offset.
 	// Create a modified input uv using the new input scale and offset.
@@ -68,6 +93,7 @@ float4 main(VertexToPixel input) : SV_TARGET
 	// Create and get a texture color from the texture using the texture,
 	// the sampler state and the given input uv coordinate.
     float3 surfaceColor = PavementSurfaceTexture.Sample(BasicSampler, input.uv).rgb;
+	
 	
 	// Make the ambient color darker.
 	// Create an CBH value to make ambient color darker or brighter.
@@ -111,7 +137,7 @@ float4 main(VertexToPixel input) : SV_TARGET
                 totalLight +=
 			DirectionalLight(
 			light,
-			input.normal,
+			finalNormal,
 			normalizedLightDirection,
 			input.worldPosition,
 			cameraCurrentPosition,
@@ -126,7 +152,7 @@ float4 main(VertexToPixel input) : SV_TARGET
                 totalLight +=
 			PointLight(
 			light,
-			input.normal,
+			finalNormal,
 			input.worldPosition,
 			cameraCurrentPosition,
 			roughness.x,
@@ -140,7 +166,7 @@ float4 main(VertexToPixel input) : SV_TARGET
                 totalLight +=
             SpotLight(
 			light,
-			input.normal,
+			finalNormal,
 			normalizedLightDirection,
 			input.worldPosition,
 			cameraCurrentPosition,

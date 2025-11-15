@@ -63,6 +63,9 @@ struct VertexShaderInput
     float3 localPosition : POSITION; // XYZ position
     float2 uv : TEXCOORD; // The uv texture coordinate.
     float3 normal : NORMAL; // The normal direction of the vertex.
+	
+	// Add a vertex to input struct for the tangent.
+    float3 tangent : TANGENT;
 };
 
 // Struct representing the data we expect to receive from earlier pipeline stages
@@ -84,11 +87,8 @@ struct VertexToPixel
 	// Add the world position of the pixel.
     float3 worldPosition : POSITION;
 	
-    //float2 scale			: SCALE;
-    //float2 offset			: OFFSET;
-	
-	// Remove the color.
-	//float4 color			: COLOR;
+	// Add the the tangent to the output for pixel shader.
+    float3 tangent : TANGENT;
 };
 
 // Create a directional light method.
@@ -159,7 +159,7 @@ float maxSpecularReflection)
     float3 dirOfLightPosFromPixelPos = light.position - inputPixelWorldPosition;
 	
 	// Normalize the light direction.
-    float normalizedLightDirection = normalize(-dirOfLightPosFromPixelPos);
+    float3 normalizedLightDirection = normalize(-dirOfLightPosFromPixelPos);
 	
 	// Return the directional light color but use the normalized direction of the light
 	// and the pixel world surface position.

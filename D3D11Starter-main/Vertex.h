@@ -13,6 +13,11 @@ struct Vertex
 	DirectX::XMFLOAT2 uv;           // The UV(x,y) texture coordinate.
 	DirectX::XMFLOAT3 normal;		// The normal direction of the surface of the vertex.
 
+	// Create a padding.
+
+	// Add a tangent for the vertex
+	DirectX::XMFLOAT3 Tangent;
+
 	// Remove color as materials contain color tint information.
 	// DirectX::XMFLOAT4 Color;        // The color of the vertex
 };

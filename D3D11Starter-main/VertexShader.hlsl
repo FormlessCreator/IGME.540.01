@@ -42,6 +42,10 @@ VertexToPixel main( VertexShaderInput input )
 	// Add the input information to the output.
     output.uv = input.uv;
 	
+	// Add the tangent to the output.
+	// The tangent need to be in world space.
+    output.tangent = normalize(mul((float3x3) worldMatrix, input.tangent));
+	
 	// Change the input normal by calculating the object's correct normal
 	// rotation and scaling in world space (Do not calculate Translation as
 	// normal needs to be normalize before and after the out put stage).

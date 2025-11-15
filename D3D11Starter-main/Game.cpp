@@ -67,12 +67,14 @@ Game::Game()
 	Graphics::Device->CreateBuffer(&cbHeapDesc, 0, constantBufferHeap.GetAddressOf());
 
 	// Get the wide string asset path of both pictures.
-	const std::wstring pavement = L"..\\..\\Assets\\Textures\\Pavement.png";
+	const std::wstring pavement = L"..\\..\\Assets\\Textures\\rock.png";
 	const std::wstring solarCell = L"..\\..\\Assets\\Textures\\SolarCell.png";
+	const std::wstring pavementNormal = L"..\\..\\Assets\\Textures\\rock_normals.png";
 
 	// Create a shader resource view to load the textures.
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pavementSRV;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> solarCellSRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pavementNormalSRV;
 
 	// Call the create WIC  texture from file for both texture and use thier SRV.
 	CreateWICTextureFromFile(
@@ -88,6 +90,13 @@ Game::Game()
 		FixPath(solarCell).c_str(),
 		0,
 		solarCellSRV.GetAddressOf());
+
+	CreateWICTextureFromFile(
+		Graphics::Device.Get(),
+		Graphics::Context.Get(),
+		FixPath(pavementNormal).c_str(),
+		0,
+		pavementNormalSRV.GetAddressOf());
 
 	// Load specific textures to generate mipmaps and refrences.
 	// By sampling.
@@ -131,6 +140,7 @@ Game::Game()
 	// Add both of the textures and sampler to the pshader Material by calling the methods.
 	pShader->AddTextureSRV(0, pavementSRV);
 	pShader->AddTextureSRV(1, solarCellSRV);
+	pShader->AddTextureSRV(2, pavementNormalSRV);
 	pShader->AddSampler(0, sampler);
 
 	// Add Texture and smaple for the pShader1 and pShaderTC.
@@ -422,7 +432,7 @@ void Game::Initialize()
 			if (i == 4)
 			{
 				lightArray[i].type = LIGHT_TYPE_SPOT;
-				lightArray[i].position = XMFLOAT3(-1.0f, 6.0f, 0.0f);
+				lightArray[i].position = XMFLOAT3(0.0f, 5.0f, 0.0f);
 				lightArray[i].range = 10.0f;
 
 				// Set the inner and outer degree.
@@ -475,7 +485,7 @@ void Game::LoadVertexShader()
 	//  - Doing this NOW because it requires a vertex shader's byte code to verify against!
 	//  - Luckily, we already have that loaded (the vertex shader blob above)
 	{
-		D3D11_INPUT_ELEMENT_DESC inputElements[3] = {};
+		D3D11_INPUT_ELEMENT_DESC inputElements[4] = {};
 
 		// Set up the first element - a position, which is 3 float values
 		inputElements[0].Format = DXGI_FORMAT_R32G32B32_FLOAT;				// Most formats are described as color channels; really it just means "Three 32-bit floats"
@@ -492,6 +502,11 @@ void Game::LoadVertexShader()
 		inputElements[2].SemanticName = "NORMAL";							// The uv texture coordinate sematic name.
 		inputElements[2].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;	// Order in which the vertex normal byte info is read - After the previous element.
 
+		// Update the input layout element for tangent.
+		inputElements[3].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+		inputElements[3].SemanticName = "TANGENT";
+		inputElements[3].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
+
 		// Remove the input layout information for the color.
 		// Set up the second element - a color, which is 4 more float values
 		//inputElements[1].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;			// 4x 32-bit floats
@@ -501,7 +516,7 @@ void Game::LoadVertexShader()
 		// Create the input layout, verifying our description against actual shader code
 		Graphics::Device->CreateInputLayout(
 			inputElements,							// An array of descriptions
-			3,										// How many elements in that array? // 2 -> 3 now!
+			4,										// How many elements in that array? // 2 -> 3 now!
 			vertexShaderBlob->GetBufferPointer(),	// Pointer to the code of a shader that uses this layout
 			vertexShaderBlob->GetBufferSize(),		// Size of the shader code that uses this layout
 			inputLayout.GetAddressOf());			// Address of the resulting ID3D11InputLayout pointer
