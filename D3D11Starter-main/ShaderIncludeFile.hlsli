@@ -136,6 +136,9 @@ float maxSpecularReflection)
 	// light reflection and the view vector camera direction.
     float specularLightReflectToTheCamera = pow(max(dot(lightReflection, normalVVDirOfCam), 0.0f), maxSpecularReflection / roughness);
 	
+	// If the surfece is facing away from the light make its specular 0.
+    specularLightReflectToTheCamera *= any(diffuseTermColor);
+	
 	// Create a final color by adding the:
 	// pixel normal surface color for the unlit part of the object
 	// to the diffuse part of the object.
