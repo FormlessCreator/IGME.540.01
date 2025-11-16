@@ -99,7 +99,7 @@ struct VertexToPixel_SkyBox
 	//  |    |                |
 	//  v    v                v
     float4 screenPosition : SV_POSITION;
-    float4 sampleDir : DIRECTION;
+    float3 sampleDir : DIRECTION;
 };
 
 // Create a directional light method.

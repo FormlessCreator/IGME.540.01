@@ -77,7 +77,7 @@ float4 main(VertexToPixel input) : SV_TARGET
 	// Get the tangent.
     float3 T = normalize(input.tangent - dot(input.tangent, N) * N);
 	
-	// Get the 90 degree Bi-tangent using the cross product of T & N.
+	// Get the perpendicular 90 degree Bi-tangent using the cross product of T & N.
     float3 B = normalize(cross(T, N));
 	
 	// Create a 3x3 float matrix that creates a 3x3 world space of T = x or u, B = y or v, N = z.
