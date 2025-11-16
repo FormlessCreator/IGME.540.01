@@ -90,6 +90,9 @@
     <ClCompile Include="Lights.cpp">
       <Filter>Source Files\Structs Cpp Files</Filter>
     </ClCompile>
+    <ClCompile Include="Sky.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Window.h">
@@ -154,6 +157,9 @@
     </ClInclude>
     <ClInclude Include="Vertex.h">
       <Filter>Header Files\Structs Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Sky.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
