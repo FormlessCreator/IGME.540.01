@@ -18,14 +18,22 @@ public:
 		const wchar_t* up,
 		const wchar_t* down,
 		const wchar_t* front,
-		const wchar_t* back);
+		const wchar_t* back,
+		const std::wstring& vertexFilePath,
+		const std::wstring& pixelFilePath);
 	~Sky();
 
 	// Create a rasterizer state.
-	Microsoft::WRL::ComPtr<ID3D11RasterizerState> CreateRasterizerState();
+	void CreateRasterizerState();
 
 	// Create a depth stencil state.
-	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> CreateDepthStencilState();
+	void CreateDepthStencilState();
+
+	// Create a load pixel method for the sky box
+	void LoadSkyPixelShader(const std::wstring& pixelShaderFilePath);
+
+	// Create a load vertex shader for the sky box.
+	void LoadSkyVertexShader(const std::wstring& vertexShaderFilePath);
 
 	// Create a sky Draw method().
 	void Draw();
@@ -61,6 +69,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState> skyRasterizeState;
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> skyPixelShader;
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> skyVertexShader;
+	Microsoft::WRL::ComPtr<ID3D11InputLayout> skyInputLayout;
 	std::shared_ptr<Mesh> skyGeometryMesh;
 };
 

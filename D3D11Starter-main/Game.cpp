@@ -116,6 +116,35 @@ Game::Game()
 
 	// Load Vertex Shader.
 	LoadVertexShader();
+
+	// Create the Sky textures string.
+	const wchar_t* right = L"..\\..\\Assets\\Skies\\Clouds_Blue\\right.png";
+	const wchar_t* left = L"..\\..\\Assets\\Skies\\Clouds_Blue\\left.png";
+	const wchar_t* up = L"..\\..\\Assets\\Skies\\Clouds_Blue\\up.png";
+	const wchar_t* down = L"..\\..\\Assets\\Skies\\Clouds_Blue\\down.png";
+	const wchar_t* front = L"..\\..\\Assets\\Skies\\Clouds_Blue\\front.png";
+	const wchar_t* back = L"..\\..\\Assets\\Skies\\Clouds_Blue\\back.png";
+
+	// Get the sky VS and PS file path.
+	const std::wstring skyVSString = L"SkyVertexShader.cso";
+	const std::wstring skyPSString = L"SkyPS.cso";
+
+	// Create a cube mesh for the sky.
+	skyMesh = std::make_shared<Mesh>(FixPath("../../Assets/Meshes/cube.obj").c_str());
+
+	// Initialize a sky shared pointer.
+	// Use the FixPath() method for the file paths.
+	sky = std::make_shared<Sky>(
+		skyMesh,
+		sampler,
+		FixPath(right).c_str(),
+		FixPath(left).c_str(),
+		FixPath(up).c_str(),
+		FixPath(down).c_str(),
+		FixPath(front).c_str(),
+		FixPath(back).c_str(),
+		skyVSString,
+		skyPSString);
 	
 	// Create a wide string for the names of all the shaders.
 	const std::wstring ps = L"PixelShader.cso";
@@ -194,9 +223,9 @@ Game::Game()
 	// Convert the float value to colors between 0 - 1.
 	// By normalization.
 	colorPicker =  XMFLOAT4(
-		(62.0f / 255.0f), 
-		(40.0f / 255.0f), 
-		(78.0f / 255.0f), 
+		(61.0f / 255.0f), 
+		(61.0f / 255.0f), 
+		(61.0f / 255.0f), 
 		(0.0f / 255.0f));
 
 	// Set boolean variables to false by casting.
@@ -1091,6 +1120,8 @@ void Game::CreateGeometry()
 	sphere = std::make_shared<Mesh>(FixPath("../../Assets/Meshes/sphere.obj").c_str());
 	torus = std::make_shared<Mesh>(FixPath("../../Assets/Meshes/torus.obj").c_str());
 
+
+
 	// Create entities using the first list of materials.
 	entity1 = Entity(*(cube.get()), listOfMaterials[0]);
 	entity2 = Entity(*(cylinder.get()), listOfMaterials[0]);
@@ -1475,6 +1506,24 @@ void Game::Draw(float deltaTime, float totalTime)
 		// Draw the entities after their world matrix have be updated in the vertex shader
 		// using the constant shader.
 		listOfEntities[i].Draw();
+	}
+
+	// Draw the sky last to minimin rendering pixel behind objects that are not displayed.
+	// Create a sky buffer, fill in the data and bind it in the CBH.
+	{
+		SkyBufferStruct skyCB = {};
+
+		XMFLOAT4X4 cameraViewMatrix = activeCamera.get()->GetViewMatrix();
+		skyCB.viewMatrix = XMLoadFloat4x4(&cameraViewMatrix);
+
+		XMFLOAT4X4 cameraProjMatrix = activeCamera.get()->GetProjectionMatrix();
+		skyCB.projectionMatrix = XMLoadFloat4x4(&cameraProjMatrix);
+
+		// Call the fill and bind method.
+		FillAndBindNextConstantBuffer(&skyCB, sizeof(skyCB), D3D11_VERTEX_SHADER, 0);
+
+		// Call the sky draw method.
+		sky->Draw();
 	}
 
 	// Call the triangle mesh draw.

@@ -22,6 +22,9 @@
 // Add and include the Light header file.
 #include "Lights.h"
 
+// Add a sky.h
+#include "Sky.h"
+
 // Include library for constant buffer heap.
 // For ring buffer:
 #include <d3d11shadertracing.h>
@@ -98,6 +101,9 @@ private:
 	//     Component Object Model, which DirectX objects do
 	//  - More info here: https://github.com/Microsoft/DirectXTK/wiki/ComPtr
 
+	// Add a sky pointer and a sky mesh.
+	std::shared_ptr<Sky> sky;
+	std::shared_ptr<Mesh> skyMesh;
 
 	// Shaders and shader-related constructs
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;

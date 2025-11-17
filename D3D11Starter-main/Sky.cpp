@@ -1,4 +1,7 @@
 #include "Sky.h"
+#include "PathHelpers.h"
+#include <d3dcompiler.h>
+#include <string>
 
 // Add the WIC texture loader package.
 #include "WICTextureLoader.h"
@@ -10,15 +13,27 @@ Sky::Sky(std::shared_ptr<Mesh> mesh,
 	const wchar_t* up,
 	const wchar_t* down,
 	const wchar_t* front,
-	const wchar_t* back) // Pass in ps shader and vS
+	const wchar_t* back, 
+	const std::wstring& vertexFilePath,
+	const std::wstring& pixelFilePath) // Pass in ps shader and vS
 {
+	// Get the device.
+	device = Graphics::Device.Get();
+
+	// Create a rasterizer and depth stencil state.
+	CreateRasterizerState();
+	CreateDepthStencilState();
+
+	//skyRasterizeState = skyRasterizeState;
+
 	// Initialize the variables.
 	skyGeometryMesh = mesh;
 	skySamplerState = samplerState;
 	skySRV = CreateCubemap(right, left, up, down, front, back);
-	skyRasterizeState = CreateRasterizerState();
-	skyDepthSS = CreateDepthStencilState();
-	device = Graphics::Device.Get();
+
+	// Load the Vertex and Pixel shader.
+	LoadSkyVertexShader(vertexFilePath);
+	LoadSkyPixelShader(pixelFilePath);
 
 	//Microsoft::WRL::ComPtr<ID3D11Device> device;
 	//Microsoft::WRL::ComPtr<ID3D11SamplerState> skySamplerState;
@@ -35,19 +50,147 @@ Sky::~Sky()
 
 }
 
-Microsoft::WRL::ComPtr<ID3D11RasterizerState> Sky::CreateRasterizerState()
+void Sky::CreateRasterizerState()
 {
-	return Microsoft::WRL::ComPtr<ID3D11RasterizerState>();
+	// Create a desc Rastarize object.
+	D3D11_RASTERIZER_DESC rastDes = {};
+	rastDes.FillMode = D3D11_FILL_SOLID;
+	rastDes.CullMode = D3D11_CULL_FRONT;
+	rastDes.DepthClipEnable = true;
+
+	// Create a rasterizer state.
+	device->CreateRasterizerState(&rastDes, skyRasterizeState.GetAddressOf());
 }
 
-Microsoft::WRL::ComPtr<ID3D11DepthStencilState> Sky::CreateDepthStencilState()
+void Sky::CreateDepthStencilState()
 {
-	return Microsoft::WRL::ComPtr<ID3D11DepthStencilState>();
+	// Craete a desc object for the depth stencil state.
+	D3D11_DEPTH_STENCIL_DESC depthDesc = {};
+	depthDesc.DepthEnable = true;
+	depthDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+	depthDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	device->CreateDepthStencilState(&depthDesc, skyDepthSS.GetAddressOf());
 }
 
-void Draw()
+void Sky::LoadSkyPixelShader(const std::wstring& pixelShaderFilePath)
 {
+	// Load the vertex shader:
+	// Using Chris Casioli code reference:
+	// Create a binary large object to hold a read external pixel shader cso file information.
+	ID3DBlob* pixelShaderBlob;
 
+	// Loading shaders
+	//  - Visual Studio will compile our shaders at build time
+	//  - They are saved as .cso (Compiled Shader Object) files
+	//  - We need to load them when the application starts
+	{
+		// Read our compiled shader code files into blobs
+		// - Essentially just "open the file and plop its contents here"
+		// - Uses the custom FixPath() helper from Helpers.h to ensure relative paths
+		// - Note the "L" before the string - this tells the compiler the string uses wide characters
+		D3DReadFileToBlob(FixPath(pixelShaderFilePath).c_str(), &pixelShaderBlob);
+		//D3DReadFileToBlob(FixPath(L"PixelShader.cso").c_str(), &pixelShaderBlob);
+
+		// Create the actual Direct3D shaders on the GPU
+		Graphics::Device->CreatePixelShader(
+			pixelShaderBlob->GetBufferPointer(),	// Pointer to blob's contents
+			pixelShaderBlob->GetBufferSize(),		// How big is that data?
+			0,										// No classes in this shader
+			skyPixelShader.GetAddressOf());			// Address of the ID3D11PixelShader pointer
+	}
+}
+
+void Sky::LoadSkyVertexShader(const std::wstring& vertexShaderFilePath)
+{
+	// -------------------------------------------------------------------------
+	ID3DBlob* vertexShaderBlob;
+	D3DReadFileToBlob(FixPath(vertexShaderFilePath).c_str(), &vertexShaderBlob);
+	Graphics::Device->CreateVertexShader(
+		vertexShaderBlob->GetBufferPointer(), // Pointer to start of binary data
+		vertexShaderBlob->GetBufferSize(), // How big is that data?
+		0, // No classes in this shader
+		skyVertexShader.GetAddressOf());
+
+	// Bind the textures and sampler state for the pixel shaders to access.
+	// Graphics::Context->PSGetShaderResources(0, 1, )
+
+	// Optimize the shader class so you only initialize and use the same shader once.
+	// Using Chris Casiolio code reference for the input layout:
+	// Create an input layout 
+	//  - This describes the layout of data sent to a vertex shader
+	//  - In other words, it describes how to interpret data (numbers) in a vertex buffer
+	//  - Doing this NOW because it requires a vertex shader's byte code to verify against!
+	//  - Luckily, we already have that loaded (the vertex shader blob above)
+	{
+		D3D11_INPUT_ELEMENT_DESC inputElements[4] = {};
+
+		// Set up the first element - a position, which is 3 float values
+		inputElements[0].Format = DXGI_FORMAT_R32G32B32_FLOAT;				// Most formats are described as color channels; really it just means "Three 32-bit floats"
+		inputElements[0].SemanticName = "POSITION";							// This is "POSITION" - needs to match the semantics in our vertex shader input!
+		inputElements[0].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;	// How far into the vertex is this?  Assume it's after the previous element
+
+		// Create the input layout information for the vertex buffer uv texture coordinate.
+		inputElements[1].Format = DXGI_FORMAT_R32G32_FLOAT;					// The uv float bit sizes format.
+		inputElements[1].SemanticName = "TEXCOORD";							// The uv texture coordinate sematic name.
+		inputElements[1].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;	// Order in which the vertex uv byte is read - After the previous element.
+
+		// Create the input layout information for the normal direction.
+		inputElements[2].Format = DXGI_FORMAT_R32G32B32_FLOAT;				// The float float bit sizes format.
+		inputElements[2].SemanticName = "NORMAL";							// The uv texture coordinate sematic name.
+		inputElements[2].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;	// Order in which the vertex normal byte info is read - After the previous element.
+
+		// Update the input layout element for tangent.
+		inputElements[3].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+		inputElements[3].SemanticName = "TANGENT";
+		inputElements[3].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
+
+		//// Set up the first element - a position, which is 3 float values
+		//inputElements[0].Format = DXGI_FORMAT_R32G32B32_FLOAT;				// Most formats are described as color channels; really it just means "Three 32-bit floats"
+		//inputElements[0].SemanticName = "POSITION";							// This is "POSITION" - needs to match the semantics in our vertex shader input!
+		//inputElements[0].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;	// How far into the vertex is this?  Assume it's after the previous element
+
+		//// Add a sample direction input element.
+		//// Create the input layout information for the sample direction.
+		//inputElements[1].Format = DXGI_FORMAT_R32G32B32_FLOAT;				// The float float bit sizes format.
+		//inputElements[1].SemanticName = "DIRECTION";						// The sample direction coordinate sematic name.
+		//inputElements[1].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;	// Order in which the vertex normal byte info is read - After the previous element.
+
+		// Create the input layout, verifying our description against actual shader code
+		Graphics::Device->CreateInputLayout(
+			inputElements,							// An array of descriptions
+			4,										// How many elements in that array? // 2 -> 2 now!
+			vertexShaderBlob->GetBufferPointer(),	// Pointer to the code of a shader that uses this layout
+			vertexShaderBlob->GetBufferSize(),		// Size of the shader code that uses this layout
+			skyInputLayout.GetAddressOf());			// Address of the resulting ID3D11InputLayout pointer
+	}
+}
+
+void Sky::Draw()
+{
+	// Set and bind the RS and DSS.
+	Graphics::Context->RSSetState(skyRasterizeState.Get());
+	Graphics::Context->OMSetDepthStencilState(skyDepthSS.Get(), 0);
+
+	// Set and bind the VS and PS of the sky.
+	Graphics::Context->VSSetShader(skyVertexShader.Get(), nullptr, 0);
+	Graphics::Context->PSSetShader(skyPixelShader.Get(), nullptr, 0);
+
+	// Set the input layout.
+	Graphics::Context->IASetInputLayout(skyInputLayout.Get());
+
+	// Set the primitive toplology.
+	Graphics::Context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	// Set and bid the Sampler and SRV.
+	Graphics::Context->PSSetSamplers(0, 1, skySamplerState.GetAddressOf());
+	Graphics::Context->PSSetShaderResources(0, 1, skySRV.GetAddressOf());
+
+	// Draw the Mesh Cube.
+	skyGeometryMesh->Draw();
+
+	// Change them back to defualt settings.
+	Graphics::Context->RSSetState(0);
+	Graphics::Context->OMSetDepthStencilState(0, 0);
 }
 
 // --------------------------------------------------------

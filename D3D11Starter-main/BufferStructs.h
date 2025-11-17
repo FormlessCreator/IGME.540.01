@@ -20,6 +20,12 @@ struct BufferStructs
 	DirectX::XMMATRIX worldInverseTransposeMatrix;
 };
 
+struct SkyBufferStruct
+{
+	DirectX::XMMATRIX viewMatrix;
+	DirectX::XMMATRIX projectionMatrix;
+};
+
 struct PixelDataStruct
 {
 	// Add padding to fit HLSL 16 bytes standard.
