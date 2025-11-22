@@ -106,7 +106,12 @@ float4 main(VertexToPixel input) : SV_TARGET
 	//   of the triangle we're rendering
     // surfaceColor1 = ambientColor.xyz * surfaceColor1 * colorTint.xyz;
 	// This is the surface color of the object for each individual light.
-    surfaceColor = darkerAmbientColor.xyz * surfaceColor * colorTint.xyz;
+	
+	// Fix the gamma corrected texture color.
+    surfaceColor = pow(surfaceColor, 2.2f);
+	
+	// No ambient light.
+    surfaceColor = surfaceColor * colorTint.xyz;
 	
 	// Create a total lights final color that is the the ambient color of all
 	// the light, the surface color and thier tint.
@@ -187,8 +192,11 @@ float4 main(VertexToPixel input) : SV_TARGET
 	// ------------------------------------------------------------------------------
 	
 	// TOTAL LIGHT RETURN:
+	// Adjust the total light for gamma correction.
+    float3 gammaAdjustedColor = pow(totalLight, 1.0f /2.2f);
+	
 	// Return a float4 color.
-    return float4(totalLight, 1.0f);
+    return float4(gammaAdjustedColor, 1.0f);
 	
 	// Test:
 	// return float4(finalColor.xyz, 1.0f);
