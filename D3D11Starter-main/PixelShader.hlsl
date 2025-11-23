@@ -107,7 +107,7 @@ float4 main(VertexToPixel input) : SV_TARGET
     // surfaceColor1 = ambientColor.xyz * surfaceColor1 * colorTint.xyz;
 	// This is the surface color of the object for each individual light.
 	
-	// Fix the gamma corrected texture color.
+	// Fix the gamma corrected texture color to make it linear.
     surfaceColor = pow(surfaceColor, 2.2f);
 	
 	// No ambient light.
@@ -117,7 +117,7 @@ float4 main(VertexToPixel input) : SV_TARGET
 	// the light, the surface color and thier tint.
 	// It starts with the ambient surface color then it adds up all other
 	// light type calculation.
-    float3 totalLight = darkerAmbientColor.xyz * surfaceColor * colorTint.xyz;
+    float3 totalLight = darkerAmbientColor.xyz * surfaceColor;
 	
 	// ------------------------------------------------------------------------------
 	// Lighting Equations:

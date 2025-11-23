@@ -223,9 +223,9 @@ Game::Game()
 	// Convert the float value to colors between 0 - 1.
 	// By normalization.
 	colorPicker =  XMFLOAT4(
-		(61.0f / 255.0f), 
-		(61.0f / 255.0f), 
-		(61.0f / 255.0f), 
+		(181.0f / 255.0f), 
+		(181.0f / 255.0f), 
+		(181.0f / 255.0f), 
 		(0.0f / 255.0f));
 
 	// Set boolean variables to false by casting.

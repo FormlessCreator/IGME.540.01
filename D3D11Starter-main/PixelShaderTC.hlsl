@@ -50,6 +50,10 @@ float4 main(VertexToPixel input) : SV_TARGET
     float3 surfaceColor1 = PavementSurfaceTexture.Sample(BasicSampler, input.uv).rgb;
     float3 surfaceColor2 = SolarCellSurfaceTexture.Sample(BasicSampler, input.uv).rgb;
 	
+	// Apply gamma correction linear to custom monitor color reduction
+    surfaceColor1 = pow(surfaceColor1, 2.2f);
+    surfaceColor2 = pow(surfaceColor2, 2.2f);
+	
 	// Just return the input color
 	// - This color (like most values passing through the rasterizer) is 
 	//   interpolated for each pixel between the corresponding vertices 
@@ -72,6 +76,7 @@ float4 main(VertexToPixel input) : SV_TARGET
     surfaceCombination *= colorTint.xyz;
 	
 	// Return a float4 color.
+	
     return float4(surfaceCombination, 1.0f);
 	
 	// Test:

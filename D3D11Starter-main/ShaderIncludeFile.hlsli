@@ -153,7 +153,7 @@ float maxSpecularReflection)
 	// Create a final color by adding the:
 	// pixel normal surface color for the unlit part of the object
 	// to the diffuse part of the object.
-    float3 finalColor = surfaceColor + diffuseTermColor + specularLightReflectToTheCamera;
+    float3 finalColor = diffuseTermColor + specularLightReflectToTheCamera;
 	
 	// Return the final 
     return finalColor;
