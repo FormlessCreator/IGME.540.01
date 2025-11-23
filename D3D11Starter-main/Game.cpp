@@ -270,7 +270,13 @@ Game::Game()
 	// Make a 7 materials that uses the PS.
 	for (int i = 0; i < 7; i++)
 	{
-		std::shared_ptr<Material> materialPBR = std::make_shared<Material>(vertexShader, pixelShader, inputLayout, ps, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+		//std::shared_ptr<Material> materialPBR = std::make_shared<Material>(vertexShader, pixelShader, inputLayout, ps, XMFLOAT4((float)i * 39.0f / 255.0f, 1.0f / 255.0f, 1.0f / 255.0f, 1.0f));
+		std::shared_ptr<Material> materialPBR = std::make_shared<Material>(
+			vertexShader, 
+			pixelShader,
+			inputLayout, 
+			ps, 
+			XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 		materialPBRs.push_back(materialPBR);
 	}
 
@@ -331,6 +337,12 @@ Game::Game()
 	{
 		//listOfMaterials[i]->LoadVertexShader();
 		listOfMaterials[i]->LoadPixelShader();
+	}
+
+	// Load the created materials PBR shaders.
+	for (int i = 0; i < materialPBRs.size(); i++)
+	{
+		materialPBRs[i]->LoadPixelShader();
 	}
 
 	CreateGeometry();
@@ -1294,28 +1306,61 @@ void Game::CreateGeometry()
 		// If the loop is greater than 0 *and less than 3*.
 		if (x > 0)
 		{
-			// Set loop material type for each group of looped entities.
-			// Create entities.
-			entity1.SetMaterial(loopMaterial);
-			entity2.SetMaterial(loopMaterial);
-			entity3.SetMaterial(loopMaterial);
-			entity4.SetMaterial(loopMaterial);
-			entity5.SetMaterial(loopMaterial);
-			entity6.SetMaterial(loopMaterial);
-			entity7.SetMaterial(loopMaterial);
+			if (x != 1)
+			{
+				// Set loop material type for each group of looped entities.
+				// Create entities.
+				entity1.SetMaterial(loopMaterial);
+				entity2.SetMaterial(loopMaterial);
+				entity3.SetMaterial(loopMaterial);
+				entity4.SetMaterial(loopMaterial);
+				entity5.SetMaterial(loopMaterial);
+				entity6.SetMaterial(loopMaterial);
+				entity7.SetMaterial(loopMaterial);
+			}
+
+			if (x == 1)
+			{
+				// Set loop material type for each group of looped entities.
+				// Create entities.
+				/*entity1.SetMaterial(loopMaterial);
+				entity2.SetMaterial(loopMaterial);
+				entity3.SetMaterial(loopMaterial);
+				entity4.SetMaterial(loopMaterial);
+				entity5.SetMaterial(loopMaterial);
+				entity6.SetMaterial(loopMaterial);
+				entity7.SetMaterial(loopMaterial);*/
+
+				// Set PBR Material.
+				/*entity1.SetMaterial(materialPBRs[0]);
+				entity2.SetMaterial(materialPBRs[1]);
+				entity3.SetMaterial(materialPBRs[2]);
+				entity4.SetMaterial(materialPBRs[3]);
+				entity5.SetMaterial(materialPBRs[4]);
+				entity6.SetMaterial(materialPBRs[5]);
+				entity7.SetMaterial(materialPBRs[6]);*/
+
+				for (int i = 0; i < 7; i++)
+				{
+					entity6.SetMaterial(materialPBRs[i]);
+
+					// Push the entities with a changed material in the list.
+					listOfEntities.push_back(entity6);
+				}
+			}
 		}
 		
-		if (x == 1)
-		{
-			// Push the entities with a changed material in the list.
-			listOfEntities.push_back(entity6);
-			listOfEntities.push_back(entity6);
-			listOfEntities.push_back(entity6);
-			listOfEntities.push_back(entity6);
-			listOfEntities.push_back(entity6);
-			listOfEntities.push_back(entity6);
-			listOfEntities.push_back(entity6);
-		}
+		//if (x == 1)
+		//{
+		//	// Push the entities with a changed material in the list.
+		//	listOfEntities.push_back(entity6);
+		//	listOfEntities.push_back(entity6);
+		//	listOfEntities.push_back(entity6);
+		//	listOfEntities.push_back(entity6);
+		//	listOfEntities.push_back(entity6);
+		//	listOfEntities.push_back(entity6);
+		//	listOfEntities.push_back(entity6);
+		//}
 		
 		if (x != 1)
 		{
