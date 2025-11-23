@@ -311,6 +311,7 @@ Game::Game()
 
 	pShaderTC->AddTextureSRV(0, pavementSRV);
 	pShaderTC->AddTextureSRV(1, solarCellSRV);
+	pShaderTC->AddTextureSRV(2, pavementNormalSRV);
 	pShaderTC->AddSampler(0, sampler);
 
 	// Make material directly:
@@ -325,8 +326,8 @@ Game::Game()
 	// Add all the materials to a material vector.
 	listOfMaterials.push_back(customMaterialForShaders);
 	listOfMaterials.push_back(pShader);
-	listOfMaterials.push_back(pShader1);
 	listOfMaterials.push_back(pShaderTC);
+	listOfMaterials.push_back(pShader1);
 	listOfMaterials.push_back(materialForShaders1);
 	listOfMaterials.push_back(materialForShaders2);
 

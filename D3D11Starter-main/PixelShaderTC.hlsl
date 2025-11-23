@@ -1,10 +1,20 @@
-// Add a shader include file.
+// Add the include shader file here.
 #include "ShaderIncludeFile.hlsli"
+
+// Add a lights header.
+//#include "Lights.h"
 
 // Store the refrences to the texture and the sampler.
 // Create a 2D texture surface data.
 Texture2D PavementSurfaceTexture : register(t0);
 Texture2D SolarCellSurfaceTexture : register(t1);
+Texture2D NormalMap : register(t2);
+
+// Add the new textures to the pixel shader.
+//Texture2D Albedo : register(t0);
+//Texture2D MetalnessMap : register(t1);
+//Texture2D NormalMap : register(t2);
+//Texture2D RoughnessMap : register(t3);
 
 // Create a sampler state.
 SamplerState BasicSampler : register(s0);
@@ -30,7 +40,15 @@ cbuffer PSExternalData1 : register(b0)
     float2 roughnessPadding;
 	
     float4 ambientColor;
+	
+	// Add the light to the pixel shader CBH.
+    Lights directionalLight1;
+	
+	// Add five lights array to match CBH:
+    Lights lightsArray[5];
+	
 }
+
 // --------------------------------------------------------
 // The entry point (main method) for our pixel shader
 // 
@@ -42,44 +60,159 @@ cbuffer PSExternalData1 : register(b0)
 // --------------------------------------------------------
 float4 main(VertexToPixel input) : SV_TARGET
 {
-	// Modify the input uv texture by its material texture scale and offset.
+	// Enter the light count.
+    int lightCount = 5;
+	
+	// Normalize the input tangent.
+    input.tangent = normalize(input.tangent);
+	
+	// Get the sample of the normal map texture.
+    float3 normalFromTexture = NormalMap.Sample(BasicSampler, input.uv).rgb;
+	
+	// Unpack the per pixel normal from the texture sample.
+    float3 unpackNormal = normalize(normalFromTexture * 2.0f - 1.0f);
+	
+	// Get the ambient color or average surface color for all the lights.
+	// Normalize the input normal.
+	// To create an non-linear interpolation of the pixel vertex normal.
+    input.normal = normalize(input.normal);
+	
+	// Create a 90* Tangent, Bitangent and Normal matrix.
+    float3 N = normalize(input.normal);
+	
+	// Get the tangent.
+    float3 T = normalize(input.tangent - dot(input.tangent, N) * N);
+	
+	// Get the perpendicular 90 degree Bi-tangent using the cross product of T & N.
+    float3 B = normalize(cross(T, N));
+	
+	// Create a 3x3 float matrix that creates a 3x3 world space of T = x or u, B = y or v, N = z.
+    float3x3 TBN = float3x3(T, B, N);
+	
+	// Transform the normal of the unpacked texture to the TBN coordinates.
+    float3 finalNormal = mul(unpackNormal, TBN);
+	
+	// Get the new input scale and offset.
+	// Create a modified input uv using the new input scale and offset.
     input.uv = input.uv * scale + offset;
 	
 	// Create and get a texture color from the texture using the texture,
 	// the sampler state and the given input uv coordinate.
-    float3 surfaceColor1 = PavementSurfaceTexture.Sample(BasicSampler, input.uv).rgb;
-    float3 surfaceColor2 = SolarCellSurfaceTexture.Sample(BasicSampler, input.uv).rgb;
+    float3 surfaceColor = PavementSurfaceTexture.Sample(BasicSampler, input.uv).rgb;
 	
-	// Apply gamma correction linear to custom monitor color reduction
-    surfaceColor1 = pow(surfaceColor1, 2.2f);
-    surfaceColor2 = pow(surfaceColor2, 2.2f);
+	// Make the ambient color darker.
+	// Create an CBH value to make ambient color darker or brighter.
+    float4 darkerAmbientColor = float4(ambientColor.xyz / 1.0f, 1.0f);
 	
+	// AMBIENT LIGHT:
 	// Just return the input color
 	// - This color (like most values passing through the rasterizer) is 
 	//   interpolated for each pixel between the corresponding vertices 
 	//   of the triangle we're rendering
-	// Get the combination of both texture for the texture tint.
-    // float3 surfaceCombination = surfaceColor1 * surfaceColor2;
+    // surfaceColor1 = ambientColor.xyz * surfaceColor1 * colorTint.xyz;
+	// This is the surface color of the object for each individual light.
 	
-	// Combine both texture together by adding.
-    float3 surfaceCombination = surfaceColor1 + surfaceColor2;
+	// Fix the gamma corrected texture color to make it linear.
+    surfaceColor = pow(surfaceColor, 2.2f);
 	
-	// Make the color brighter by adding new surface texture combination 
-	// again (+ 1 brightness).
-    surfaceCombination += surfaceCombination;
+	// No ambient light.
+    surfaceColor = surfaceColor * colorTint.xyz;
 	
-	// Make the color less bright(its intial combination brightness) or
-	// or darker by subtracting.
-    // surfaceCombination -= surfaceCombination;
+	// Create a total lights final color that is the the ambient color of all
+	// the light, the surface color and thier tint.
+	// It starts with the ambient surface color then it adds up all other
+	// light type calculation.
+    float3 totalLight = darkerAmbientColor.xyz * surfaceColor;
 	
-	// Combine the surface with the color tint.
-    surfaceCombination *= colorTint.xyz;
+	// ------------------------------------------------------------------------------
+	// Lighting Equations:
+	
+	// Create a for loop that gets the light in an array, does some calculation
+	// based on its type using a switch statement and adds the light color to
+	// the total light color combination for the pixel.
+    for (int i = 0; i < 5; i++)
+    {
+		// Get the light in the current loop.
+        Lights light = lightsArray[i];
+		
+		// Get the normalised light direction.
+        float3 normalizedLightDirection = normalize(-light.direction);
+		
+		// Create a switch statement that gets the current light type.
+        switch (light.type)
+        {
+		// If the light is a directional light, calculate light on the pixel surface
+		// and add to all the lights in the scene.
+            case 0:
+                totalLight +=
+			DirectionalLight(
+			light,
+			finalNormal,
+			normalizedLightDirection,
+			input.worldPosition,
+			cameraCurrentPosition,
+			roughness.x,
+			surfaceColor,
+			MAX_SPECULAR_EXPONENT);
+                break;
+		
+            case 1:
+			// If the light is a point light, calculate light on the pixel surface
+			// and add to all the lights in the scene.
+                totalLight +=
+			PointLight(
+			light,
+			finalNormal,
+			input.worldPosition,
+			cameraCurrentPosition,
+			roughness.x,
+			surfaceColor,
+			MAX_SPECULAR_EXPONENT) * Attenuate(light, input.worldPosition);
+                break;
+		
+            case 2:
+			// If the light is a spot light, calculate light on the pixel surface
+			// and add to all the lights in the scene.
+                totalLight +=
+            SpotLight(
+			light,
+			finalNormal,
+			normalizedLightDirection,
+			input.worldPosition,
+			cameraCurrentPosition,
+			roughness.y,
+			surfaceColor,
+			MAX_SPECULAR_EXPONENT) * Attenuate(light, input.worldPosition);
+                break;
+        }
+    }
+	
+	// Issues:
+	// Here the final surface color is just the diffuse surface color and 
+	// ambient color(for the unlit surface, no surface color texture).
+	//float3 finalColor = ambientColor.xyz / 0.6f + diffuseTermColor;
+    //float3 finalColor = darkerAmbientColor.xyz + diffuseTermColor;
+	
+	
+	// ------------------------------------------------------------------------------
+	
+	// TOTAL LIGHT RETURN:
+	// Adjust the total light for gamma correction.
+    float3 gammaAdjustedColor = pow(totalLight, 1.0f / 2.2f);
 	
 	// Return a float4 color.
-	
-    return float4(surfaceCombination, 1.0f);
+    return float4(gammaAdjustedColor, 1.0f);
 	
 	// Test:
+	// return float4(finalColor.xyz, 1.0f);
 	//return float4(input.uv, 0, 1);
     //return float4(input.normal, 1);
+    //return float4(directionalLight1.color, 1.0f);
+    //return float4(directionalLight1.direction, 1.0f);
+	//return float4(surfaceColor1.xyz, 1.0f);
+    //return float4(input.worldPosition, 1.0f);
+    //return float4(normalVVDirOfCam.xyz, 1.0f);
+    //return float4(lightReflection.xyz, 1.0f);
+    //return float4(specularLightReflectToTheCamera.xxx, 1.0f);
+    //return float4(diffuseTermColor.xyz, 1.0f);
 }
