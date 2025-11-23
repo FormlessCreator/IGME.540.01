@@ -70,6 +70,7 @@ Game::Game()
 	const std::wstring pavement = L"..\\..\\Assets\\Textures\\rock.png";
 	const std::wstring solarCell = L"..\\..\\Assets\\Textures\\SolarCell.png";
 	const std::wstring pavementNormal = L"..\\..\\Assets\\Textures\\rock_normals.png";
+	//const std::wstring
 
 	// Create a shader resource view to load the textures.
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pavementSRV;
@@ -1179,15 +1180,30 @@ void Game::CreateGeometry()
 			entity7.SetMaterial(loopMaterial);
 		}
 		
+		if (x == 1)
+		{
+			// Push the entities with a changed material in the list.
+			listOfEntities.push_back(entity6);
+			listOfEntities.push_back(entity6);
+			listOfEntities.push_back(entity6);
+			listOfEntities.push_back(entity6);
+			listOfEntities.push_back(entity6);
+			listOfEntities.push_back(entity6);
+			listOfEntities.push_back(entity6);
+		}
 		
-		// Push the entities with a changed material in the list.
-		listOfEntities.push_back(entity7);
-		listOfEntities.push_back(entity6);
-		listOfEntities.push_back(entity5);
-		listOfEntities.push_back(entity4);
-		listOfEntities.push_back(entity3);
-		listOfEntities.push_back(entity2);
-		listOfEntities.push_back(entity1);
+		if (x != 1)
+		{
+			// Push the entities with a changed material in the list.
+			listOfEntities.push_back(entity7);
+			listOfEntities.push_back(entity6);
+			listOfEntities.push_back(entity5);
+			listOfEntities.push_back(entity4);
+			listOfEntities.push_back(entity3);
+			listOfEntities.push_back(entity2);
+			listOfEntities.push_back(entity1);
+		}
+
 	}
 
 	// For each entities group in the list, transform their y position by 3.
@@ -1207,6 +1223,7 @@ void Game::CreateGeometry()
 		listOfEntities[4 + indexMultiple].GetTransform().SetPosition(3, y, 0);
 		listOfEntities[5 + indexMultiple].GetTransform().SetPosition(6, y, 0);
 		listOfEntities[6 + indexMultiple].GetTransform().SetPosition(9, y, 0);
+		//listOfEntities[6 + indexMultiple].GetTransform().SetPosition(9, y, 0);
 	}
 }
 
