@@ -96,10 +96,23 @@ float4 main(VertexToPixel input) : SV_TARGET
 	// Create a modified input uv using the new input scale and offset.
     input.uv = input.uv * scale + offset;
 	
+	// Get the roughness map sample and the metalness map sample.
+    float roughnessTexture = RoughnessMap.Sample(BasicSampler, input.uv).r;
+    float metalnessTexture = MetalnessMap.Sample(BasicSampler, input.uv).r;
+	
 	// Create and get a texture color from the texture using the texture,
 	// the sampler state and the given input uv coordinate.
     float3 surfaceColor = Albedo.Sample(BasicSampler, input.uv).rgb;
 	
+	// Create a specular reflection for the albedo material texture color.
+	// Specular color is the color of light reflected of the surface of a
+	// material:
+	// If it is dielectric the albedo specular color is often between the 
+	// range of constant 0.04f or 0 as they do not tint their reflected light.
+	// Metal often have a specular color of 1 as it reflect more tinted 
+	// light of its surface albedo color.
+	// We determine this based on the metalness of the pixel.
+    float3 specularColor = lerp(0.04f, surfaceColor.rgb, metalnessTexture);
 	
 	// Make the ambient color darker.
 	// Create an CBH value to make ambient color darker or brighter.
@@ -113,7 +126,7 @@ float4 main(VertexToPixel input) : SV_TARGET
     // surfaceColor1 = ambientColor.xyz * surfaceColor1 * colorTint.xyz;
 	// This is the surface color of the object for each individual light.
 	
-	// Fix the gamma corrected texture color to make it linear.
+	// Gamma correct the albedo surface texture.
     surfaceColor = pow(surfaceColor, 2.2f);
 	
 	// No ambient light.
@@ -153,7 +166,7 @@ float4 main(VertexToPixel input) : SV_TARGET
 			input.worldPosition,
 			cameraCurrentPosition,
 			roughness.x,
-			surfaceColor,
+			roughnessTexture,
 			MAX_SPECULAR_EXPONENT);
                 break;
 		
@@ -166,7 +179,7 @@ float4 main(VertexToPixel input) : SV_TARGET
 			finalNormal,
 			input.worldPosition,
 			cameraCurrentPosition,
-			roughness.x,
+			roughnessTexture,
 			surfaceColor,
 			MAX_SPECULAR_EXPONENT) * Attenuate(light, input.worldPosition);
                 break;
@@ -181,7 +194,7 @@ float4 main(VertexToPixel input) : SV_TARGET
 			normalizedLightDirection,
 			input.worldPosition,
 			cameraCurrentPosition,
-			roughness.y,
+			roughnessTexture,
 			surfaceColor,
 			MAX_SPECULAR_EXPONENT) * Attenuate(light, input.worldPosition);
                 break;

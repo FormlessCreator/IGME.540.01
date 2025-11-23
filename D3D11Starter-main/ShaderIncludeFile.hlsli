@@ -102,6 +102,8 @@ struct VertexToPixel_SkyBox
     float3 sampleDir : DIRECTION;
 };
 
+// -----------------------------------------------------------------------------------------
+// Using Phong Lighting equations:
 // Create a directional light method.
 float3 DirectionalLight(
 Lights light,
@@ -235,9 +237,159 @@ float maxSpecularReflection)
 	
     return finalColor;
 }
+// ------------------------------------------------------------------------------------------
+
+// ------------------------------------------------------------------------------------------
+// Using Cook-Torrance BRDF Lighting equation:
+// Create a microfacet for the pixel based on its:
+// Normal - n
+// Light vector - l
+// View vector - v
+// Roughness - roughness
+// Specular color - f0
+float3 MicrofacetBRDF(float3 n, float3 l, float3 v, float roughness, float3 f0)
+{
+	
+	// Return float3.
+    return float3(0, 0, 0);
+}
+
+// Create a directional light method.
+float3 CookDirectionalLight(
+Lights light,
+float3 inputNormal,
+float3 normalizedLightDirection,
+float3 inputPixelWorldPosition,
+float4 cameraPosition,
+float roughness,
+float3 surfaceColor,
+float maxSpecularReflection)
+{
+	// DIFFUSE LIGHT:
+	// Calculate the overall diffuse color of light 1.
+	// Get the dot product of the light:
+	// Using the and the normalize input pixel normal and normalize -direction of the light.
+	// Using saturate or max or clamp to make so that the light does not fall beyond 0.
+	// Does the pixel normal direction point to the same direction as the light?
+	// How much light is shined on the given pixels?
+    float Ndot1 = saturate(dot(inputNormal, -normalizedLightDirection));
+	
+	// Create a diffuse term color by combining the normalize dot light with:
+	// The light intensity
+	// The light color
+	// The surface color.
+    float3 diffuseTermColor = Ndot1 * light.intensity * light.color * surfaceColor;
+	
+	// SPECULAR LIGHT:
+	// USING THE DIRECTIONAL LIGHT:
+	
+	// Get the view vector or direction of the camera using camera position and the world position of the pixel
+	// normal that the light is hitting.
+    float3 viewVectorDirOfTheCamera = cameraPosition.xyz - inputPixelWorldPosition;
+	
+	// Normalize the view vector direction to resolve non-unit direction.
+    float3 normalVVDirOfCam = normalize(viewVectorDirOfTheCamera);
+	
+	// Get the reflection of the light using the normalized light direction and input normal.
+    float3 lightReflection = reflect(normalizedLightDirection, inputNormal);
+	
+	// Get the max specular.
+    //float maxSpecularReflection = MAX_SPECULAR_EXPONENT;
+	// Create a specular reflection using the dot product of the 
+	// light reflection and the view vector camera direction.
+    float specularLightReflectToTheCamera = pow(max(dot(lightReflection, normalVVDirOfCam), 0.0f), maxSpecularReflection / roughness);
+	
+	// If the surfece is facing away from the light make its specular 0.
+    specularLightReflectToTheCamera *= any(diffuseTermColor);
+	
+	// Create a final color by adding the:
+	// pixel normal surface color for the unlit part of the object
+	// to the diffuse part of the object.
+    float3 finalColor = diffuseTermColor + specularLightReflectToTheCamera;
+	
+	// Return the final 
+    return finalColor;
+}
+
+// Create a point light method.
+float3 CookPointLight(
+Lights light,
+float3 inputNormal,
+float3 inputPixelWorldPosition,
+float4 cameraPosition,
+float roughness,
+float3 surfaceColor,
+float maxSpecularReflection)
+{
+	// Point light uses position and direction of the light from the the pixel position.
+    float3 dirOfLightPosFromPixelPos = light.position - inputPixelWorldPosition;
+	
+	// Normalize the light direction.
+    float3 normalizedLightDirection = normalize(-dirOfLightPosFromPixelPos);
+	
+	// Return the directional light color but use the normalized direction of the light
+	// and the pixel world surface position.
+    return DirectionalLight(
+	light,
+	inputNormal,
+	normalizedLightDirection,
+	inputPixelWorldPosition,
+	cameraPosition,
+	roughness,
+	surfaceColor,
+	maxSpecularReflection);
+}
+
+// Create a spot light method.
+float3 CookSpotLight(
+Lights light,
+float3 inputNormal,
+float3 normalizedLightDirection,
+float3 inputPixelWorldPosition,
+float4 cameraPosition,
+float roughness,
+float3 surfaceColor,
+float maxSpecularReflection)
+{
+	// Get the direction of light from the pixel.
+    float3 dirOfLightFromThePixel = inputPixelWorldPosition - light.position;
+	
+	// Normalize the direction of the position to the light.
+    float3 normalizedLightPosDir = normalize(dirOfLightFromThePixel);
+	
+	// Normalize the direction to the light.
+    float3 normalizeLightDir = normalize(normalizedLightDirection);
+	
+	// Get the normalized dot product(cos angle) of light direction and the spot light direction.
+    float pixelAngle = saturate(dot(normalizedLightPosDir, normalizeLightDir));
+	
+	// Get the cos angle of both inner and outer radian range of the light direction.
+    float cosOfOuterRange = cos(light.spotOuterAngle);
+    float cosOfInnerrange = cos(light.spotInnerAngle);
+	
+	// Calculate the falloff(gap) range of both angles.
+    float fallOfRange = cosOfOuterRange - cosOfInnerrange;
+	
+	// Give the light a linear falloff dim starting from the gap of the falloff range.
+	// to create a spot light range.
+    float linearSpotLightFalloff = saturate((cosOfOuterRange - pixelAngle) / fallOfRange);
+	
+	// Spot light is just a point light with a falloff range of light.
+	// Use the point light method and multiply by the fall offrange.
+    float3 finalColor = PointLight(
+	light,
+	inputNormal,
+	inputPixelWorldPosition,
+	cameraPosition,
+	roughness,
+	surfaceColor,
+	maxSpecularReflection) * linearSpotLightFalloff;
+	
+    return finalColor;
+}
+// ------------------------------------------------------------------------------------------
 
 // Helper functions:
-
 // Create a Color Change class that changes color based on the float value it is provided.
 float4 ColorChange(float4 value, float2 time)
 {
