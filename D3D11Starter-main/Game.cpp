@@ -70,7 +70,6 @@ Game::Game()
 	const std::wstring pavement = L"..\\..\\Assets\\Textures\\rock.png";
 	const std::wstring solarCell = L"..\\..\\Assets\\Textures\\SolarCell.png";
 	const std::wstring pavementNormal = L"..\\..\\Assets\\Textures\\rock_normals.png";
-	//const std::wstring
 
 	// Create a shader resource view to load the textures.
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pavementSRV;
@@ -98,6 +97,109 @@ Game::Game()
 		FixPath(pavementNormal).c_str(),
 		0,
 		pavementNormalSRV.GetAddressOf());
+
+	// Load the textures of the PBR Textures.
+	// Bronze:
+	//const std::wstring bronze_albedo = L"..\\..\\Assets\\PBR\\bronze_albedo.png";
+	//const std::wstring bronze_metal = L"..\\..\\Assets\\PBR\\bronze_metal.png";
+	//const std::wstring bronze_normals = L"..\\..\\Assets\\PBR\\bronze_normals.png";
+	//const std::wstring bronze_roughness = L"..\\..\\Assets\\PBR\\bronze_roughness.png";
+
+	//// CobbleStone:
+	//const std::wstring cobblestone_albedo = L"..\\..\\Assets\\PBR\\cobblestone_albedo.png";
+	//const std::wstring cobblestone_metal = L"..\\..\\Assets\\PBR\\cobblestone_metal.png";
+	//const std::wstring cobblestone_normals = L"..\\..\\Assets\\PBR\\cobblestone_normals.png";
+	//const std::wstring cobblestone_roughness = L"..\\..\\Assets\\PBR\\cobblestone_roughness.png";
+
+	//// Floor:
+	//const std::wstring floor_albedo = L"..\\..\\Assets\\PBR\\floor_albedo.png";
+	//const std::wstring floor_metal = L"..\\..\\Assets\\PBR\\floor_metal.png";
+	//const std::wstring floor_normals = L"..\\..\\Assets\\PBR\\floor_normals.png";
+	//const std::wstring floor_roughness = L"..\\..\\Assets\\PBR\\floor_roughness.png";
+
+	//// Paint:
+	//const std::wstring paint_albedo = L"..\\..\\Assets\\PBR\\paint_albedo.png";
+	//const std::wstring paint_metal = L"..\\..\\Assets\\PBR\\paint_metal.png";
+	//const std::wstring paint_normals = L"..\\..\\Assets\\PBR\\paint_normals.png";
+	//const std::wstring paint_roughness = L"..\\..\\Assets\\PBR\\paint_roughness.png";
+
+	//// Rough:
+	//const std::wstring rough_albedo = L"..\\..\\Assets\\PBR\\rough_albedo.png";
+	//const std::wstring rough_metal = L"..\\..\\Assets\\PBR\\rough_metal.png";
+	//const std::wstring rough_normals = L"..\\..\\Assets\\PBR\\rough_normals.png";
+	//const std::wstring rough_roughness = L"..\\..\\Assets\\PBR\\rough_roughness.png";
+
+	//// Scratched:
+	//const std::wstring scratched_albedo = L"..\\..\\Assets\\PBR\\scratched_albedo.png";
+	//const std::wstring scratched_metal = L"..\\..\\Assets\\PBR\\scratched_metal.png";
+	//const std::wstring scratched_normals = L"..\\..\\Assets\\PBR\\scratched_normals.png";
+	//const std::wstring scratched_roughness = L"..\\..\\Assets\\PBR\\scratched_roughness.png";
+
+	//// Wood:
+	//const std::wstring wood_albedo = L"..\\..\\Assets\\PBR\\wood_albedo.png";
+	//const std::wstring wood_metal = L"..\\..\\Assets\\PBR\\wood_metal.png";
+	//const std::wstring wood_normals = L"..\\..\\Assets\\PBR\\wood_normals.png";
+	//const std::wstring wood_roughness = L"..\\..\\Assets\\PBR\\wood_roughness.png";
+
+
+	//// Create shader resources view for all the added PRB textures.
+	//Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> bronze_SRV;
+	//Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cobblestone_SRV;
+	//Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> floor_SRV;
+	//Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> paint_SRV;
+	//Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> rough_SRV;
+	//Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> scratch_SRV;
+	//Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> wood_SRV;
+
+	//// Create a WIC Texture file to load textures.
+	//CreateWICTextureFromFile(
+	//	Graphics::Device.Get(),
+	//	Graphics::Context.Get(),
+	//	FixPath(bronze_albedo).c_str(),
+	//	0,
+	//	bronze_SRV.GetAddressOf());
+
+	// To save time I will use a nested for loop.
+	// Create a vector that holds the wstring of different materials and their texture type.
+	materials = {
+		L"bronze",
+		L"cobblestone",
+		L"floor",
+		L"paint",
+		L"rough",
+		L"scratched",
+		L"wood" };
+
+	materialTextureType = {
+		L"_albedo.png",
+		L"_metal.png",
+		L"_normals.png",
+		L"_roughness.png"};
+
+	// Using a nested for loop.
+	for (int i = 0; i < materials.size(); i++)
+	{
+		for (int j = 0; j < materialTextureType.size(); j++)
+		{
+			// Create a texture type wstring.
+			std::wstring pathFile = L"..\\..\\Assets\\PBR\\" + materials[i] + materialTextureType[j];
+
+			// Create texture srv.
+			Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> textureSRV;
+
+			// Create a texture file using WIC and load texture.
+			// Create a WIC Texture file to load textures.
+			CreateWICTextureFromFile(
+				Graphics::Device.Get(),
+				Graphics::Context.Get(),
+				FixPath(pathFile).c_str(),
+				0,
+				textureSRV.GetAddressOf());
+
+			// Push texture SRV in materials SRV.
+			materialSRVs.push_back(textureSRV);
+		}
+	}
 
 	// Load specific textures to generate mipmaps and refrences.
 	// By sampling.
@@ -165,7 +267,30 @@ Game::Game()
 	materialForShaders2 = std::make_shared<Material>(vertexShader, debugUVsPS, inputLayout, debugUVShader, XMFLOAT4(1.0f, 1.0f, 1.0f, 0.0f));
 	customMaterialForShaders = std::make_shared<Material>(vertexShader, customPS, inputLayout, customPShader, XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f));
 
-	// Set pshader material roughness.
+	// Make a 7 materials that uses the PS.
+	for (int i = 0; i < 7; i++)
+	{
+		std::shared_ptr<Material> materialPBR = std::make_shared<Material>(vertexShader, pixelShader, inputLayout, ps, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+		materialPBRs.push_back(materialPBR);
+	}
+
+	srvCounter = 0;
+
+	// Add all the textures and samples for the materials pbr using a nested for loop.
+	for (int i = 0; i < 7; i++)
+	{
+		for (unsigned int j = 0; j < 4; j++)
+		{
+			// Add texture to the material.
+			materialPBRs[i]->AddTextureSRV(j, materialSRVs[srvCounter]);
+
+			// Increase srv counter by 1.
+			srvCounter++;
+		}
+
+		// Add a sample to the material.
+		materialPBRs[i]->AddSampler(0, sampler);
+	}
 
 	// Add both of the textures and sampler to the pshader Material by calling the methods.
 	pShader->AddTextureSRV(0, pavementSRV);

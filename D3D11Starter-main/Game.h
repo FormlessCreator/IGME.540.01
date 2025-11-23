@@ -131,8 +131,12 @@ private:
 	std::shared_ptr<Material> materialForShaders2;
 	std::shared_ptr<Material> customMaterialForShaders;
 
+	// Create PRB materials for Pixel Shader.
 	// Create a material vector list to hold created shared pointer materials.
 	std::vector <std::shared_ptr<Material>> listOfMaterials;
+
+	// Create a list of shared pointer materials for PBRs to be used by the PS.
+	std::vector<std::shared_ptr<Material>> materialPBRs;
 
 	// Create a test material that is not shared.
 	//Material testMaterial;
@@ -203,5 +207,15 @@ private:
 
 	// Boolean to initialize once.
 	bool lightInitialized;
+
+	// Create vectors for PRB materials texture type SRV creation.
+	std::vector<std::wstring> materials;
+	std::vector<std::wstring> materialTextureType;
+
+	// For 28 textures to be created.
+	std::vector<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>> materialSRVs;
+
+	// Number for tracking the srv of the material texture.
+	int srvCounter;
 };
 
