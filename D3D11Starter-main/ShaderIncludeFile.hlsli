@@ -328,17 +328,20 @@ float3 MicrofacetBRDF(float3 n, float3 l, float3 v, float roughness, float3 f0)
 	
 	// Create a specular PBR light.
 	// Get the Normal distribution of the microfacets reflection in our direction.
-    float	D = D_GGX(n, h, roughness);
+    float D = D_GGX(n, h, roughness);
 	
 	// Get the Fresnel relflection that gives use the amount of reflection based
 	// on the ratio of the relflected light and our camera viewing angle.
-    float3	F = F_Schlick(v, h, f0);
+    float3 F = F_Schlick(v, h, f0);
 	
 	// Geometric shadowing for the reflected light and incoming light.
-    float	G = G_SchlickGGX(n, v, roughness) * G_SchlickGGX(n, l, roughness);
+    float G = G_SchlickGGX(n, v, roughness) * G_SchlickGGX(n, l, roughness);
 	
 	// Return the remap formula that avoids division by 0.
-    return (D * F * G) / 4;
+    float3 specularResult = (D * F * G) / 4;
+	
+	// Return the specular result by dot product of the normal and light.
+    return specularResult * saturate(dot(n, l));
 }
 
 // Create a diffuse energy conservation method for the given light.
@@ -373,14 +376,14 @@ float metalness)
 	
 	// Calculate the new Specular PBR Light.
     float3 spec = MicrofacetBRDF(
-	inputNormal,
-	normalizedLightDirection,
+	normalize(inputNormal),
+	normalize(normalizedLightDirection),
 	normalVVDirOfCam,
 	roughness,
 	specularColor); 
 	
 	// Calculate the half vector.
-    float3 h = HalfVector(normalVVDirOfCam, normalizedLightDirection);
+    float3 h = normalize(HalfVector(normalVVDirOfCam, normalizedLightDirection));
 	
 	// Calculate the diffuse light with energy conservation, including the cutting diffuse for metals.
 	// Using the Fresnel Equation.

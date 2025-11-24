@@ -381,7 +381,7 @@ Game::Game()
 	float fov = XM_PIDIV4;
 	float nearClip = 0.1f;
 	float farClip = 1000.f;
-	float cameraMovementSpeed = 10.0f;
+	float cameraMovementSpeed = 25.0f;
 	float cameraMouseLookSpeed = 0.02f;
 	bool isCameraPerspective = true;
 
