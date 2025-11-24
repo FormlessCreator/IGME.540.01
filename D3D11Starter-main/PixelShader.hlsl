@@ -104,6 +104,12 @@ float4 main(VertexToPixel input) : SV_TARGET
 	// the sampler state and the given input uv coordinate.
     float3 surfaceColor = Albedo.Sample(BasicSampler, input.uv).rgb;
 	
+	// Gamma correct the albedo surface texture.
+    surfaceColor = pow(surfaceColor, 2.2f);
+	
+	// No ambient light.
+    surfaceColor = surfaceColor * colorTint.xyz;
+	
 	// Create a specular reflection for the albedo material texture color.
 	// Specular color is the color of light reflected of the surface of a
 	// material:
@@ -116,7 +122,7 @@ float4 main(VertexToPixel input) : SV_TARGET
 	
 	// Make the ambient color darker.
 	// Create an CBH value to make ambient color darker or brighter.
-    float4 darkerAmbientColor = float4(ambientColor.xyz / 1.0f, 1.0f);
+    //float4 darkerAmbientColor = float4(ambientColor.xyz / 1.0f, 1.0f);
 	
 	// AMBIENT LIGHT:
 	// Just return the input color
@@ -125,18 +131,16 @@ float4 main(VertexToPixel input) : SV_TARGET
 	//   of the triangle we're rendering
     // surfaceColor1 = ambientColor.xyz * surfaceColor1 * colorTint.xyz;
 	// This is the surface color of the object for each individual light.
-	
-	// Gamma correct the albedo surface texture.
-    surfaceColor = pow(surfaceColor, 2.2f);
-	
-	// No ambient light.
-    surfaceColor = surfaceColor * colorTint.xyz;
+
 	
 	// Create a total lights final color that is the the ambient color of all
 	// the light, the surface color and thier tint.
 	// It starts with the ambient surface color then it adds up all other
 	// light type calculation.
-    float3 totalLight = darkerAmbientColor.xyz * surfaceColor;
+    //float3 totalLight = darkerAmbientColor.xyz * surfaceColor;
+	
+	// No ambient light.
+    float3 totalLight = surfaceColor;
 	
 	// ------------------------------------------------------------------------------
 	// Lighting Equations:
@@ -159,36 +163,38 @@ float4 main(VertexToPixel input) : SV_TARGET
 		// and add to all the lights in the scene.
             case 0:
                 totalLight +=
-			DirectionalLight(
+			CookDirectionalLight(
 			light,
 			finalNormal,
 			normalizedLightDirection,
 			input.worldPosition,
 			cameraCurrentPosition,
-			roughness.x,
 			roughnessTexture,
-			MAX_SPECULAR_EXPONENT);
+			surfaceColor,
+			specularColor,
+			metalnessTexture);
                 break;
 		
             case 1:
 			// If the light is a point light, calculate light on the pixel surface
 			// and add to all the lights in the scene.
                 totalLight +=
-			PointLight(
+			CookPointLight(
 			light,
 			finalNormal,
 			input.worldPosition,
 			cameraCurrentPosition,
 			roughnessTexture,
 			surfaceColor,
-			MAX_SPECULAR_EXPONENT) * Attenuate(light, input.worldPosition);
+			specularColor,
+			metalnessTexture) * Attenuate(light, input.worldPosition);
                 break;
 		
             case 2:
 			// If the light is a spot light, calculate light on the pixel surface
 			// and add to all the lights in the scene.
                 totalLight +=
-            SpotLight(
+            CookSpotLight(
 			light,
 			finalNormal,
 			normalizedLightDirection,
@@ -196,7 +202,8 @@ float4 main(VertexToPixel input) : SV_TARGET
 			cameraCurrentPosition,
 			roughnessTexture,
 			surfaceColor,
-			MAX_SPECULAR_EXPONENT) * Attenuate(light, input.worldPosition);
+			specularColor,
+			metalnessTexture) * Attenuate(light, input.worldPosition);
                 break;
         }
     }
