@@ -186,6 +186,7 @@
     </FxCompile>
     <FxCompile Include="SkyVertexShader.hlsl" />
     <FxCompile Include="SkyPS.hlsl" />
+    <FxCompile Include="ShadowMapVS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ShaderIncludeFile.hlsli">

@@ -201,6 +201,47 @@ Game::Game()
 		}
 	}
 
+	// Create a shadow map resolution.
+	int shadowMapResolution = 1024; // It should be ideally a power of 2 like a square.
+
+	// Create and load the shadow texture using a texture2D designation options.
+	D3D11_TEXTURE2D_DESC shadowDesc = {};
+	shadowDesc.Width = shadowMapResolution;
+	shadowDesc.Height = shadowMapResolution;
+	shadowDesc.ArraySize = 1;
+	shadowDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE; // Both DSV & SRV.
+	shadowDesc.Format = DXGI_FORMAT_R32_TYPELESS;
+	shadowDesc.MipLevels = 1;
+	shadowDesc.MiscFlags = 0;
+	shadowDesc.SampleDesc.Count = 1;
+	shadowDesc.SampleDesc.Quality = 0;
+	shadowDesc.Usage = D3D11_USAGE_DEFAULT;
+
+	// Create a texture2D for the shadow and use the shadowDesc options.
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> shadowTexture;
+	Graphics::Device->CreateTexture2D(&shadowDesc, 0, shadowTexture.GetAddressOf());
+
+	// Create a depth stencil view with a DSV Desc.
+	D3D11_DEPTH_STENCIL_VIEW_DESC shadowDSDesc = {};
+	shadowDSDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	shadowDSDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	shadowDSDesc.Texture2D.MipSlice = 0;
+	Graphics::Device->CreateDepthStencilView(
+		shadowTexture.Get(),
+		&shadowDSDesc,
+		shadowDSV.GetAddressOf());
+
+	// Create a shader resource view for the shadow texture using a SRV Desc.
+	D3D11_SHADER_RESOURCE_VIEW_DESC shadowSRVDesc = {};
+	shadowSRVDesc.Format = DXGI_FORMAT_R32_FLOAT;
+	shadowSRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	shadowSRVDesc.Texture2D.MipLevels = 1;
+	shadowSRVDesc.Texture2D.MostDetailedMip = 0;
+	Graphics::Device->CreateShaderResourceView(
+		shadowTexture.Get(),
+		&shadowSRVDesc,
+		shadowSRV.GetAddressOf());
+
 	// Load specific textures to generate mipmaps and refrences.
 	// By sampling.
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> sampler;
@@ -547,7 +588,7 @@ void Game::Initialize()
 		dLight1.type = LIGHT_TYPE_DIRECTIONAL;
 		dLight1.direction = DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f);
 		dLight1.color = DirectX::XMFLOAT3(0.8f, 0.8f, 0.8f);
-		dLight1.intensity = 10.0f;
+		dLight1.intensity = 40.0f;
 
 		// Make five directional lights and add them to the array.
 		for (int i = 0; i < 5; i++)
@@ -569,7 +610,7 @@ void Game::Initialize()
 
 				if (i == 2)
 				{
-					lightArray[i].direction = XMFLOAT3(0.0f, -(static_cast<float>(i + 1)), 0.0f);
+					lightArray[i].direction = XMFLOAT3(10.0f, -(static_cast<float>(i + 1)), -6.0f);
 				}
 
 				// All the same white color.
@@ -585,7 +626,7 @@ void Game::Initialize()
 			{
 				lightArray[i].type = LIGHT_TYPE_POINT;
 				lightArray[i].position = XMFLOAT3(0.0f, 10.0f, 0.0f);
-				lightArray[i].range = 20.0f;
+				lightArray[i].range = 10.0f;
 				lightArray[i].direction = XMFLOAT3(static_cast<float>(i + 1), static_cast<float>(i + 1), 0.0f);
 
 				// A blue color
@@ -628,6 +669,22 @@ void Game::Initialize()
 		// Set to true.
 		lightInitialized = true;
 	}
+
+	// Create a light view and projection matrix based on light[2] directional light.
+	XMVECTOR lightDirection = XMLoadFloat3(&lightArray[2].direction);
+	XMMATRIX lightView = XMMatrixLookAtLH(
+		-lightDirection * 20,				// The position = light direction backwards by 20.
+		lightDirection,
+		XMVectorSet(0, 1, 0, 0));
+	XMStoreFloat4x4(&lightViewMatrix, lightView);
+
+	float lightProjectionSize = 100.0f;
+	XMMATRIX projectionMatrix = XMMatrixOrthographicLH(
+		lightProjectionSize / 2.0f,
+		lightProjectionSize / 2.0f,
+		1.0f,
+		lightProjectionSize);
+	XMStoreFloat4x4(&lightProjectionMatrix, projectionMatrix);
 }
 
 //Load the vertex shader.
@@ -1374,8 +1431,10 @@ void Game::CreateGeometry()
 			listOfEntities.push_back(entity2);
 			listOfEntities.push_back(entity1);
 		}
-
 	}
+
+	// Set the float y = 0 for use after the loop.
+	float y = 0.0f;
 
 	// For each entities group in the list, transform their y position by 3.
 	for (int i = 0; i < 6; i++)
@@ -1384,7 +1443,7 @@ void Game::CreateGeometry()
 		int indexMultiple = 7 * i;
 
 		// Move the y of the enties position by 4 each time.
-		float y = static_cast<float>(4 * i);
+		y = static_cast<float>(4 * i);
 
 		// Transform the meshes position to their new position.
 		listOfEntities[0 + indexMultiple].GetTransform().SetPosition(-9, y, 0);
@@ -1396,6 +1455,13 @@ void Game::CreateGeometry()
 		listOfEntities[6 + indexMultiple].GetTransform().SetPosition(9, y, 0);
 		//listOfEntities[6 + indexMultiple].GetTransform().SetPosition(9, y, 0);
 	}
+
+	// Create an plane for the ground and add the plane to the list of entities.
+	// Use a previous entity.
+	listOfEntities.push_back(entity5);
+	listOfEntities[listOfEntities.size() - 1].SetMaterial(pShaderTC);
+	listOfEntities[listOfEntities.size() - 1].GetTransform().SetPosition(0, -4.0f, 0);
+	listOfEntities[listOfEntities.size() - 1].GetTransform().SetScale(20, 20, 20);
 }
 
 
@@ -1540,8 +1606,8 @@ void Game::Update(float deltaTime, float totalTime)
 	//// Rotate the third square with time on its z axis.
 	//listOfEntities[2].GetTransform().Rotate(XMFLOAT3(0.0f, 0.0f, static_cast<float>(deltaTime * 3.5)));
 
-	// Rotate all the object with time.
-	for (int i = 0; i < listOfEntities.size(); i++)
+	// Rotate all the entities except the last entity with time.
+	for (int i = 0; i < listOfEntities.size() - 1; i++)
 	{
 		// Get the object transformation and rotate with time.
 		listOfEntities[i].GetTransform().Rotate(XMFLOAT3(0.0f, 1.0f * deltaTime, 0.0f));
