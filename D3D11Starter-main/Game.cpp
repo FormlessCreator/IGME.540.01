@@ -159,48 +159,6 @@ Game::Game()
 	//	0,
 	//	bronze_SRV.GetAddressOf());
 
-	// To save time I will use a nested for loop.
-	// Create a vector that holds the wstring of different materials and their texture type.
-	materials = {
-		L"bronze",
-		L"cobblestone",
-		L"floor",
-		L"paint",
-		L"rough",
-		L"scratched",
-		L"wood" };
-
-	materialTextureType = {
-		L"_albedo.png",
-		L"_metal.png",
-		L"_normals.png",
-		L"_roughness.png"};
-
-	// Using a nested for loop.
-	for (int i = 0; i < materials.size(); i++)
-	{
-		for (int j = 0; j < materialTextureType.size(); j++)
-		{
-			// Create a texture type wstring.
-			std::wstring pathFile = L"..\\..\\Assets\\PBR\\" + materials[i] + materialTextureType[j];
-
-			// Create texture srv.
-			Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> textureSRV;
-
-			// Create a texture file using WIC and load texture.
-			// Create a WIC Texture file to load textures.
-			CreateWICTextureFromFile(
-				Graphics::Device.Get(),
-				Graphics::Context.Get(),
-				FixPath(pathFile).c_str(),
-				0,
-				textureSRV.GetAddressOf());
-
-			// Push texture SRV in materials SRV.
-			materialSRVs.push_back(textureSRV);
-		}
-	}
-
 	// Create a shadow map resolution.
 	shadowMapResolution = 1024; // It should be ideally a power of 2 like a square.
 
@@ -242,6 +200,74 @@ Game::Game()
 		shadowTexture.Get(),
 		&shadowSRVDesc,
 		shadowSRV.GetAddressOf());
+
+	// Create the special "comparison" sampler state for shadows
+	D3D11_SAMPLER_DESC shadowSampDesc = {};
+	shadowSampDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR; // COMPARISON filter!
+	shadowSampDesc.ComparisonFunc = D3D11_COMPARISON_LESS;
+	shadowSampDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+	shadowSampDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+	shadowSampDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+	shadowSampDesc.BorderColor[0] = 1.0f;
+	shadowSampDesc.BorderColor[1] = 1.0f;
+	shadowSampDesc.BorderColor[2] = 1.0f;
+	shadowSampDesc.BorderColor[3] = 1.0f;
+	Graphics::Device->CreateSamplerState(&shadowSampDesc, shadowSampler.GetAddressOf());
+
+	// Create a rasterizer state - Note: Storing the description in the shadow UI options 
+	// so it can be regenerated via UI changes.
+	D3D11_RASTERIZER_DESC shadowRastDesc = {};
+	shadowRastDesc.FillMode = D3D11_FILL_SOLID;
+	shadowRastDesc.CullMode = D3D11_CULL_BACK;
+	shadowRastDesc.DepthClipEnable = false;
+	shadowRastDesc.DepthBias = 1000; // Multiplied by (smallest possible positive value storable in the depth buffer)
+	shadowRastDesc.DepthBiasClamp = 0.0f;
+	shadowRastDesc.SlopeScaledDepthBias = 5.0f;
+	Graphics::Device->CreateRasterizerState(&shadowRastDesc, shadowRasterizer.GetAddressOf());
+
+	// To save time I will use a nested for loop.
+	// Create a vector that holds the wstring of different materials and their texture type.
+	materials = {
+		L"bronze",
+		L"cobblestone",
+		L"floor",
+		L"paint",
+		L"rough",
+		L"scratched",
+		L"wood" };
+
+	materialTextureType = {
+		L"_albedo.png",
+		L"_metal.png",
+		L"_normals.png",
+		L"_roughness.png"};
+
+	// Using a nested for loop.
+	for (int i = 0; i < materials.size(); i++)
+	{
+		for (int j = 0; j < materialTextureType.size(); j++)
+		{
+			// Create a texture type wstring.
+			std::wstring pathFile = L"..\\..\\Assets\\PBR\\" + materials[i] + materialTextureType[j];
+
+			// Create texture srv.
+			Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> textureSRV;
+
+			// Create a texture file using WIC and load texture.
+			// Create a WIC Texture file to load textures.
+			CreateWICTextureFromFile(
+				Graphics::Device.Get(),
+				Graphics::Context.Get(),
+				FixPath(pathFile).c_str(),
+				0,
+				textureSRV.GetAddressOf());
+
+			// Push texture SRV in materials SRV.
+			materialSRVs.push_back(textureSRV);
+		}
+
+		materialSRVs.push_back(shadowSRV);
+	}
 
 	// Load specific textures to generate mipmaps and refrences.
 	// By sampling.
@@ -330,7 +356,7 @@ Game::Game()
 	// Add all the textures and samples for the materials pbr using a nested for loop.
 	for (int i = 0; i < 7; i++)
 	{
-		for (unsigned int j = 0; j < 4; j++)
+		for (unsigned int j = 0; j < 5; j++)
 		{
 			// Add texture to the material.
 			materialPBRs[i]->AddTextureSRV(j, materialSRVs[srvCounter]);
@@ -1492,9 +1518,9 @@ void Game::CreateGeometry()
 	// Create an plane for the ground and add the plane to the list of entities.
 	// Use a previous entity.
 	listOfEntities.push_back(entity5);
-	listOfEntities[listOfEntities.size() - 1].SetMaterial(pShaderTC);
+	listOfEntities[listOfEntities.size() - 1].SetMaterial(pShader);
 	listOfEntities[listOfEntities.size() - 1].GetTransform().SetPosition(0, -4.0f, 0);
-	listOfEntities[listOfEntities.size() - 1].GetTransform().SetScale(20, 20, 20);
+	listOfEntities[listOfEntities.size() - 1].GetTransform().SetScale(30, 30, 30);
 }
 
 
@@ -1686,10 +1712,13 @@ void Game::Draw(float deltaTime, float totalTime)
 
 		// For drawing the shadow depths.
 		{
-			//Graphics::Context->OMSetRenderTargets(0, 0, shadowDSV.Get());
+			Graphics::Context->OMSetRenderTargets(0, 0, shadowDSV.Get());
 
 			// Clear the depth value of the shadowDSV.
 			Graphics::Context->ClearDepthStencilView(shadowDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+			// Rasterizer.
+			Graphics::Context->RSSetState(shadowRasterizer.Get());
 
 			// Set the shadowDSV as the current depth buffer and unbind the back buffer.
 			ID3D11RenderTargetView* nullRTV{};
@@ -1749,16 +1778,19 @@ void Game::Draw(float deltaTime, float totalTime)
 			viewport.Height = (float)Window::Height();
 
 			Graphics::Context->RSSetViewports(1, &viewport);
-			//Graphics::Context->RSSetState(0);
+			Graphics::Context->RSSetState(0);
 
 			// Reset the viewport to match the screen size and render targets to defualt.
 			Graphics::Context->OMSetRenderTargets(
 				1,
 				Graphics::BackBufferRTV.GetAddressOf(),
 				Graphics::DepthBufferDSV.Get());
+
+			// Bind normal pixel shader
+			//Graphics::Context->PSSetShader(pixelShader.Get(), 0, 0);
 		}
 
-		Graphics::Context->PSSetShaderResources(4, 1, shadowSRV.GetAddressOf());
+		//Graphics::Context->PSSetShaderResources(4, 1, shadowSRV.GetAddressOf());
 	}
 
 

@@ -81,11 +81,9 @@ float4 main(VertexToPixel input) : SV_TARGET
 	
 	// If the light to the pixel is less than the distance to the surface floor,
 	// then there are shadows to display.
-    float d = 1;
-    if (distanceOfLightToPixel < distanceOfShadowMapFloor)
-        d = 0; // R Black.
+	// Use tenary operator for fast if statements
+    float d = distanceOfLightToPixel < distanceOfShadowMapFloor ? 0.0f : 1.0f;
 
-	
 	// Normalize the input tangent.
     input.tangent = normalize(input.tangent);
 	
@@ -230,7 +228,9 @@ float4 main(VertexToPixel input) : SV_TARGET
     float3 gammaAdjustedColor = pow(totalLight, 1.0f / 2.2f);
 	
 	// Return a float4 color.
+    //return float4(gammaAdjustedColor, 1.0f);
     return float4(gammaAdjustedColor, 1.0f);
+    //return float4(distanceOfShadowMapFloor.xx, 1.0f);
 	
 	// Test:
 	// return float4(finalColor.xyz, 1.0f);
