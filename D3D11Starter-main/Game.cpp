@@ -673,22 +673,6 @@ void Game::Initialize()
 		// Set to true.
 		lightInitialized = true;
 	}
-
-	// Create a light view and projection matrix based on light[2] directional light.
-	XMVECTOR lightDirection = XMLoadFloat3(&lightArray[2].direction);
-	XMMATRIX lightView = XMMatrixLookToLH(
-		-lightDirection * 20,				// The position = light direction backwards by 20.
-		lightDirection,
-		XMVectorSet(0, 1, 0, 0));
-	XMStoreFloat4x4(&lightViewMatrix, lightView);
-
-	float lightProjectionSize = 100.0f;
-	XMMATRIX projectionMatrix = XMMatrixOrthographicLH(
-		lightProjectionSize,
-		lightProjectionSize,
-		0.1f,
-		lightProjectionSize / 2.0f);
-	XMStoreFloat4x4(&lightProjectionMatrix, projectionMatrix);
 }
 
 //Load the vertex shader.
@@ -1661,6 +1645,22 @@ void Game::Update(float deltaTime, float totalTime)
 		listOfEntities[i].GetTransform().Rotate(XMFLOAT3(0.0f, 1.0f * deltaTime, 0.0f));
 	}
 
+	// Create a light view and projection matrix based on light[2] directional light.
+	XMVECTOR lightDirection = XMLoadFloat3(&lightArray[2].direction);
+	XMMATRIX lightView = XMMatrixLookToLH(
+		-lightDirection * 20,				// The position = light direction backwards by 20.
+		lightDirection,
+		XMVectorSet(0, 1, 0, 0));
+	XMStoreFloat4x4(&lightViewMatrix, lightView);
+
+	float lightProjectionSize = 100.0f;
+	XMMATRIX projectionMatrix = XMMatrixOrthographicLH(
+		lightProjectionSize,
+		lightProjectionSize,
+		0.1f,
+		lightProjectionSize * 4);
+	XMStoreFloat4x4(&lightProjectionMatrix, projectionMatrix);
+
 
 	// Update the input and view matrix camera each frame.
 	// Get update the active camera each time.
@@ -1685,14 +1685,14 @@ void Game::Draw(float deltaTime, float totalTime)
 
 		// For drawing the shadow depths.
 		{
-			Graphics::Context->OMSetRenderTargets(0, 0, shadowDSV.Get());
+			//Graphics::Context->OMSetRenderTargets(0, 0, shadowDSV.Get());
 
 			// Clear the depth value of the shadowDSV.
 			Graphics::Context->ClearDepthStencilView(shadowDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 			// Set the shadowDSV as the current depth buffer and unbind the back buffer.
-			//ID3D11RenderTargetView* nullRTV{};
-			//Graphics::Context->OMSetRenderTargets(1, &nullRTV, shadowDSV.Get());
+			ID3D11RenderTargetView* nullRTV{};
+			Graphics::Context->OMSetRenderTargets(1, &nullRTV, shadowDSV.Get());
 
 			// Deactivate PS.
 			Graphics::Context->PSSetShader(0, 0, 0);
@@ -1716,10 +1716,13 @@ void Game::Draw(float deltaTime, float totalTime)
 			vsdata.projection = lightProjectionMatrix;
 
 			// Loop all entities.
-			for (auto& e : listOfEntities)
+			for (int i = 0; i < listOfEntities.size(); i++)
 			{
-				// Get the entities world matrix.
-				vsdata.world = e.GetTransform().GetWorldMatrix();
+				// Get the transform class world matrix.
+				XMFLOAT4X4 entityTransformWorldMatrix = listOfEntities[i].GetTransform().GetWorldMatrix();
+
+				// Store the SIMD identity matrix to the world matrix.
+				vsdata.world = entityTransformWorldMatrix;
 
 				// Fill and bind the data in the CBH.
 				FillAndBindNextConstantBuffer(
@@ -1728,8 +1731,9 @@ void Game::Draw(float deltaTime, float totalTime)
 					D3D11_VERTEX_SHADER,
 					0);
 
-				// Draw the entities on the texture.
-				e.Draw();
+				// Draw the entities after their world matrix have be updated in the vertex shader
+				// using the constant shader.
+				listOfEntities[i].Draw();
 			}
 
 			// Reset the pipeline and switch/bind the ShadowDSV to the defualt RTV and DSV.
