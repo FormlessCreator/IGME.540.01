@@ -720,6 +720,7 @@ void Game::LoadVertexShader()
 		inputElements[3].SemanticName = "TANGENT";
 		inputElements[3].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
 
+
 		// Remove the input layout information for the color.
 		// Set up the second element - a color, which is 4 more float values
 		//inputElements[1].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;			// 4x 32-bit floats
@@ -783,7 +784,7 @@ void Game::LoadShadowVertexShader()
 
 		// Update the input layout element for tangent.
 		inputElements[4].Format = DXGI_FORMAT_R32G32B32_FLOAT;
-		inputElements[4].SemanticName = "SHADOW_POSITION";
+		inputElements[4].SemanticName = "SHADOWPOS";
 		inputElements[4].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
 
 		// Remove the input layout information for the color.

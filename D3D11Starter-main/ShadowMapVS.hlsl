@@ -24,14 +24,14 @@ VertexToPixel main(VertexShaderInput input)
     // Get the camera.
     output.worldPosition = mul(world, float4(input.localPosition, 1.0f)).xyz;
     output.screenPosition = mul(wvp, float4(input.localPosition, 1.0f));
-
-    // Get the shadow.
-    output.shadowMapPos = mul(shadowWVP, float4(input.localPosition, 1.0f));
     
     // Just input.
     output.uv = input.uv;
     output.normal = input.normal;
     output.tangent = input.tangent;
+    
+    // Get the shadow.
+    output.shadowMapPos = mul(shadowWVP, float4(input.localPosition, 1.0f));
     
     return output;
 }

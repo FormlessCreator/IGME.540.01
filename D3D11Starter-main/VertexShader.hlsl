@@ -71,6 +71,9 @@ VertexToPixel main( VertexShaderInput input )
 	
 	// Get the world position of the vertex using the local position and the world matrix.
     output.worldPosition = mul(worldMatrix, float4(input.localPosition, 1.0f)).xyz;
+	
+	// To fix Linkage error.
+    output.shadowMapPos = float4(0, 0, 0, 0);
 
 	// Whatever we return will make its way through the pipeline to the
 	// next programmable stage we're using (the pixel shader for now)
