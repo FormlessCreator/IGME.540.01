@@ -63,6 +63,28 @@ float4 main(VertexToPixel input) : SV_TARGET
 {
 	// Enter the light count.
     int lightCount = 5;
+
+	// Check the shadow map.
+	// Perform a perspective divide our self.
+    input.shadowMapPos /= input.shadowMapPos.w;
+	
+	// Convert the normalized cordinate of the perspective divide to UV's
+	// for sampling (unpack).
+    float2 shadowUV = input.shadowMapPos.xy * 0.5f + 0.5f;
+	
+	// Flip the y of the shadow UV.
+    shadowUV.y = 1 - shadowUV.y;
+	
+	// Get the distance from the light to the pixel and the closet surface.
+    float distanceOfLightToPixel = input.shadowMapPos.z;
+	float distanceOfShadowMapFloor = ShadowMap.Sample(BasicSampler, shadowUV).r;
+	
+	// If the light to the pixel is less than the distance to the surface floor,
+	// then there are shadows to display.
+    float d = 1;
+    if (distanceOfLightToPixel < distanceOfShadowMapFloor)
+        d = 0; // R Black.
+
 	
 	// Normalize the input tangent.
     input.tangent = normalize(input.tangent);
@@ -158,7 +180,7 @@ float4 main(VertexToPixel input) : SV_TARGET
 			roughnessTexture,
 			surfaceColor,
 			specularColor,
-			metalnessTexture);
+			metalnessTexture) * d;
                 break;
 		
             case 1:

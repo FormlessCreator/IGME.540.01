@@ -1655,8 +1655,8 @@ void Game::Update(float deltaTime, float totalTime)
 
 	float lightProjectionSize = 100.0f;
 	XMMATRIX projectionMatrix = XMMatrixOrthographicLH(
-		lightProjectionSize,
-		lightProjectionSize,
+		lightProjectionSize - 40.0f,
+		lightProjectionSize - 40.0f,
 		0.1f,
 		lightProjectionSize * 4);
 	XMStoreFloat4x4(&lightProjectionMatrix, projectionMatrix);
@@ -1723,6 +1723,13 @@ void Game::Draw(float deltaTime, float totalTime)
 
 				// Store the SIMD identity matrix to the world matrix.
 				vsdata.world = entityTransformWorldMatrix;
+
+				// Get the view and projection matrix of our camera and set it to the constant buffer.
+				XMFLOAT4X4 cameraViewMatrix = activeCamera.get()->GetViewMatrix();
+				vsdata.cameraView = cameraViewMatrix;
+
+				XMFLOAT4X4 cameraProjectionMatrix = activeCamera.get()->GetProjectionMatrix();
+				vsdata.cameraProjection = cameraProjectionMatrix;
 
 				// Fill and bind the data in the CBH.
 				FillAndBindNextConstantBuffer(
