@@ -28,6 +28,12 @@
     <Filter Include="Header Files\Structs Header Files">
       <UniqueIdentifier>{31bcc10c-5fa6-4f14-adcd-ede904329952}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\Vertex Shaders">
+      <UniqueIdentifier>{54a1d8f8-5425-40f3-a4cd-0d6716fc8b4f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Pixel Shaders">
+      <UniqueIdentifier>{7266d6cd-c222-4378-9f01-76473fd678d3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -163,30 +169,36 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="PixelShader.hlsl">
-      <Filter>Shaders</Filter>
+    <FxCompile Include="SkyVertexShader.hlsl">
+      <Filter>Shaders\Vertex Shaders</Filter>
     </FxCompile>
     <FxCompile Include="VertexShader.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>Shaders\Vertex Shaders</Filter>
     </FxCompile>
     <FxCompile Include="CustomPS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>Shaders\Pixel Shaders</Filter>
     </FxCompile>
     <FxCompile Include="DebugNormalsPS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>Shaders\Pixel Shaders</Filter>
     </FxCompile>
     <FxCompile Include="DebugUVsPS.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>Shaders\Pixel Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="PixelShader.hlsl">
+      <Filter>Shaders\Pixel Shaders</Filter>
     </FxCompile>
     <FxCompile Include="PixelShader1.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>Shaders\Pixel Shaders</Filter>
     </FxCompile>
     <FxCompile Include="PixelShaderTC.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>Shaders\Pixel Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="SkyVertexShader.hlsl" />
-    <FxCompile Include="SkyPS.hlsl" />
-    <FxCompile Include="ShadowMapVS.hlsl" />
+    <FxCompile Include="ShadowMapVS.hlsl">
+      <Filter>Shaders\Pixel Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="SkyPS.hlsl">
+      <Filter>Shaders\Pixel Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="ShaderIncludeFile.hlsli">

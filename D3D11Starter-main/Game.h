@@ -66,6 +66,7 @@ public:
 		unsigned int registerSlot);
 
 	void LoadVertexShader();
+	void LoadShadowVertexShader();
 	//void LoadPixelShader(std::wstring shaderCso, Microsoft::WRL::ComPtr<ID3D11PixelShader>& pixelShaderType);
 
 private:
@@ -221,7 +222,11 @@ private:
 	// Create a shadow map for a light with the light view and projection matrix data.
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> shadowDSV;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> shadowSRV;
+	int shadowMapResolution;
 	DirectX::XMFLOAT4X4 lightViewMatrix;
 	DirectX::XMFLOAT4X4 lightProjectionMatrix;
+
+	// Create a verter shader for the shadow.
+	Microsoft::WRL::ComPtr<ID3D11VertexShader> shadowVS;
 };
 

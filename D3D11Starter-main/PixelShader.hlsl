@@ -15,6 +15,7 @@ Texture2D Albedo : register(t0);
 Texture2D MetalnessMap : register(t1);
 Texture2D NormalMap : register(t2);
 Texture2D RoughnessMap : register(t3);
+Texture2D ShadowMap : register(t4);
 
 // Create a sampler state.
 SamplerState BasicSampler : register(s0);

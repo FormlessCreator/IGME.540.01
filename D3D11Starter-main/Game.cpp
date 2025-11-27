@@ -202,14 +202,15 @@ Game::Game()
 	}
 
 	// Create a shadow map resolution.
-	int shadowMapResolution = 1024; // It should be ideally a power of 2 like a square.
+	shadowMapResolution = 1024; // It should be ideally a power of 2 like a square.
 
 	// Create and load the shadow texture using a texture2D designation options.
 	D3D11_TEXTURE2D_DESC shadowDesc = {};
 	shadowDesc.Width = shadowMapResolution;
 	shadowDesc.Height = shadowMapResolution;
 	shadowDesc.ArraySize = 1;
-	shadowDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE; // Both DSV & SRV.
+	shadowDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+	shadowDesc.CPUAccessFlags = 0;
 	shadowDesc.Format = DXGI_FORMAT_R32_TYPELESS;
 	shadowDesc.MipLevels = 1;
 	shadowDesc.MiscFlags = 0;
@@ -260,6 +261,9 @@ Game::Game()
 
 	// Load Vertex Shader.
 	LoadVertexShader();
+
+	// Load shadow vertex shader.
+	LoadShadowVertexShader();
 
 	// Create the Sky textures string.
 	const wchar_t* right = L"..\\..\\Assets\\Skies\\Clouds_Blue\\right.png";
@@ -748,6 +752,67 @@ void Game::LoadVertexShader()
 	}
 }
 
+//Load the vertex shader.
+void Game::LoadShadowVertexShader()
+{
+	// -------------------------------------------------------------------------
+	ID3DBlob* vertexShaderBlob;
+	D3DReadFileToBlob(FixPath(L"ShadowMapVS.cso").c_str(), &vertexShaderBlob);
+	Graphics::Device->CreateVertexShader(
+		vertexShaderBlob->GetBufferPointer(), // Pointer to start of binary data
+		vertexShaderBlob->GetBufferSize(), // How big is that data?
+		0, // No classes in this shader
+		shadowVS.GetAddressOf());
+
+	// Bind the textures and sampler state for the pixel shaders to access.
+	// Graphics::Context->PSGetShaderResources(0, 1, )
+
+	// Optimize the shader class so you only initialize and use the same shader once.
+		// Using Chris Casiolio code reference for the input layout:
+	// Create an input layout 
+	//  - This describes the layout of data sent to a vertex shader
+	//  - In other words, it describes how to interpret data (numbers) in a vertex buffer
+	//  - Doing this NOW because it requires a vertex shader's byte code to verify against!
+	//  - Luckily, we already have that loaded (the vertex shader blob above)
+	{
+		D3D11_INPUT_ELEMENT_DESC inputElements[4] = {};
+
+		// Set up the first element - a position, which is 3 float values
+		inputElements[0].Format = DXGI_FORMAT_R32G32B32_FLOAT;				// Most formats are described as color channels; really it just means "Three 32-bit floats"
+		inputElements[0].SemanticName = "POSITION";							// This is "POSITION" - needs to match the semantics in our vertex shader input!
+		inputElements[0].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;	// How far into the vertex is this?  Assume it's after the previous element
+
+		// Create the input layout information for the vertex buffer uv texture coordinate.
+		inputElements[1].Format = DXGI_FORMAT_R32G32_FLOAT;					// The uv float bit sizes format.
+		inputElements[1].SemanticName = "TEXCOORD";							// The uv texture coordinate sematic name.
+		inputElements[1].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;	// Order in which the vertex uv byte is read - After the previous element.
+
+		// Create the input layout information for the normal direction.
+		inputElements[2].Format = DXGI_FORMAT_R32G32B32_FLOAT;				// The float float bit sizes format.
+		inputElements[2].SemanticName = "NORMAL";							// The uv texture coordinate sematic name.
+		inputElements[2].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;	// Order in which the vertex normal byte info is read - After the previous element.
+
+		// Update the input layout element for tangent.
+		inputElements[3].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+		inputElements[3].SemanticName = "TANGENT";
+		inputElements[3].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
+
+		// Remove the input layout information for the color.
+		// Set up the second element - a color, which is 4 more float values
+		//inputElements[1].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;			// 4x 32-bit floats
+		//inputElements[1].SemanticName = "COLOR";							// Match our vertex shader input!
+		//inputElements[1].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;	// After the previous element
+
+		// Create the input layout, verifying our description against actual shader code
+		Graphics::Device->CreateInputLayout(
+			inputElements,							// An array of descriptions
+			4,										// How many elements in that array? // 2 -> 3 now!
+			vertexShaderBlob->GetBufferPointer(),	// Pointer to the code of a shader that uses this layout
+			vertexShaderBlob->GetBufferSize(),		// Size of the shader code that uses this layout
+			inputLayout.GetAddressOf());			// Address of the resulting ID3D11InputLayout pointer
+	}
+}
+
 void Game::updateHelper()
 {
 	// Feed fresh data to ImGui
@@ -946,35 +1011,13 @@ void Game::buildImGuiCustomizedUI()
 		}
 	}
 
-	// Create Tree node for Meshes.
-	/*if (ImGui::TreeNode("Mesh"))
+	// Create Tree node for the Shadow map image.
+	if (ImGui::TreeNode("Shadow Texture"))
 	{
-		if (ImGui::TreeNode("Triangle"))
-		{
-			ImGui::Text("Triangle: %d", triangle->GetIndexCount() / 3);
-			ImGui::Text("Vertices: %d", triangle->GetVertexCount());
-			ImGui::Text("Indices: %d", triangle->GetIndexCount());
-			ImGui::TreePop();
-		}
-
-		if (ImGui::TreeNode("Right-angle Triangle"))
-		{
-			ImGui::Text("Triangle: %d", rightTriangle->GetIndexCount() / 3);
-			ImGui::Text("Vertices: %d", rightTriangle->GetVertexCount());
-			ImGui::Text("Indices: %d", rightTriangle->GetIndexCount());
-			ImGui::TreePop();
-		}
-
-		if (ImGui::TreeNode("Diamond square"))
-		{
-			ImGui::Text("Triangle: %d", square->GetIndexCount() / 3);
-			ImGui::Text("Vertices: %d", square->GetVertexCount());
-			ImGui::Text("Indices: %d", square->GetIndexCount());
-			ImGui::TreePop();
-		}
-		
+		// Draw the texture.
+		ImGui::Image(shadowSRV.Get(), ImVec2(512, 512));
 		ImGui::TreePop();
-	}*/
+	}
 
 	// Create new menu for entity tracking.
 	if (ImGui::TreeNode("Entities"))
@@ -1632,10 +1675,77 @@ void Game::Draw(float deltaTime, float totalTime)
 		// Clear the back buffer (erase what's on screen) and depth buffer
 		// Use the color picker values to create a float array.
 		float color[4] = { colorPicker.x, colorPicker.y, colorPicker.z, colorPicker.w };
-
-		Graphics::Context->ClearRenderTargetView(Graphics::BackBufferRTV.Get(),	color);
+		Graphics::Context->ClearRenderTargetView(Graphics::BackBufferRTV.Get(), color);
 		Graphics::Context->ClearDepthStencilView(Graphics::DepthBufferDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+		// For drawing the shadow depths.
+		{
+			Graphics::Context->OMSetRenderTargets(0, 0, shadowDSV.Get());
+
+			// Clear the depth value of the shadowDSV.
+			Graphics::Context->ClearDepthStencilView(shadowDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+			// Set the shadowDSV as the current depth buffer and unbind the back buffer.
+			//ID3D11RenderTargetView* nullRTV{};
+			//Graphics::Context->OMSetRenderTargets(1, &nullRTV, shadowDSV.Get());
+
+			// Deactivate PS.
+			Graphics::Context->PSSetShader(0, 0, 0);
+
+			// Change the render viewport exact pixel dimension needed for the shadow map 
+			// using the rasterizer viewport map to render the entire window.
+			D3D11_VIEWPORT viewport = {};
+			viewport.Width = (float)shadowMapResolution;
+			viewport.Height = (float)shadowMapResolution;
+			viewport.MaxDepth = 1.0f;
+
+			// Get the previous viewport.
+			Graphics::Context->RSSetViewports(1, &viewport);
+
+			// Set and bind the vertex shader for the shadowVS.
+			Graphics::Context->VSSetShader(shadowVS.Get(), 0, 0);
+
+			// Set the shadow VS data.
+			ShadowVSData vsdata = {};
+			vsdata.view = lightViewMatrix;
+			vsdata.projection = lightProjectionMatrix;
+
+			// Loop all entities.
+			for (auto& e : listOfEntities)
+			{
+				// Get the entities world matrix.
+				vsdata.world = e.GetTransform().GetWorldMatrix();
+
+				// Fill and bind the data in the CBH.
+				FillAndBindNextConstantBuffer(
+					&vsdata,
+					sizeof(ShadowVSData),
+					D3D11_VERTEX_SHADER,
+					0);
+
+				Graphics::Context->PSSetShader(nullptr, nullptr, 0); // deactivate P
+
+				// Draw the entities on the texture.
+				e.Draw();
+			}
+
+			// Reset the pipeline and switch/bind the ShadowDSV to the defualt RTV and DSV.
+			viewport.Width = (float)Window::Width();
+			viewport.Height = (float)Window::Height();
+
+			Graphics::Context->RSSetViewports(1, &viewport);
+			//Graphics::Context->RSSetState(0);
+
+			// Reset the viewport to match the screen size and render targets to defualt.
+			Graphics::Context->OMSetRenderTargets(
+				1,
+				Graphics::BackBufferRTV.GetAddressOf(),
+				Graphics::DepthBufferDSV.Get());
+		}
+
+		Graphics::Context->PSSetShaderResources(4, 1, shadowSRV.GetAddressOf());
 	}
+
 
 	// Use a for each to draw the mesh.
 	for (int i = 0; i < listOfEntities.size(); i++)
@@ -1784,6 +1894,10 @@ void Game::Draw(float deltaTime, float totalTime)
 	//square->Draw();
 	//rightTriangle->Draw();
 	//triangle->Draw();
+
+	// Unbind the shadowSRV to use at the satrt of the loop.
+	ID3D11ShaderResourceView* nullSRVs[16] = {};
+	Graphics::Context->PSSetShaderResources(0, 16, nullSRVs);
 
 
 	// Tells Imgui to gets its buffer data information and feed the data to another funtion.
