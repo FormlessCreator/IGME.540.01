@@ -95,6 +95,9 @@ struct VertexToPixel
 	
 	// Add the the tangent to the output for pixel shader.
     float3 tangent : TANGENT;
+	
+	// Add shadowMapPos.
+    float4 shadowMapPos : SHADOW_POSITION;
 };
 
 struct VertexToPixel_SkyBox

@@ -193,11 +193,11 @@
     <FxCompile Include="PixelShaderTC.hlsl">
       <Filter>Shaders\Pixel Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="ShadowMapVS.hlsl">
-      <Filter>Shaders\Pixel Shaders</Filter>
-    </FxCompile>
     <FxCompile Include="SkyPS.hlsl">
       <Filter>Shaders\Pixel Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="ShadowMapVS.hlsl">
+      <Filter>Shaders\Vertex Shaders</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

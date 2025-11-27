@@ -676,7 +676,7 @@ void Game::Initialize()
 
 	// Create a light view and projection matrix based on light[2] directional light.
 	XMVECTOR lightDirection = XMLoadFloat3(&lightArray[2].direction);
-	XMMATRIX lightView = XMMatrixLookAtLH(
+	XMMATRIX lightView = XMMatrixLookToLH(
 		-lightDirection * 20,				// The position = light direction backwards by 20.
 		lightDirection,
 		XMVectorSet(0, 1, 0, 0));
@@ -684,10 +684,10 @@ void Game::Initialize()
 
 	float lightProjectionSize = 100.0f;
 	XMMATRIX projectionMatrix = XMMatrixOrthographicLH(
-		lightProjectionSize / 2.0f,
-		lightProjectionSize / 2.0f,
-		1.0f,
-		lightProjectionSize);
+		lightProjectionSize,
+		lightProjectionSize,
+		0.1f,
+		lightProjectionSize / 2.0f);
 	XMStoreFloat4x4(&lightProjectionMatrix, projectionMatrix);
 }
 
@@ -775,7 +775,7 @@ void Game::LoadShadowVertexShader()
 	//  - Doing this NOW because it requires a vertex shader's byte code to verify against!
 	//  - Luckily, we already have that loaded (the vertex shader blob above)
 	{
-		D3D11_INPUT_ELEMENT_DESC inputElements[4] = {};
+		D3D11_INPUT_ELEMENT_DESC inputElements[5] = {};
 
 		// Set up the first element - a position, which is 3 float values
 		inputElements[0].Format = DXGI_FORMAT_R32G32B32_FLOAT;				// Most formats are described as color channels; really it just means "Three 32-bit floats"
@@ -797,6 +797,11 @@ void Game::LoadShadowVertexShader()
 		inputElements[3].SemanticName = "TANGENT";
 		inputElements[3].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
 
+		// Update the input layout element for tangent.
+		inputElements[4].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+		inputElements[4].SemanticName = "SHADOW_POSITION";
+		inputElements[4].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
+
 		// Remove the input layout information for the color.
 		// Set up the second element - a color, which is 4 more float values
 		//inputElements[1].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;			// 4x 32-bit floats
@@ -806,7 +811,7 @@ void Game::LoadShadowVertexShader()
 		// Create the input layout, verifying our description against actual shader code
 		Graphics::Device->CreateInputLayout(
 			inputElements,							// An array of descriptions
-			4,										// How many elements in that array? // 2 -> 3 now!
+			5,										// How many elements in that array? // 2 -> 3 now!
 			vertexShaderBlob->GetBufferPointer(),	// Pointer to the code of a shader that uses this layout
 			vertexShaderBlob->GetBufferSize(),		// Size of the shader code that uses this layout
 			inputLayout.GetAddressOf());			// Address of the resulting ID3D11InputLayout pointer
@@ -1722,8 +1727,6 @@ void Game::Draw(float deltaTime, float totalTime)
 					sizeof(ShadowVSData),
 					D3D11_VERTEX_SHADER,
 					0);
-
-				Graphics::Context->PSSetShader(nullptr, nullptr, 0); // deactivate P
 
 				// Draw the entities on the texture.
 				e.Draw();
