@@ -97,7 +97,7 @@ struct VertexToPixel
     float3 tangent : TANGENT;
 	
 	// Add shadowMapPos.
-    float4 shadowMapPos : SHADOWPOS;
+    float4 shadowMapPos : SHADOW_POSITION;
 };
 
 struct VertexToPixel_SkyBox

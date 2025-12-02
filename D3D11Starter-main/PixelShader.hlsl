@@ -50,6 +50,7 @@ cbuffer PSExternalData1 : register(b0)
 	
 }
 
+
 // --------------------------------------------------------
 // The entry point (main method) for our pixel shader
 // 
@@ -230,7 +231,7 @@ float4 main(VertexToPixel input) : SV_TARGET
 	// Return a float4 color.
     //return float4(gammaAdjustedColor, 1.0f);
     return float4(gammaAdjustedColor, 1.0f);
-    //return float4(distanceOfShadowMapFloor.xx, 1.0f);
+    //return float4(distanceOfShadowMapFloor.xxx, 1.0f);
 	
 	// Test:
 	// return float4(finalColor.xyz, 1.0f);
