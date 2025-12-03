@@ -188,12 +188,12 @@ float4 main(VertexToPixel input) : SV_TARGET
 			specularColor,
 			metalnessTexture); //* d;
 			
-			// If this is the light(light 3) needed for shadowing apply the shadow result to only
+			// If this light  needed for shadowing apply the shadow result to only
 			// this light.
-			if(i == 3)
+			if(i == 0)
             {
 				// Multiply the light calculations by the sampled shadow amount.
-                directionalLightResult *= d;
+                directionalLightResult *= shadowAmount;
             }
 			
 			// This shadow map will only affect the third light.
@@ -247,8 +247,8 @@ float4 main(VertexToPixel input) : SV_TARGET
     float3 gammaAdjustedColor = pow(totalLight, 1.0f / 2.2f);
 	
 	// Return a float4 color.
-    //return float4(gammaAdjustedColor, 1.0f);
-    return float4(shadowAmount.rrr, 1.0f);
+    return float4(gammaAdjustedColor, 1.0f);
+    //return float4(shadowAmount.rrr, 1.0f);
     //return float4(distanceOfShadowMapFloor.xxx, 1.0f);
 	
 	// Test:

@@ -1791,7 +1791,7 @@ void Game::Draw(float deltaTime, float totalTime)
 		}
 
 		//Graphics::Context->PSSetShaderResources(4, 1, shadowSRV.GetAddressOf());
-		//Graphics::Context->PSSetSamplers(1, 1, shadowSampler.GetAddressOf());
+		Graphics::Context->PSSetSamplers(1, 1, shadowSampler.GetAddressOf());
 	}
 
 
