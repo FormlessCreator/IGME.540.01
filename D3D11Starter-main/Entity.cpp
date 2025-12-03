@@ -36,7 +36,7 @@ std::shared_ptr<Mesh> Entity::GetMesh()
 	return this->mesh;
 }
 
-void Entity::Draw()
+void Entity::Draw(bool bindPixelShader = true)
 {
 	// Set the material input layout, vertex and pixel shader here.
 	// Using the new material for shaders set the input laout.
@@ -49,7 +49,12 @@ void Entity::Draw()
 	//Graphics::Context->PSSetShader(pixelShader.Get(), 0, 0);
 	// Using the material for shaders, set the shaders.
 	Graphics::Context->VSSetShader(material.get()->GetVertexShader().Get(), 0, 0);
-	Graphics::Context->PSSetShader(material.get()->GetPixelShader().Get(), 0, 0);
+
+	// If you want to bind pixel shader == true. Else skip it.
+	if (bindPixelShader)
+	{
+		Graphics::Context->PSSetShader(material.get()->GetPixelShader().Get(), 0, 0);
+	}
 
 	// Call the mesh draw method here.
 	mesh->Draw();

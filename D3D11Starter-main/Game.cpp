@@ -1770,7 +1770,7 @@ void Game::Draw(float deltaTime, float totalTime)
 
 				// Draw the entities after their world matrix have be updated in the vertex shader
 				// using the constant shader.
-				listOfEntities[i].Draw();
+				listOfEntities[i].Draw(false);
 			}
 
 			// Reset the pipeline and switch/bind the ShadowDSV to the defualt RTV and DSV.
@@ -1787,7 +1787,7 @@ void Game::Draw(float deltaTime, float totalTime)
 				Graphics::DepthBufferDSV.Get());
 
 			// Bind normal pixel shader
-			//Graphics::Context->PSSetShader(pixelShader.Get(), 0, 0);
+			Graphics::Context->PSSetShader(pixelShader.Get(), 0, 0);
 		}
 
 		//Graphics::Context->PSSetShaderResources(4, 1, shadowSRV.GetAddressOf());
@@ -1921,7 +1921,7 @@ void Game::Draw(float deltaTime, float totalTime)
 
 		// Draw the entities after their world matrix have be updated in the vertex shader
 		// using the constant shader.
-		listOfEntities[i].Draw();
+		listOfEntities[i].Draw(true);
 	}
 
 	// Draw the sky last to minimin rendering pixel behind objects that are not displayed.
@@ -1974,6 +1974,7 @@ void Game::Draw(float deltaTime, float totalTime)
 			Graphics::BackBufferRTV.GetAddressOf(),
 			Graphics::DepthBufferDSV.Get());
 	}
+
 }
 
 

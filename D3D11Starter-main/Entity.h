@@ -12,7 +12,7 @@ public:
 	~Entity();
 	Transform& GetTransform();
 	std::shared_ptr<Mesh> GetMesh();
-	void Draw();
+	void Draw(bool bindPixelShader);
 
 	// A Get and set for the material.
 	std::shared_ptr<Material> GetMaterial();
