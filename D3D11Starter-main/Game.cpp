@@ -1747,8 +1747,8 @@ void Game::Draw(float deltaTime, float totalTime)
 
 			// Set the shadow VS data.
 			ShadowVSData vsdata = {};
-			vsdata.view = lightViewMatrix;
-			vsdata.projection = lightProjectionMatrix;
+			vsdata.lightView = lightViewMatrix;
+			vsdata.lightProjection = lightProjectionMatrix;
 
 			// Loop all entities.
 			for (int i = 0; i < listOfEntities.size(); i++)
@@ -1756,15 +1756,8 @@ void Game::Draw(float deltaTime, float totalTime)
 				// Get the transform class world matrix.
 				XMFLOAT4X4 entityTransformWorldMatrix = listOfEntities[i].GetTransform().GetWorldMatrix();
 
-				// Store the SIMD identity matrix to the world matrix.
+				// Set world data to ShadowVSData.
 				vsdata.world = entityTransformWorldMatrix;
-
-				// Get the view and projection matrix of our camera and set it to the constant buffer.
-				XMFLOAT4X4 cameraViewMatrix = activeCamera.get()->GetViewMatrix();
-				vsdata.cameraView = cameraViewMatrix;
-
-				XMFLOAT4X4 cameraProjectionMatrix = activeCamera.get()->GetProjectionMatrix();
-				vsdata.cameraProjection = cameraProjectionMatrix;
 
 				// Fill and bind the data in the CBH.
 				FillAndBindNextConstantBuffer(
@@ -1830,6 +1823,10 @@ void Game::Draw(float deltaTime, float totalTime)
 
 		// Load the stored entity world IT matrix into the CBH struct.
 		cbStruct.worldInverseTransposeMatrix = XMLoadFloat4x4(&entityWorldInverseTransposeMatrix);
+
+		// Add the light view and projection to the standard VS.
+		cbStruct.lightViewMatrix = lightViewMatrix;
+		cbStruct.lightProjectionMatrix = lightProjectionMatrix;
 
 		// Call the CBH method for copying data.
 		FillAndBindNextConstantBuffer(

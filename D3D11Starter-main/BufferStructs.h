@@ -18,6 +18,10 @@ struct BufferStructs
 	// rotation and scaling for the normals of the all objects in the
 	// world spacein relation to the camera.
 	DirectX::XMMATRIX worldInverseTransposeMatrix;
+
+	// Add the light view and projection matrix for the standard vertex shader.
+	DirectX::XMFLOAT4X4 lightViewMatrix;
+	DirectX::XMFLOAT4X4 lightProjectionMatrix;
 };
 
 struct SkyBufferStruct
@@ -65,9 +69,9 @@ struct PixelDataStruct
 struct ShadowVSData
 {
 	DirectX::XMFLOAT4X4 world;
-	DirectX::XMFLOAT4X4 view;
-	DirectX::XMFLOAT4X4 projection;
-	DirectX::XMFLOAT4X4 cameraView;
-	DirectX::XMFLOAT4X4 cameraProjection;
+	DirectX::XMFLOAT4X4 lightView;
+	DirectX::XMFLOAT4X4 lightProjection;
+	//DirectX::XMFLOAT4X4 cameraView;
+	//DirectX::XMFLOAT4X4 cameraProjection;
 };
 

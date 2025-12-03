@@ -6,15 +6,15 @@ cbuffer ExternalVSData : register(b0)
     matrix world;
     matrix lightView;
     matrix lightProjection;
-    matrix cameraView;
-    matrix cameraProjection;
+    //matrix cameraView;
+    //matrix cameraProjection;
 }
 
 float4 main(VertexShaderInput input): SV_POSITION
 {
 
     // Get the wvp matrix of the object.
-    matrix wvp = mul(cameraProjection, mul(cameraView, world));
+    matrix wvp = mul(lightProjection, mul(lightView, world));
     
     // Get the shadow.
     return mul(wvp, float4(input.localPosition, 1.0f));
