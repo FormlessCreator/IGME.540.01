@@ -370,7 +370,7 @@ Game::Game()
 	}
 
 	// Add both of the textures and sampler to the pshader Material by calling the methods.
-	pShader->AddTextureSRV(0, pavementSRV);
+	pShader->AddTextureSRV(0, materialSRVs[30]);
 	pShader->AddTextureSRV(1, solarCellSRV);
 	pShader->AddTextureSRV(2, pavementNormalSRV);
 	pShader->AddSampler(0, sampler);
