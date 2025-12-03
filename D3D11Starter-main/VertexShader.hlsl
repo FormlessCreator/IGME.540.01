@@ -12,6 +12,10 @@ cbuffer VSExternalData : register(b0)
 	
 	// Add the object inverse transpose matrix in the world space.
     matrix worldInverseTransposeMatrix;
+	
+	// Add light matrix.
+    matrix lightView;
+    matrix lightProjection;
 }
 
 // --------------------------------------------------------
@@ -72,32 +76,13 @@ VertexToPixel main( VertexShaderInput input )
 	// Get the world position of the vertex using the local position and the world matrix.
     output.worldPosition = mul(worldMatrix, float4(input.localPosition, 1.0f)).xyz;
 	
-	// To fix Linkage error.
-    output.shadowMapPos = float4(0, 0, 0, 0);
+	// To fix Linkage error:
+    // Get the shadow wvp matrix of the object.
+    matrix shadowWVP = mul(lightProjection, mul(lightView, worldMatrix));
 	
-	//// Get the Vertex to pixel output;
- //   VertexToPixel output;
+    // Get the shadow map position.
+    output.shadowMapPos = mul(shadowWVP, float4(input.localPosition, 1.0f));
     
- //   // Get the wvp matrix of the object.
- //   matrix wvp = mul(cameraProjection, mul(cameraView, world));
-    
- //   // Get the wvp matrix of the object.
- //   matrix shadowWVP = mul(lightProjection, mul(lightView, world));
-    
- //   // Get the camera.
- //   output.worldPosition = mul(world, float4(input.localPosition, 1.0f)).xyz;
- //   output.screenPosition = mul(wvp, float4(input.localPosition, 1.0f));
-    
- //   // Just input.
- //   output.uv = input.uv;
- //   output.normal = input.normal;
- //   output.tangent = input.tangent;
-    
- //   // Get the shadow.
- //   output.shadowMapPos = mul(shadowWVP, float4(input.localPosition, 1.0f));
-    
- //   return output;
-
 	// Whatever we return will make its way through the pipeline to the
 	// next programmable stage we're using (the pixel shader for now)
 	return output;

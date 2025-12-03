@@ -83,7 +83,7 @@ float4 main(VertexToPixel input) : SV_TARGET
 	// If the light to the pixel is less than the distance to the surface floor,
 	// then there are shadows to display.
 	// Use tenary operator for fast if statements
-    float d = distanceOfLightToPixel < distanceOfShadowMapFloor ? 0.0f : 1.0f;
+    float d = distanceOfLightToPixel < distanceOfShadowMapFloor ? 1.0f : 0.0f;
 
 	// Normalize the input tangent.
     input.tangent = normalize(input.tangent);
