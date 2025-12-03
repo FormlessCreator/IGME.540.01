@@ -203,15 +203,12 @@ Game::Game()
 
 	// Create the special "comparison" sampler state for shadows
 	D3D11_SAMPLER_DESC shadowSampDesc = {};
-	shadowSampDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR; // COMPARISON filter!
+	shadowSampDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR; // The comparison filter!
 	shadowSampDesc.ComparisonFunc = D3D11_COMPARISON_LESS;
 	shadowSampDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
 	shadowSampDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
 	shadowSampDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
 	shadowSampDesc.BorderColor[0] = 1.0f;
-	shadowSampDesc.BorderColor[1] = 1.0f;
-	shadowSampDesc.BorderColor[2] = 1.0f;
-	shadowSampDesc.BorderColor[3] = 1.0f;
 	Graphics::Device->CreateSamplerState(&shadowSampDesc, shadowSampler.GetAddressOf());
 
 	// Create a rasterizer state - Note: Storing the description in the shadow UI options 
@@ -367,6 +364,9 @@ Game::Game()
 
 		// Add a sample to the material.
 		materialPBRs[i]->AddSampler(0, sampler);
+
+		// Add the shadow sampler.
+		materialPBRs[i]->AddSampler(1, shadowSampler);
 	}
 
 	// Add both of the textures and sampler to the pshader Material by calling the methods.
@@ -1766,6 +1766,8 @@ void Game::Draw(float deltaTime, float totalTime)
 					D3D11_VERTEX_SHADER,
 					0);
 
+				//Graphics::Context->PSSetSamplers(1, 1, shadowSampler.GetAddressOf());
+
 				// Draw the entities after their world matrix have be updated in the vertex shader
 				// using the constant shader.
 				listOfEntities[i].Draw();
@@ -1789,6 +1791,7 @@ void Game::Draw(float deltaTime, float totalTime)
 		}
 
 		//Graphics::Context->PSSetShaderResources(4, 1, shadowSRV.GetAddressOf());
+		//Graphics::Context->PSSetSamplers(1, 1, shadowSampler.GetAddressOf());
 	}
 
 
@@ -1945,8 +1948,8 @@ void Game::Draw(float deltaTime, float totalTime)
 	//triangle->Draw();
 
 	// Unbind the shadowSRV to use at the satrt of the loop.
-	ID3D11ShaderResourceView* nullSRVs[16] = {};
-	Graphics::Context->PSSetShaderResources(0, 16, nullSRVs);
+	ID3D11ShaderResourceView* nullSRVs[128] = {};
+	Graphics::Context->PSSetShaderResources(0, 128, nullSRVs);
 
 
 	// Tells Imgui to gets its buffer data information and feed the data to another funtion.

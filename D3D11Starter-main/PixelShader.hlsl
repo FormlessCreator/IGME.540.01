@@ -20,6 +20,9 @@ Texture2D ShadowMap : register(t4);
 // Create a sampler state.
 SamplerState BasicSampler : register(s0);
 
+// Add a shadow sampler.
+SamplerComparisonState ShadowSampler : register(s1);
+
 // Create a cbuffer struct for the pixel shader.
 cbuffer PSExternalData1 : register(b0)
 {
@@ -74,15 +77,19 @@ float4 main(VertexToPixel input) : SV_TARGET
     float2 shadowUV = input.shadowMapPos.xy * 0.5f + 0.5f;
 	
 	// Flip the y of the shadow UV.
-    shadowUV.y = 1 - shadowUV.y;
+    shadowUV.y = 1.0f - shadowUV.y;
 	
 	// Get the distance from the light to the pixel and the closet surface.
     float distanceOfLightToPixel = input.shadowMapPos.z;
 	float distanceOfShadowMapFloor = ShadowMap.Sample(BasicSampler, shadowUV).r;
 	
+	// Use the shadow amount for the shadow map sample and comparison.
+    float shadowAmount = ShadowMap.SampleCmpLevelZero(
+	   ShadowSampler, shadowUV, distanceOfLightToPixel).r;
+	
 	// If the light to the pixel is less than the distance to the surface floor,
 	// then there are shadows to display.
-	// Use tenary operator for fast if statements
+	// Use tenary operator for fast if statements.
     float d = distanceOfLightToPixel < distanceOfShadowMapFloor ? 1.0f : 0.0f;
 
 	// Normalize the input tangent.
@@ -169,7 +176,7 @@ float4 main(VertexToPixel input) : SV_TARGET
 		// If the light is a directional light, calculate light on the pixel surface
 		// and add to all the lights in the scene.
             case 0:
-                totalLight +=
+                float3 directionalLightResult =
 			CookDirectionalLight(
 			light,
 			finalNormal,
@@ -179,7 +186,18 @@ float4 main(VertexToPixel input) : SV_TARGET
 			roughnessTexture,
 			surfaceColor,
 			specularColor,
-			metalnessTexture) * d;
+			metalnessTexture); //* d;
+			
+			// If this is the light(light 3) needed for shadowing apply the shadow result to only
+			// this light.
+			if(i == 3)
+            {
+				// Multiply the light calculations by the sampled shadow amount.
+                directionalLightResult *= d;
+            }
+			
+			// This shadow map will only affect the third light.
+                totalLight += directionalLightResult;
                 break;
 		
             case 1:
@@ -230,7 +248,7 @@ float4 main(VertexToPixel input) : SV_TARGET
 	
 	// Return a float4 color.
     //return float4(gammaAdjustedColor, 1.0f);
-    return float4(gammaAdjustedColor, 1.0f);
+    return float4(shadowAmount.rrr, 1.0f);
     //return float4(distanceOfShadowMapFloor.xxx, 1.0f);
 	
 	// Test:
