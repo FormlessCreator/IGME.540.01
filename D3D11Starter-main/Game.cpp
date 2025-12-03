@@ -1767,6 +1767,9 @@ void Game::Draw(float deltaTime, float totalTime)
 					0);
 
 				//Graphics::Context->PSSetSamplers(1, 1, shadowSampler.GetAddressOf());
+				// Set sampler in the rendering loop after binding PS material.
+				/*Graphics::Context->PSSetShaderResources(4, 1, shadowSRV.GetAddressOf());
+				Graphics::Context->PSSetSamplers(1, 1, shadowSampler.GetAddressOf());*/
 
 				// Draw the entities after their world matrix have be updated in the vertex shader
 				// using the constant shader.
@@ -1790,7 +1793,8 @@ void Game::Draw(float deltaTime, float totalTime)
 			Graphics::Context->PSSetShader(pixelShader.Get(), 0, 0);
 		}
 
-		//Graphics::Context->PSSetShaderResources(4, 1, shadowSRV.GetAddressOf());
+		// Set sampler in the rendering loop after binding PS material.
+		Graphics::Context->PSSetShaderResources(4, 1, shadowSRV.GetAddressOf());
 		Graphics::Context->PSSetSamplers(1, 1, shadowSampler.GetAddressOf());
 	}
 
@@ -1918,6 +1922,10 @@ void Game::Draw(float deltaTime, float totalTime)
 		// Get the material of the current entity and set its texture srv's and sampler state 
 		// active by binding it to its pshaders register for use.
 		listOfEntities[i].GetMaterial()->BindTexturesAndSamplers();
+
+		//// Set sampler in the rendering loop after binding PS material.
+		//Graphics::Context->PSSetShaderResources(4, 1, shadowSRV.GetAddressOf());
+		//Graphics::Context->PSSetSamplers(1, 1, shadowSampler.GetAddressOf());
 
 		// Draw the entities after their world matrix have be updated in the vertex shader
 		// using the constant shader.
