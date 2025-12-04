@@ -698,6 +698,9 @@ void Game::Initialize()
 
 		// Set to true.
 		lightInitialized = true;
+
+		// Initialize the chromatic value to false.
+		aberationValue = false;
 	}
 }
 
@@ -1262,24 +1265,46 @@ void Game::buildImGuiCustomizedUI()
 		ImGui::TreePop();
 	}
 
-	if (ImGui::TreeNode("Constant Buffer Data Changes"))
+	// Create UI for Postprocessing Effects.
+	if (ImGui::TreeNode("Post Process Effects"))
 	{
-		if (ImGui::TreeNode("Vertices offset"))
+		if (ImGui::TreeNode("Blur"))
 		{
-			// Get the float[] data content with Sliderfloat3().
-			ImGui::SliderFloat3("Vertices Offset", offsetData.get(), -1.0f, 1.0f);
-			ImGui::TreePop();
-		}
-		
-		if (ImGui::TreeNode("Vertices Color"))
-		{
-			// Edit the color data of the buffer shader and update the unique ptr data.
-			ImGui::ColorEdit4("Vertices Color", colorData.get());
+			// Add a slider value for blur.
+			ImGui::SliderFloat("Blur Value", &blurValue, 1.0f, 10.f);
 			ImGui::TreePop();
 		}
 
+		if (ImGui::TreeNode("Chromatic Aberation"))
+		{
+			// Add a checkbox for turning on the chromatic abration.
+			ImGui::Checkbox("Turn On Aberation", &aberationValue);
+			ImGui::TreePop();
+		}
+		
 		ImGui::TreePop();
 	}
+	
+
+	// Removed the constant buffer data variables.
+	//if (ImGui::TreeNode("Constant Buffer Data Changes"))
+	//{
+	//	if (ImGui::TreeNode("Vertices offset"))
+	//	{
+	//		// Get the float[] data content with Sliderfloat3().
+	//		ImGui::SliderFloat3("Vertices Offset", offsetData.get(), -1.0f, 1.0f);
+	//		ImGui::TreePop();
+	//	}
+	//	
+	//	if (ImGui::TreeNode("Vertices Color"))
+	//	{
+	//		// Edit the color data of the buffer shader and update the unique ptr data.
+	//		ImGui::ColorEdit4("Vertices Color", colorData.get());
+	//		ImGui::TreePop();
+	//	}
+
+	//	ImGui::TreePop();
+	//}
 
 	// End the created window.
 	ImGui::End();

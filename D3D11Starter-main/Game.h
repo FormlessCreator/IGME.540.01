@@ -230,5 +230,11 @@ private:
 
 	// Create a verter shader for the shadow.
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> shadowVS;
+
+	// Create a float variable for the blur slider.
+	float blurValue;
+
+	// Create a bool value for the aberation check box.
+	bool aberationValue;
 };
 
