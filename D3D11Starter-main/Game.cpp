@@ -700,7 +700,7 @@ void Game::Initialize()
 		lightInitialized = true;
 
 		// Initialize the chromatic value to false.
-		aberationValue = false;
+		aberrationValue = false;
 	}
 }
 
@@ -1278,7 +1278,7 @@ void Game::buildImGuiCustomizedUI()
 		if (ImGui::TreeNode("Chromatic Aberation"))
 		{
 			// Add a checkbox for turning on the chromatic abration.
-			ImGui::Checkbox("Turn On Aberation", &aberationValue);
+			ImGui::Checkbox("Turn On Aberation", &aberrationValue);
 			ImGui::TreePop();
 		}
 		

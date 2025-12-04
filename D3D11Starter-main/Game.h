@@ -235,6 +235,6 @@ private:
 	float blurValue;
 
 	// Create a bool value for the aberation check box.
-	bool aberationValue;
+	bool aberrationValue;
 };
 
