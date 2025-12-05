@@ -69,6 +69,9 @@ public:
 	void LoadShadowVertexShader();
 	//void LoadPixelShader(std::wstring shaderCso, Microsoft::WRL::ComPtr<ID3D11PixelShader>& pixelShaderType);
 
+	// Create a helper funtion that reset the SRV and RTV for the post process using the new window size.
+	void ResetAndLoadRTVAndSRVForPP();
+
 private:
 
 	// Initialization helper methods - feel free to customize, combine, remove, etc.
@@ -236,5 +239,19 @@ private:
 
 	// Create a bool value for the aberation check box.
 	bool aberrationValue;
+
+	// Create a post processing resources that is shared across all post process.
+	Microsoft::WRL::ComPtr<ID3D11SamplerState> ppSampler;
+	Microsoft::WRL::ComPtr<ID3D11VertexShader> ppVS;
+
+	// Create post processing resource for for bluring.
+	Microsoft::WRL::ComPtr<ID3D11PixelShader> ppBlurPS;
+	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> ppBlurRTV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> ppBlurSRV;
+
+	// Create post processing resource for chromatic aberration.
+	Microsoft::WRL::ComPtr<ID3D11PixelShader> ppChromaticAPS;
+	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> ppChromaticARTV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> ppChromaticASRV;
 };
 

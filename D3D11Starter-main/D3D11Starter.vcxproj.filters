@@ -199,6 +199,9 @@
     <FxCompile Include="ShadowMapVS.hlsl">
       <Filter>Shaders\Vertex Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="FullScreenPPVS.hlsl">
+      <Filter>Shaders\Vertex Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="ShaderIncludeFile.hlsli">

@@ -222,6 +222,61 @@ Game::Game()
 	shadowRastDesc.SlopeScaledDepthBias = 5.0f;
 	Graphics::Device->CreateRasterizerState(&shadowRastDesc, shadowRasterizer.GetAddressOf());
 
+	// Create a sampler state for both the blur and the aberration effect.
+	D3D11_SAMPLER_DESC ppSamplerDesc = {};
+	ppSamplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	ppSamplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	ppSamplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	ppSamplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	ppSamplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+	Graphics::Device->CreateSamplerState(&ppSamplerDesc, ppSampler.GetAddressOf());
+
+	// Create a texture destination for the blur view and the aberration view.
+	D3D11_TEXTURE2D_DESC textureDesc = {};
+	textureDesc.Height = Window::Height();
+	textureDesc.Width = Window::Width();
+	textureDesc.ArraySize = 1;
+	textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+	textureDesc.CPUAccessFlags = 0;
+	textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	textureDesc.MipLevels = 1;
+	textureDesc.MiscFlags = 0;
+	textureDesc.SampleDesc.Count = 1;
+	textureDesc.SampleDesc.Quality = 0;
+	textureDesc.Usage = D3D11_USAGE_DEFAULT;
+
+	// Create the pp texture for the blur amd chromatic abberation.
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> ppBlurTexture;
+	Microsoft::WRL::ComPtr <ID3D11Texture2D> ppAberationTexture;
+	Graphics::Device->CreateTexture2D(&textureDesc, 0, ppBlurTexture.GetAddressOf());
+	Graphics::Device->CreateTexture2D(&textureDesc, 0, ppAberationTexture.GetAddressOf());
+
+	// Create a render target view destination.
+	D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+	rtvDesc.Format = textureDesc.Format;
+	rtvDesc.Texture2D.MipSlice = 0;
+	rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+	
+	// Create a render target view for the blur and the chromatic effect.
+	Graphics::Device->CreateRenderTargetView(
+		ppBlurTexture.Get(),
+		&rtvDesc,
+		ppBlurRTV.ReleaseAndGetAddressOf());
+	Graphics::Device->CreateRenderTargetView(
+		ppAberationTexture.Get(),
+		&rtvDesc,
+		ppChromaticARTV.ReleaseAndGetAddressOf());
+
+	// Create a shader resource view for the ppblur and ppChromaticA texture.
+	Graphics::Device->CreateShaderResourceView(
+		ppBlurTexture.Get(),
+		0,
+		ppBlurSRV.ReleaseAndGetAddressOf());
+	Graphics::Device->CreateShaderResourceView(
+		ppAberationTexture.Get(),
+		0,
+		ppChromaticASRV.ReleaseAndGetAddressOf());
+
 	// To save time I will use a nested for loop.
 	// Create a vector that holds the wstring of different materials and their texture type.
 	materials = {
@@ -835,6 +890,62 @@ void Game::LoadShadowVertexShader()
 			vertexShaderBlob->GetBufferSize(),		// Size of the shader code that uses this layout
 			inputLayout.GetAddressOf());			// Address of the resulting ID3D11InputLayout pointer
 	}
+}
+
+void Game::ResetAndLoadRTVAndSRVForPP()
+{
+	// Reset the RTV and SRV for both the ppblur ans ppChromaticA.
+	ppBlurRTV.Reset();
+	ppBlurSRV.Reset();
+	ppChromaticARTV.Reset();
+	ppChromaticASRV.Reset();
+
+	// Create a texture destination for the blur view and the aberration view.
+	D3D11_TEXTURE2D_DESC textureDesc = {};
+	textureDesc.Height = Window::Height();
+	textureDesc.Width = Window::Width();
+	textureDesc.ArraySize = 1;
+	textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+	textureDesc.CPUAccessFlags = 0;
+	textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	textureDesc.MipLevels = 1;
+	textureDesc.MiscFlags = 0;
+	textureDesc.SampleDesc.Count = 1;
+	textureDesc.SampleDesc.Quality = 0;
+	textureDesc.Usage = D3D11_USAGE_DEFAULT;
+
+	// Create the pp texture for the blur amd chromatic abberation.
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> ppBlurTexture;
+	Microsoft::WRL::ComPtr <ID3D11Texture2D> ppAberationTexture;
+	Graphics::Device->CreateTexture2D(&textureDesc, 0, ppBlurTexture.GetAddressOf());
+	Graphics::Device->CreateTexture2D(&textureDesc, 0, ppAberationTexture.GetAddressOf());
+
+	// Create a render target view destination.
+	D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+	rtvDesc.Format = textureDesc.Format;
+	rtvDesc.Texture2D.MipSlice = 0;
+	rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+
+	// Create a render target view for the blur and the chromatic effect.
+	Graphics::Device->CreateRenderTargetView(
+		ppBlurTexture.Get(),
+		&rtvDesc,
+		ppBlurRTV.ReleaseAndGetAddressOf());
+	Graphics::Device->CreateRenderTargetView(
+		ppAberationTexture.Get(),
+		&rtvDesc,
+		ppChromaticARTV.ReleaseAndGetAddressOf());
+
+	// Create a shader resource view for the ppblur and ppChromaticA texture.
+	Graphics::Device->CreateShaderResourceView(
+		ppBlurTexture.Get(),
+		0,
+		ppBlurSRV.ReleaseAndGetAddressOf());
+	Graphics::Device->CreateShaderResourceView(
+		ppAberationTexture.Get(),
+		0,
+		ppChromaticASRV.ReleaseAndGetAddressOf());
+
 }
 
 void Game::updateHelper()
