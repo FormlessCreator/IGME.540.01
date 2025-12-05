@@ -2022,6 +2022,24 @@ void Game::Draw(float deltaTime, float totalTime)
 		Graphics::Context->PSSetSamplers(1, 1, shadowSampler.GetAddressOf());
 	}
 
+	// Pre rendering the blur PP.
+	//{
+	//	// Tells Imgui to gets its buffer data information and feed the data to another funtion.
+	//	{
+	//		ImGui::Render(); // Turns this frame’s UI into renderable triangles
+	//		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData()); // Draws it to the screen
+	//	}
+
+	//	// For the blur:
+	//	// Clear the render target view.
+	//	const float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	//	Graphics::Context->ClearRenderTargetView(ppBlurRTV.Get(), clearColor);
+	//	Graphics::Context->ClearRenderTargetView(ppChromaticARTV.Get(), clearColor);
+
+	//	// Change the active render view.
+	//	Graphics::Context->OMSetRenderTargets(1, ppBlurRTV.GetAddressOf(), Graphics::DepthBufferDSV.Get());
+	//}
+
 
 	// Use a for each to draw the mesh.
 	for (int i = 0; i < listOfEntities.size(); i++)
