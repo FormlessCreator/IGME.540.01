@@ -1921,6 +1921,24 @@ void Game::Draw(float deltaTime, float totalTime)
 		Graphics::Context->ClearRenderTargetView(Graphics::BackBufferRTV.Get(), color);
 		Graphics::Context->ClearDepthStencilView(Graphics::DepthBufferDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
+		// Pre rendering the blur PP.
+		{
+			// Tells Imgui to gets its buffer data information and feed the data to another funtion.
+			{
+				ImGui::Render(); // Turns this frame’s UI into renderable triangles
+				ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData()); // Draws it to the screen
+			}
+
+			// For the blur:
+			// Clear the render target view.
+			const float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+			Graphics::Context->ClearRenderTargetView(ppBlurRTV.Get(), clearColor);
+			Graphics::Context->ClearRenderTargetView(ppChromaticARTV.Get(), clearColor);
+
+			// Change the active render view.
+			Graphics::Context->OMSetRenderTargets(1, ppBlurRTV.GetAddressOf(), Graphics::DepthBufferDSV.Get());
+		}
+
 		// For drawing the shadow depths.
 		{
 			//Graphics::Context->OMSetRenderTargets(0, 0, shadowDSV.Get());
@@ -2168,8 +2186,16 @@ void Game::Draw(float deltaTime, float totalTime)
 	// Create a post processing block for the blur and chromatic effect.
 	{
 		// For the blur:
+		// Clear the render target view.
+		//const float clearColor[4] = { 0, 0, 0, 0 };
+		//Graphics::Context->ClearRenderTargetView(ppBlurRTV.Get(), clearColor);
+		//Graphics::Context->ClearRenderTargetView(ppChromaticARTV.Get(), clearColor);
+		//
+		//// Change the active render view.
+		//Graphics::Context->OMSetRenderTargets(1, ppBlurRTV.GetAddressOf(), Graphics::DepthBufferDSV.Get());
+
 		// Get back to the screen.
-		Graphics::Context->OMSetRenderTargets(1, Graphics::BackBufferRTV.GetAddressOf(), 0);
+		Graphics::Context->OMSetRenderTargets(1, ppBlurRTV.GetAddressOf(), 0);
 
 		// Activate the shaders and bind their resources.
 		Graphics::Context->VSSetShader(ppVS.Get(), 0, 0);
@@ -2184,12 +2210,23 @@ void Game::Draw(float deltaTime, float totalTime)
 		BlurData.pixelHeight = 1.0f / Window::Height();
 		FillAndBindNextConstantBuffer(&BlurData, sizeof(PPBlurData), D3D11_PIXEL_SHADER, 0);
 
+		// Turn off vertex and index buffer for the full screen trick.
+		UINT stride = sizeof(Vertex);
+		UINT offset = 0;
+		ID3D11Buffer* nothing = 0;
+		Graphics::Context->IASetIndexBuffer(0, DXGI_FORMAT_R32_UINT, 0);
+		Graphics::Context->IASetVertexBuffers(0, 1, &nothing, &stride, &offset);
+
 		// Draw the render using the full screen vertex shader.
 		Graphics::Context->Draw(3, 0);
 
 		// Unbind the shader resource view.
 		ID3D11ShaderResourceView* nullSRVs[16] = {};
 		Graphics::Context->PSSetShaderResources(0, 16, nullSRVs);
+
+		// For the blur:
+		// Get back to the screen.
+		//Graphics::Context->OMSetRenderTargets(1, Graphics::BackBufferRTV.GetAddressOf(), 0);
 	}
 
 	// Tells Imgui to gets its buffer data information and feed the data to another funtion.
