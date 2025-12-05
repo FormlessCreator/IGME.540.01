@@ -75,3 +75,11 @@ struct ShadowVSData
 	//DirectX::XMFLOAT4X4 cameraProjection;
 };
 
+// Create a buffer struct for the PP Blur Pixel Shader.
+struct PPBlurData
+{
+	int blurRadius;
+	float pixelWidth;
+	float pixelHeight;
+};
+

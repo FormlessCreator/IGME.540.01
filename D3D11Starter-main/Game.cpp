@@ -222,60 +222,26 @@ Game::Game()
 	shadowRastDesc.SlopeScaledDepthBias = 5.0f;
 	Graphics::Device->CreateRasterizerState(&shadowRastDesc, shadowRasterizer.GetAddressOf());
 
-	// Create a sampler state for both the blur and the aberration effect.
-	D3D11_SAMPLER_DESC ppSamplerDesc = {};
-	ppSamplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-	ppSamplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-	ppSamplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	ppSamplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	ppSamplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
-	Graphics::Device->CreateSamplerState(&ppSamplerDesc, ppSampler.GetAddressOf());
+	// Create a post processing block to load PP resources.
+	{
+		// Load the PP Vertex shader with the blur and chromatic Pixel Shaders.
+		LoadPPVertexShader();
+		LoadPPBlurPixelShader();
+		LoadPPChromaticPixelShader();
 
-	// Create a texture destination for the blur view and the aberration view.
-	D3D11_TEXTURE2D_DESC textureDesc = {};
-	textureDesc.Height = Window::Height();
-	textureDesc.Width = Window::Width();
-	textureDesc.ArraySize = 1;
-	textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-	textureDesc.CPUAccessFlags = 0;
-	textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	textureDesc.MipLevels = 1;
-	textureDesc.MiscFlags = 0;
-	textureDesc.SampleDesc.Count = 1;
-	textureDesc.SampleDesc.Quality = 0;
-	textureDesc.Usage = D3D11_USAGE_DEFAULT;
+		// Reset and load the RTV and SRV for both blur and chromatic post processing.
+		ResetAndLoadRTVAndSRVForPP();
 
-	// Create the pp texture for the blur amd chromatic abberation.
-	Microsoft::WRL::ComPtr<ID3D11Texture2D> ppBlurTexture;
-	Microsoft::WRL::ComPtr <ID3D11Texture2D> ppAberationTexture;
-	Graphics::Device->CreateTexture2D(&textureDesc, 0, ppBlurTexture.GetAddressOf());
-	Graphics::Device->CreateTexture2D(&textureDesc, 0, ppAberationTexture.GetAddressOf());
-
-	// Create a render target view destination.
-	D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
-	rtvDesc.Format = textureDesc.Format;
-	rtvDesc.Texture2D.MipSlice = 0;
-	rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-	
-	// Create a render target view for the blur and the chromatic effect.
-	Graphics::Device->CreateRenderTargetView(
-		ppBlurTexture.Get(),
-		&rtvDesc,
-		ppBlurRTV.ReleaseAndGetAddressOf());
-	Graphics::Device->CreateRenderTargetView(
-		ppAberationTexture.Get(),
-		&rtvDesc,
-		ppChromaticARTV.ReleaseAndGetAddressOf());
-
-	// Create a shader resource view for the ppblur and ppChromaticA texture.
-	Graphics::Device->CreateShaderResourceView(
-		ppBlurTexture.Get(),
-		0,
-		ppBlurSRV.ReleaseAndGetAddressOf());
-	Graphics::Device->CreateShaderResourceView(
-		ppAberationTexture.Get(),
-		0,
-		ppChromaticASRV.ReleaseAndGetAddressOf());
+		// Set up the sampler:
+		// Create a sampler state for both the blur and the aberration effect.
+		D3D11_SAMPLER_DESC ppSamplerDesc = {};
+		ppSamplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+		ppSamplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+		ppSamplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+		ppSamplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+		ppSamplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+		Graphics::Device->CreateSamplerState(&ppSamplerDesc, ppSampler.GetAddressOf());
+	}
 
 	// To save time I will use a nested for loop.
 	// Create a vector that holds the wstring of different materials and their texture type.
@@ -892,6 +858,110 @@ void Game::LoadShadowVertexShader()
 	}
 }
 
+void Game::LoadPPVertexShader()
+{
+	// -------------------------------------------------------------------------
+	ID3DBlob* vertexShaderBlob;
+	D3DReadFileToBlob(FixPath(L"FullScreenPPVS.cso").c_str(), &vertexShaderBlob);
+	Graphics::Device->CreateVertexShader(
+		vertexShaderBlob->GetBufferPointer(), // Pointer to start of binary data
+		vertexShaderBlob->GetBufferSize(), // How big is that data?
+		0, // No classes in this shader
+		ppVS.GetAddressOf());
+
+	// Bind the textures and sampler state for the pixel shaders to access.
+	// Graphics::Context->PSGetShaderResources(0, 1, )
+
+	// Optimize the shader class so you only initialize and use the same shader once.
+		// Using Chris Casiolio code reference for the input layout:
+	// Create an input layout 
+	//  - This describes the layout of data sent to a vertex shader
+	//  - In other words, it describes how to interpret data (numbers) in a vertex buffer
+	//  - Doing this NOW because it requires a vertex shader's byte code to verify against!
+	//  - Luckily, we already have that loaded (the vertex shader blob above)
+	
+	// I think the Full screen vertex shader needs an input element layout of one.
+	// I will check it later.
+	//{
+	//	D3D11_INPUT_ELEMENT_DESC inputElements[1] = {};
+
+	//	// Set up the first element - a position, which is 3 float values
+	//	inputElements[0].Format = DXGI_FORMAT_R32G32B32_FLOAT;				// Most formats are described as color channels; really it just means "Three 32-bit floats"
+	//	inputElements[0].SemanticName = "SV_VertexID";						// This is "POSITION" - needs to match the semantics in our vertex shader input!
+	//	inputElements[0].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;	// How far into the vertex is this?  Assume it's after the previous element
+
+	//	// Create the input layout, verifying our description against actual shader code
+	//	Graphics::Device->CreateInputLayout(
+	//		inputElements,							// An array of descriptions
+	//		1,										// How many elements in that array? // 2 -> 3 now!
+	//		vertexShaderBlob->GetBufferPointer(),	// Pointer to the code of a shader that uses this layout
+	//		vertexShaderBlob->GetBufferSize(),		// Size of the shader code that uses this layout
+	//		inputLayout.GetAddressOf());			// Address of the resulting ID3D11InputLayout pointer
+	//}
+}
+
+void Game::LoadPPBlurPixelShader()
+{
+	// Load the vertex shader:
+	// Using Chris Casioli code reference:
+	// Create a binary large object to hold a read external pixel shader cso file information.
+	ID3DBlob* pixelShaderBlob;
+
+	// Create a com ptr for the pixel shader blob.
+	//Microsoft::WRL::ComPtr<ID3DBlob> pixelShaderBlob;
+
+	// Loading shaders
+	//  - Visual Studio will compile our shaders at build time
+	//  - They are saved as .cso (Compiled Shader Object) files
+	//  - We need to load them when the application starts
+	{
+		// Read our compiled shader code files into blobs
+		// - Essentially just "open the file and plop its contents here"
+		// - Uses the custom FixPath() helper from Helpers.h to ensure relative paths
+		// - Note the "L" before the string - this tells the compiler the string uses wide characters
+		D3DReadFileToBlob(FixPath(L"PPBlurPS.cso").c_str(), &pixelShaderBlob);
+		//D3DReadFileToBlob(FixPath(L"PixelShader.cso").c_str(), &pixelShaderBlob);
+
+		// Create the actual Direct3D shaders on the GPU
+		Graphics::Device->CreatePixelShader(
+			pixelShaderBlob->GetBufferPointer(),	// Pointer to blob's contents
+			pixelShaderBlob->GetBufferSize(),		// How big is that data?
+			0,										// No classes in this shader
+			ppBlurPS.GetAddressOf());			// Address of the ID3D11PixelShader pointer
+	}
+}
+
+void Game::LoadPPChromaticPixelShader()
+{
+	// Load the vertex shader:
+	// Using Chris Casioli code reference:
+	// Create a binary large object to hold a read external pixel shader cso file information.
+	ID3DBlob* pixelShaderBlob;
+
+	// Create a com ptr for the pixel shader blob.
+	//Microsoft::WRL::ComPtr<ID3DBlob> pixelShaderBlob;
+
+	// Loading shaders
+	//  - Visual Studio will compile our shaders at build time
+	//  - They are saved as .cso (Compiled Shader Object) files
+	//  - We need to load them when the application starts
+	{
+		// Read our compiled shader code files into blobs
+		// - Essentially just "open the file and plop its contents here"
+		// - Uses the custom FixPath() helper from Helpers.h to ensure relative paths
+		// - Note the "L" before the string - this tells the compiler the string uses wide characters
+		D3DReadFileToBlob(FixPath(L"PPChromaticPS.cso").c_str(), &pixelShaderBlob);
+		//D3DReadFileToBlob(FixPath(L"PixelShader.cso").c_str(), &pixelShaderBlob);
+
+		// Create the actual Direct3D shaders on the GPU
+		Graphics::Device->CreatePixelShader(
+			pixelShaderBlob->GetBufferPointer(),	// Pointer to blob's contents
+			pixelShaderBlob->GetBufferSize(),		// How big is that data?
+			0,										// No classes in this shader
+			ppChromaticAPS.GetAddressOf());			// Address of the ID3D11PixelShader pointer
+	}
+}
+
 void Game::ResetAndLoadRTVAndSRVForPP()
 {
 	// Reset the RTV and SRV for both the ppblur ans ppChromaticA.
@@ -1381,8 +1451,8 @@ void Game::buildImGuiCustomizedUI()
 	{
 		if (ImGui::TreeNode("Blur"))
 		{
-			// Add a slider value for blur.
-			ImGui::SliderFloat("Blur Value", &blurValue, 1.0f, 10.f);
+			// Add a slider value for blur radius.
+			ImGui::SliderInt("Blur Raduis", &blurValue, 1, 10);
 			ImGui::TreePop();
 		}
 
@@ -2095,6 +2165,32 @@ void Game::Draw(float deltaTime, float totalTime)
 	ID3D11ShaderResourceView* nullSRVs[128] = {};
 	Graphics::Context->PSSetShaderResources(0, 128, nullSRVs);
 
+	// Create a post processing block for the blur and chromatic effect.
+	{
+		// For the blur:
+		// Get back to the screen.
+		Graphics::Context->OMSetRenderTargets(1, Graphics::BackBufferRTV.GetAddressOf(), 0);
+
+		// Activate the shaders and bind their resources.
+		Graphics::Context->VSSetShader(ppVS.Get(), 0, 0);
+		Graphics::Context->PSSetShader(ppBlurPS.Get(), 0, 0);
+		Graphics::Context->PSSetShaderResources(0, 1, ppBlurSRV.GetAddressOf());
+		Graphics::Context->PSSetSamplers(0, 1, ppSampler.GetAddressOf());
+
+		// Set the CBH data for the blur PS and bind it.
+		PPBlurData BlurData = {};
+		BlurData.blurRadius = blurValue;
+		BlurData.pixelWidth = 1.0f / Window::Width();
+		BlurData.pixelHeight = 1.0f / Window::Height();
+		FillAndBindNextConstantBuffer(&BlurData, sizeof(PPBlurData), D3D11_PIXEL_SHADER, 0);
+
+		// Draw the render using the full screen vertex shader.
+		Graphics::Context->Draw(3, 0);
+
+		// Unbind the shader resource view.
+		ID3D11ShaderResourceView* nullSRVs[16] = {};
+		Graphics::Context->PSSetShaderResources(0, 16, nullSRVs);
+	}
 
 	// Tells Imgui to gets its buffer data information and feed the data to another funtion.
 	{

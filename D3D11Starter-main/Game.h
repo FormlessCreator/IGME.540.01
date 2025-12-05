@@ -68,6 +68,9 @@ public:
 	void LoadVertexShader();
 	void LoadShadowVertexShader();
 	//void LoadPixelShader(std::wstring shaderCso, Microsoft::WRL::ComPtr<ID3D11PixelShader>& pixelShaderType);
+	void LoadPPVertexShader();
+	void LoadPPBlurPixelShader();
+	void LoadPPChromaticPixelShader();
 
 	// Create a helper funtion that reset the SRV and RTV for the post process using the new window size.
 	void ResetAndLoadRTVAndSRVForPP();
@@ -234,8 +237,8 @@ private:
 	// Create a verter shader for the shadow.
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> shadowVS;
 
-	// Create a float variable for the blur slider.
-	float blurValue;
+	// Create a variables for the blur PP.
+	int blurValue;
 
 	// Create a bool value for the aberation check box.
 	bool aberrationValue;
