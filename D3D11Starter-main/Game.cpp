@@ -1038,6 +1038,24 @@ void Game::ResetAndLoadRTVAndSRVForPP()
 		0,
 		ppChromaticASRV.ReleaseAndGetAddressOf());
 
+	//Graphics::Device->CreateRenderTargetView(
+	//	ppBlurTexture.Get(),
+	//	&rtvDesc,
+	//	ppBlurRTV.GetAddressOf());
+	//Graphics::Device->CreateRenderTargetView(
+	//	ppAberationTexture.Get(),
+	//	&rtvDesc,
+	//	ppChromaticARTV.GetAddressOf());
+
+	//// Create a shader resource view for the ppblur and ppChromaticA texture.
+	//Graphics::Device->CreateShaderResourceView(
+	//	ppBlurTexture.Get(),
+	//	0,
+	//	ppBlurSRV.GetAddressOf());
+	//Graphics::Device->CreateShaderResourceView(
+	//	ppAberationTexture.Get(),
+	//	0,
+	//	ppChromaticASRV.GetAddressOf());
 }
 
 void Game::updateHelper()
@@ -2031,12 +2049,6 @@ void Game::Draw(float deltaTime, float totalTime)
 
 	// Pre rendering the blur PP.
 	{
-		// Tells Imgui to gets its buffer data information and feed the data to another funtion.
-		{
-			ImGui::Render(); // Turns this frame’s UI into renderable triangles
-			ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData()); // Draws it to the screen
-		}
-
 		// Set the render target to the blur render target.
 		// For the blur:
 		// Clear the render target view.
@@ -2049,7 +2061,6 @@ void Game::Draw(float deltaTime, float totalTime)
 		// Change the active render view.
 		Graphics::Context->OMSetRenderTargets(1, ppBlurRTV.GetAddressOf(), Graphics::DepthBufferDSV.Get());
 	}
-
 
 	// Use a for each to draw the mesh.
 	for (int i = 0; i < listOfEntities.size(); i++)

@@ -22,8 +22,8 @@ VertexToPixelForPP main( uint id : SV_VertexID )
 	//	   V
 	//	  -3
     output.position = float4(output.uv, 0, 1);
-    output.position.x = output.position * 2 - 1;  // Make the number 3 or -1.
-    output.position.y = output.position * -2 + 1; // Make the number reverse 1 or -3 for y
+    output.position.x = output.position.x * 2 - 1;  // Make the number 3 or -1.
+    output.position.y = output.position.y * -2 + 1; // Make the number reverse 1 or -3 for y
 	
 	// Return the output.
 	return output;
