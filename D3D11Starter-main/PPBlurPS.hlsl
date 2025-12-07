@@ -20,4 +20,5 @@ float4 main(VertexToPixelForPP input) : SV_TARGET
 	
 	// Return the color to test.
 	return pixelColor;
+    //return float4(1, 1, 1, 0);
 }

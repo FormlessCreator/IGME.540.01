@@ -222,26 +222,26 @@ Game::Game()
 	shadowRastDesc.SlopeScaledDepthBias = 5.0f;
 	Graphics::Device->CreateRasterizerState(&shadowRastDesc, shadowRasterizer.GetAddressOf());
 
-	// Create a post processing block to load PP resources.
-	{
-		// Load the PP Vertex shader with the blur and chromatic Pixel Shaders.
-		LoadPPVertexShader();
-		LoadPPBlurPixelShader();
-		LoadPPChromaticPixelShader();
+	//// Create a post processing block to load PP resources.
+	//{
+	//	// Load the PP Vertex shader with the blur and chromatic Pixel Shaders.
+	//	LoadPPVertexShader();
+	//	LoadPPBlurPixelShader();
+	//	LoadPPChromaticPixelShader();
 
-		// Reset and load the RTV and SRV for both blur and chromatic post processing.
-		ResetAndLoadRTVAndSRVForPP();
+	//	// Reset and load the RTV and SRV for both blur and chromatic post processing.
+	//	ResetAndLoadRTVAndSRVForPP();
 
-		// Set up the sampler:
-		// Create a sampler state for both the blur and the aberration effect.
-		D3D11_SAMPLER_DESC ppSamplerDesc = {};
-		ppSamplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-		ppSamplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-		ppSamplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-		ppSamplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-		ppSamplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
-		Graphics::Device->CreateSamplerState(&ppSamplerDesc, ppSampler.GetAddressOf());
-	}
+	//	// Set up the sampler:
+	//	// Create a sampler state for both the blur and the aberration effect.
+	//	D3D11_SAMPLER_DESC ppSamplerDesc = {};
+	//	ppSamplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	//	ppSamplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	//	ppSamplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	//	ppSamplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	//	ppSamplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+	//	Graphics::Device->CreateSamplerState(&ppSamplerDesc, ppSampler.GetAddressOf());
+	//}
 
 	// To save time I will use a nested for loop.
 	// Create a vector that holds the wstring of different materials and their texture type.
@@ -308,6 +308,7 @@ Game::Game()
 
 	// Load shadow vertex shader.
 	LoadShadowVertexShader();
+
 
 	// Create the Sky textures string.
 	const wchar_t* right = L"..\\..\\Assets\\Skies\\Clouds_Blue\\right.png";
@@ -440,6 +441,27 @@ Game::Game()
 
 	CreateGeometry();
 
+	// Create a post processing block to load PP resources.
+	{
+		// Load the PP Vertex shader with the blur and chromatic Pixel Shaders.
+		LoadPPVertexShader();
+		LoadPPBlurPixelShader();
+		LoadPPChromaticPixelShader();
+
+		// Reset and load the RTV and SRV for both blur and chromatic post processing.
+		ResetAndLoadRTVAndSRVForPP();
+
+		// Set up the sampler:
+		// Create a sampler state for both the blur and the aberration effect.
+		D3D11_SAMPLER_DESC ppSamplerDesc = {};
+		ppSamplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+		ppSamplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+		ppSamplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+		ppSamplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+		ppSamplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+		Graphics::Device->CreateSamplerState(&ppSamplerDesc, ppSampler.GetAddressOf());
+	}
+
 	// Initialize count to 0.
 	count = 0;
 
@@ -454,9 +476,9 @@ Game::Game()
 	// Convert the float value to colors between 0 - 1.
 	// By normalization.
 	colorPicker =  XMFLOAT4(
-		(181.0f / 255.0f), 
-		(181.0f / 255.0f), 
-		(181.0f / 255.0f), 
+		(0.0f / 255.0f), 
+		(0.0f / 255.0f), 
+		(0.0f / 255.0f), 
 		(0.0f / 255.0f));
 
 	// Set boolean variables to false by casting.
@@ -1741,6 +1763,9 @@ void Game::CreateGeometry()
 // --------------------------------------------------------
 void Game::OnResize()
 {
+	// Update the render target view if window is resized.
+	ResetAndLoadRTVAndSRVForPP();
+
 	// Update the matrix of each camera.
 	// if the camera pointer is not null.
 	if (cameras.size() <= 0)
@@ -1921,24 +1946,6 @@ void Game::Draw(float deltaTime, float totalTime)
 		Graphics::Context->ClearRenderTargetView(Graphics::BackBufferRTV.Get(), color);
 		Graphics::Context->ClearDepthStencilView(Graphics::DepthBufferDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
-		// Pre rendering the blur PP.
-		{
-			// Tells Imgui to gets its buffer data information and feed the data to another funtion.
-			{
-				ImGui::Render(); // Turns this frame’s UI into renderable triangles
-				ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData()); // Draws it to the screen
-			}
-
-			// For the blur:
-			// Clear the render target view.
-			const float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-			Graphics::Context->ClearRenderTargetView(ppBlurRTV.Get(), clearColor);
-			Graphics::Context->ClearRenderTargetView(ppChromaticARTV.Get(), clearColor);
-
-			// Change the active render view.
-			Graphics::Context->OMSetRenderTargets(1, ppBlurRTV.GetAddressOf(), Graphics::DepthBufferDSV.Get());
-		}
-
 		// For drawing the shadow depths.
 		{
 			//Graphics::Context->OMSetRenderTargets(0, 0, shadowDSV.Get());
@@ -2017,28 +2024,31 @@ void Game::Draw(float deltaTime, float totalTime)
 			Graphics::Context->PSSetShader(pixelShader.Get(), 0, 0);
 		}
 
-		// Set sampler in the rendering loop after binding PS material.
+		// Set shader resources and sampler in the rendering loop after binding PS material.
 		Graphics::Context->PSSetShaderResources(4, 1, shadowSRV.GetAddressOf());
 		Graphics::Context->PSSetSamplers(1, 1, shadowSampler.GetAddressOf());
 	}
 
 	// Pre rendering the blur PP.
-	//{
-	//	// Tells Imgui to gets its buffer data information and feed the data to another funtion.
-	//	{
-	//		ImGui::Render(); // Turns this frame’s UI into renderable triangles
-	//		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData()); // Draws it to the screen
-	//	}
+	{
+		// Tells Imgui to gets its buffer data information and feed the data to another funtion.
+		{
+			ImGui::Render(); // Turns this frame’s UI into renderable triangles
+			ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData()); // Draws it to the screen
+		}
 
-	//	// For the blur:
-	//	// Clear the render target view.
-	//	const float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-	//	Graphics::Context->ClearRenderTargetView(ppBlurRTV.Get(), clearColor);
-	//	Graphics::Context->ClearRenderTargetView(ppChromaticARTV.Get(), clearColor);
+		// Set the render target to the blur render target.
+		// For the blur:
+		// Clear the render target view.
+		const float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+		Graphics::Context->ClearRenderTargetView(ppBlurRTV.Get(), clearColor);
 
-	//	// Change the active render view.
-	//	Graphics::Context->OMSetRenderTargets(1, ppBlurRTV.GetAddressOf(), Graphics::DepthBufferDSV.Get());
-	//}
+		// Only clear the render target view for the ppBlurRTV:
+		//Graphics::Context->ClearRenderTargetView(ppChromaticARTV.Get(), clearColor);
+
+		// Change the active render view.
+		Graphics::Context->OMSetRenderTargets(1, ppBlurRTV.GetAddressOf(), Graphics::DepthBufferDSV.Get());
+	}
 
 
 	// Use a for each to draw the mesh.
@@ -2203,21 +2213,35 @@ void Game::Draw(float deltaTime, float totalTime)
 
 	// Create a post processing block for the blur and chromatic effect.
 	{
-		// For the blur:
+		// For the Chromatic:
 		// Clear the render target view.
 		//const float clearColor[4] = { 0, 0, 0, 0 };
-		//Graphics::Context->ClearRenderTargetView(ppBlurRTV.Get(), clearColor);
 		//Graphics::Context->ClearRenderTargetView(ppChromaticARTV.Get(), clearColor);
-		//
-		//// Change the active render view.
-		//Graphics::Context->OMSetRenderTargets(1, ppBlurRTV.GetAddressOf(), Graphics::DepthBufferDSV.Get());
+		
+		// Restore the initial or defualt back buffer without using the depth stencil for any checks.
+		// To get back to the screen.
+		// This results to RTV to SRV
+		//Graphics::Context->OMSetRenderTargets(1, ppBlurRTV.GetAddressOf(), 0);
+		// And Unbind the ppBlurRTV texture before before using it for the SRV.
+		// Results to no or empty active slot for active RTV.
+		//ID3D11RenderTargetView* nullRTVs[1] = {};
+		//Graphics::Context->OMSetRenderTargets(1, nullRTVs, 0);
 
-		// Get back to the screen.
-		Graphics::Context->OMSetRenderTargets(1, ppBlurRTV.GetAddressOf(), 0);
+		// Restore the initial or defualt back buffer without using the depth stencil for any checks.
+		// To get back to the screen.
+		Graphics::Context->OMSetRenderTargets(1, Graphics::BackBufferRTV.GetAddressOf(), 0);
+
+		// Turn off vertex and index buffer for the full screen trick.
+		UINT stride = sizeof(Vertex);
+		UINT offset = 0;
+		ID3D11Buffer* nothing = 0;
+		Graphics::Context->IASetIndexBuffer(0, DXGI_FORMAT_R32_UINT, 0);
+		Graphics::Context->IASetVertexBuffers(0, 1, &nothing, &stride, &offset);
 
 		// Activate the shaders and bind their resources.
 		Graphics::Context->VSSetShader(ppVS.Get(), 0, 0);
 		Graphics::Context->PSSetShader(ppBlurPS.Get(), 0, 0);
+
 		Graphics::Context->PSSetShaderResources(0, 1, ppBlurSRV.GetAddressOf());
 		Graphics::Context->PSSetSamplers(0, 1, ppSampler.GetAddressOf());
 
@@ -2228,13 +2252,6 @@ void Game::Draw(float deltaTime, float totalTime)
 		BlurData.pixelHeight = 1.0f / Window::Height();
 		FillAndBindNextConstantBuffer(&BlurData, sizeof(PPBlurData), D3D11_PIXEL_SHADER, 0);
 
-		// Turn off vertex and index buffer for the full screen trick.
-		UINT stride = sizeof(Vertex);
-		UINT offset = 0;
-		ID3D11Buffer* nothing = 0;
-		Graphics::Context->IASetIndexBuffer(0, DXGI_FORMAT_R32_UINT, 0);
-		Graphics::Context->IASetVertexBuffers(0, 1, &nothing, &stride, &offset);
-
 		// Draw the render using the full screen vertex shader.
 		Graphics::Context->Draw(3, 0);
 
@@ -2243,7 +2260,7 @@ void Game::Draw(float deltaTime, float totalTime)
 		Graphics::Context->PSSetShaderResources(0, 16, nullSRVs);
 
 		// For the blur:
-		// Get back to the screen.
+		// Get back to the original normal screen.
 		//Graphics::Context->OMSetRenderTargets(1, Graphics::BackBufferRTV.GetAddressOf(), 0);
 	}
 
