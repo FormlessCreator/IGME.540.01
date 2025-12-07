@@ -2263,59 +2263,47 @@ void Game::Draw(float deltaTime, float totalTime)
 		Graphics::Context->PSSetShaderResources(0, 16, nullSRVs);
 	}
 
-	//// Pre-render for the chromatic aberration.
-	//{
-	//	// Create a clear color to clear the render target view of the chromatic RTV.
-	//	const float clearColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	//	Graphics::Context->ClearRenderTargetView(ppChromaticARTV.Get(), clearColor);
+	// If the bool of show aberration is clicked.
+	if (aberrationValue)
+	{
+		// Pre-render for the chromatic aberration.
+		{
+			// Create a clear color to clear the render target view of the chromatic RTV.
+			const float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+			Graphics::Context->ClearRenderTargetView(ppChromaticARTV.Get(), clearColor);
 
-	//	// Change the active render target view to the chromaticRTV.
-	//	Graphics::Context->OMSetRenderTargets(1, ppChromaticARTV.GetAddressOf(), Graphics::DepthBufferDSV.Get());
-	//}
+			// Change the active render target view to the chromaticRTV.
+			Graphics::Context->OMSetRenderTargets(1, ppChromaticARTV.GetAddressOf(), Graphics::DepthBufferDSV.Get());
+		}
 
-	//// Create a post processing block for the chromatic effect.
-	//{
-	//	// Restore the initial or defualt back buffer without using the depth stencil for any checks.
-	//	// To get back to the screen.
-	//	// This results to RTV to SRV
-	//	//Graphics::Context->OMSetRenderTargets(1, ppBlurRTV.GetAddressOf(), 0);
-	//	// And Unbind the ppBlurRTV texture before before using it for the SRV.
-	//	// Results to no or empty active slot for active RTV.
-	//	//ID3D11RenderTargetView* nullRTVs[1] = {};
-	//	//Graphics::Context->OMSetRenderTargets(1, nullRTVs, 0);
+		// Create a post processing block for the chromatic effect.
+		{
+			//// Restore the initial or defualt back buffer without using the depth stencil for any checks.
+			//// To get back to the screen.
+			//Graphics::Context->OMSetRenderTargets(1, Graphics::BackBufferRTV.GetAddressOf(), 0);
 
-	//	// Restore the initial or defualt back buffer without using the depth stencil for any checks.
-	//	// To get back to the screen.
-	//	Graphics::Context->OMSetRenderTargets(1, Graphics::BackBufferRTV.GetAddressOf(), 0);
+			//// Turn off vertex and index buffer for the full screen trick.
+			//UINT stride = sizeof(Vertex);
+			//UINT offset = 0;
+			//ID3D11Buffer* nothing = 0;
+			//Graphics::Context->IASetIndexBuffer(0, DXGI_FORMAT_R32_UINT, 0);
+			//Graphics::Context->IASetVertexBuffers(0, 1, &nothing, &stride, &offset);
 
-	//	// Turn off vertex and index buffer for the full screen trick.
-	//	UINT stride = sizeof(Vertex);
-	//	UINT offset = 0;
-	//	ID3D11Buffer* nothing = 0;
-	//	Graphics::Context->IASetIndexBuffer(0, DXGI_FORMAT_R32_UINT, 0);
-	//	Graphics::Context->IASetVertexBuffers(0, 1, &nothing, &stride, &offset);
+			//// Activate the shaders and bind their resources.
+			//Graphics::Context->VSSetShader(ppVS.Get(), 0, 0);
+			//Graphics::Context->PSSetShader(ppChromaticAPS.Get(), 0, 0);
+			//Graphics::Context->PSSetShaderResources(0, 1, ppChromaticASRV.GetAddressOf());
+			//Graphics::Context->PSSetSamplers(0, 1, ppSampler.GetAddressOf());
 
-	//	// Activate the shaders and bind their resources.
-	//	Graphics::Context->VSSetShader(ppVS.Get(), 0, 0);
-	//	Graphics::Context->PSSetShader(ppBlurPS.Get(), 0, 0);
+			//// There is no CBH data to set and bind for the PP chromatic aberration PS.
+			//// Draw the render using the full screen vertex shader.
+			//Graphics::Context->Draw(3, 0);
 
-	//	Graphics::Context->PSSetShaderResources(0, 1, ppBlurSRV.GetAddressOf());
-	//	Graphics::Context->PSSetSamplers(0, 1, ppSampler.GetAddressOf());
-
-	//	// Set the CBH data for the blur PS and bind it.
-	//	PPBlurData BlurData = {};
-	//	BlurData.blurRadius = blurValue;
-	//	BlurData.pixelWidth = 1.0f / Window::Width();
-	//	BlurData.pixelHeight = 1.0f / Window::Height();
-	//	FillAndBindNextConstantBuffer(&BlurData, sizeof(PPBlurData), D3D11_PIXEL_SHADER, 0);
-
-	//	// Draw the render using the full screen vertex shader.
-	//	Graphics::Context->Draw(3, 0);
-
-	//	// Unbind the shader resource view.
-	//	ID3D11ShaderResourceView* nullSRVs[16] = {};
-	//	Graphics::Context->PSSetShaderResources(0, 16, nullSRVs);
-	//}
+			//// Unbind the shader resource view.
+			//ID3D11ShaderResourceView* nullSRVs[16] = {};
+			//Graphics::Context->PSSetShaderResources(0, 16, nullSRVs);
+		}
+	}
 
 	// Tells Imgui to gets its buffer data information and feed the data to another funtion.
 	{
