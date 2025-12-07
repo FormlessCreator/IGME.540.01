@@ -14,7 +14,7 @@ float4 main(VertexToPixelForPP input) : SV_TARGET
     float3 colorOffset = float3(0.009f, 0.006f, -0.006f);
 	
 	// Create a coordinate at the middle of the screen.
-    //float2 positionXY = float2(0.01f, 0.01f);
+    float2 positionXY = float2(0.0f, 0.0f);
 	
 	// Create a texture color;
     float2 textureSize;
@@ -26,7 +26,7 @@ float4 main(VertexToPixelForPP input) : SV_TARGET
     float2 textureCoord = input.position.xy / textureSize;
 	
 	// Get a new direction.
-    float2 direction = textureCoord; //- positionXY;
+    float2 direction = textureCoord - positionXY;
 	
 	// Create a color sample.
     float4 aberrationColor;

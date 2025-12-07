@@ -2232,6 +2232,7 @@ void Game::Draw(float deltaTime, float totalTime)
 
 		// Restore the initial or defualt back buffer without using the depth stencil for any checks.
 		// To get back to the screen.
+		//Graphics::Context->OMSetRenderTargets(1, ppBlurRTV.GetAddressOf(), 0);
 		Graphics::Context->OMSetRenderTargets(1, Graphics::BackBufferRTV.GetAddressOf(), 0);
 
 		// Turn off vertex and index buffer for the full screen trick.
@@ -2264,9 +2265,22 @@ void Game::Draw(float deltaTime, float totalTime)
 		Graphics::Context->PSSetShaderResources(0, 16, nullSRVs);
 	}
 
+
 	// If the bool of show aberration is clicked.
 	if (aberrationValue)
 	{
+		// Pre rendering the blur PP.
+		{
+			// Set the render target to the blur render target.
+			// For the blur:
+			// Clear the render target view.
+			const float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+			Graphics::Context->ClearRenderTargetView(ppChromaticARTV.Get(), clearColor);
+
+			// Change the active render view.
+			Graphics::Context->OMSetRenderTargets(1, ppChromaticARTV.GetAddressOf(), Graphics::DepthBufferDSV.Get());
+		}
+
 		// Create a post processing block for the chromatic effect.
 		{
 			// Get the current back buffer that is the ppBlurSRV
@@ -2287,6 +2301,7 @@ void Game::Draw(float deltaTime, float totalTime)
 
 			// Use the same blur SRV textion for the chromatic pixel shader.
 			Graphics::Context->PSSetShaderResources(0, 1, ppBlurSRV.GetAddressOf());
+			//Graphics::Context->PSSetShaderResources(0, 1, ppChromaticASRV.GetAddressOf());
 			Graphics::Context->PSSetSamplers(0, 1, ppSampler.GetAddressOf());
 
 			// There is no CBH data to set and bind for the PP chromatic aberration PS.
