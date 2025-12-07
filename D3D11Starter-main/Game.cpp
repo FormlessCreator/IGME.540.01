@@ -2278,30 +2278,30 @@ void Game::Draw(float deltaTime, float totalTime)
 
 		// Create a post processing block for the chromatic effect.
 		{
-			//// Restore the initial or defualt back buffer without using the depth stencil for any checks.
-			//// To get back to the screen.
-			//Graphics::Context->OMSetRenderTargets(1, Graphics::BackBufferRTV.GetAddressOf(), 0);
+			// Restore the initial or defualt back buffer without using the depth stencil for any checks.
+			// To get back to the screen.
+			Graphics::Context->OMSetRenderTargets(1, Graphics::BackBufferRTV.GetAddressOf(), 0);
 
-			//// Turn off vertex and index buffer for the full screen trick.
-			//UINT stride = sizeof(Vertex);
-			//UINT offset = 0;
-			//ID3D11Buffer* nothing = 0;
-			//Graphics::Context->IASetIndexBuffer(0, DXGI_FORMAT_R32_UINT, 0);
-			//Graphics::Context->IASetVertexBuffers(0, 1, &nothing, &stride, &offset);
+			// Turn off vertex and index buffer for the full screen trick.
+			UINT stride = sizeof(Vertex);
+			UINT offset = 0;
+			ID3D11Buffer* nothing = 0;
+			Graphics::Context->IASetIndexBuffer(0, DXGI_FORMAT_R32_UINT, 0);
+			Graphics::Context->IASetVertexBuffers(0, 1, &nothing, &stride, &offset);
 
-			//// Activate the shaders and bind their resources.
-			//Graphics::Context->VSSetShader(ppVS.Get(), 0, 0);
-			//Graphics::Context->PSSetShader(ppChromaticAPS.Get(), 0, 0);
-			//Graphics::Context->PSSetShaderResources(0, 1, ppChromaticASRV.GetAddressOf());
-			//Graphics::Context->PSSetSamplers(0, 1, ppSampler.GetAddressOf());
+			// Activate the shaders and bind their resources.
+			Graphics::Context->VSSetShader(ppVS.Get(), 0, 0);
+			Graphics::Context->PSSetShader(ppChromaticAPS.Get(), 0, 0);
+			Graphics::Context->PSSetShaderResources(0, 1, ppChromaticASRV.GetAddressOf());
+			Graphics::Context->PSSetSamplers(0, 1, ppSampler.GetAddressOf());
 
-			//// There is no CBH data to set and bind for the PP chromatic aberration PS.
-			//// Draw the render using the full screen vertex shader.
-			//Graphics::Context->Draw(3, 0);
+			// There is no CBH data to set and bind for the PP chromatic aberration PS.
+			// Draw the render using the full screen vertex shader.
+			Graphics::Context->Draw(3, 0);
 
-			//// Unbind the shader resource view.
-			//ID3D11ShaderResourceView* nullSRVs[16] = {};
-			//Graphics::Context->PSSetShaderResources(0, 16, nullSRVs);
+			// Unbind the shader resource view.
+			ID3D11ShaderResourceView* nullSRVs[16] = {};
+			Graphics::Context->PSSetShaderResources(0, 16, nullSRVs);
 		}
 	}
 
